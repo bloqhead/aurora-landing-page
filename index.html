@@ -310,18 +310,28 @@
     color: var(--accent);
     letter-spacing: 0.1em;
   }
-  .quote-refresh {
+  /* ── CARD REFRESH BUTTON (shared) ───────────────────────── */
+  .card-btn {
     position: absolute;
-    top: 18px; right: 18px;
-    background: none;
-    border: none;
+    top: 16px; right: 16px;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
     color: var(--text-muted);
+    width: 30px; height: 30px;
+    display: flex; align-items: center; justify-content: center;
     cursor: pointer;
     font-size: 14px;
-    opacity: 0.6;
-    transition: all 0.2s;
+    line-height: 1;
+    transition: all 0.25s;
+    backdrop-filter: blur(8px);
   }
-  .quote-refresh:hover { opacity: 1; color: var(--accent); transform: rotate(180deg); }
+  .card-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--glow);
+    transform: rotate(180deg);
+  }
   .quote-loading {
     font-family: var(--font-mono);
     font-size: 12px;
@@ -684,7 +694,7 @@
       <!-- QUOTE -->
       <div class="card col-7" style="position:relative">
         <div class="card-label">Inspiration</div>
-        <button class="quote-refresh" @click="fetchQuote" title="New quote">↺</button>
+        <button class="card-btn" @click="fetchQuote" title="New quote">↺</button>
         <template v-if="quote">
           <div class="quote-text">"{{ quote.text }}"</div>
           <div class="quote-author">— {{ quote.author }}</div>
@@ -695,8 +705,9 @@
       </div>
 
       <!-- ALBUM -->
-      <div class="card col-5">
+      <div class="card col-5" style="position:relative">
         <div class="card-label">Album Rec</div>
+        <button class="card-btn" @click="fetchAlbum(selectedGenre)" title="New recommendation">↺</button>
         <template v-if="album">
           <div class="album-row">
             <div class="album-art">
