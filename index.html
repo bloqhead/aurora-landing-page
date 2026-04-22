@@ -9,1194 +9,451 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,200;0,9..144,400;1,9..144,300&family=DM+Mono:wght@300;400&family=Outfit:wght@200;300;400&display=swap" rel="stylesheet" />
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --bg: #0a0e1a;
-    --card: rgba(10,20,35,0.72);
-    --card-border: rgba(80,220,180,0.13);
-    --accent: #50dca0;
-    --accent2: #7b6ff0;
-    --text: #e8f4f0;
-    --text-muted: #7a9e92;
-    --glow: rgba(80,220,160,0.18);
-    --shimmer: #a0f0d0;
-    --radius: 18px;
-    --font-display: 'Fraunces', serif;
-    --font-body: 'Outfit', sans-serif;
-    --font-mono: 'DM Mono', monospace;
+    --bg: #0a0e1a; --card: rgba(10,20,35,0.72); --card-border: rgba(80,220,180,0.13);
+    --accent: #50dca0; --accent2: #7b6ff0; --text: #e8f4f0; --text-muted: #7a9e92;
+    --glow: rgba(80,220,160,0.18); --shimmer: #a0f0d0; --radius: clamp(12px, 1.5vw, 20px);
+    --font-display: 'Fraunces', serif; --font-body: 'Outfit', sans-serif; --font-mono: 'DM Mono', monospace;
+    --text-2xs: clamp(0.55rem,  0.5rem  + 0.2vi,  0.65rem);
+    --text-xs:  clamp(0.65rem,  0.6rem  + 0.25vi, 0.75rem);
+    --text-sm:  clamp(0.75rem,  0.7rem  + 0.3vi,  0.875rem);
+    --text-base:clamp(0.875rem, 0.8rem  + 0.4vi,  1rem);
+    --text-lg:  clamp(1rem,     0.9rem  + 0.6vi,  1.25rem);
+    --text-xl:  clamp(1.1rem,   0.9rem  + 1vi,    1.5rem);
+    --text-2xl: clamp(1.4rem,   1rem    + 2vi,    2.5rem);
+    --text-3xl: clamp(2rem,     1rem    + 4vi,    4.5rem);
+    --text-4xl: clamp(3rem,     1rem    + 7vi,    6.5rem);
+    --gap: clamp(10px, 1.2vw, 16px); --pad: clamp(14px, 2vw, 24px); --pad-sm: clamp(10px, 1.2vw, 16px);
   }
-
-  html, body { height: 100%; }
-
-  body {
-    font-family: var(--font-body);
-    color: var(--text);
-    background: var(--bg);
-    min-height: 100vh;
-    overflow-x: hidden;
-    transition: background 0.6s ease, color 0.4s ease;
-  }
-
-  /* ── BG IMAGE LAYER ──────────────────────────────────── */
-  #bg-layer {
-    position: fixed; inset: 0; z-index: 0;
-    background-size: cover;
-    background-position: center;
-    transition: opacity 1.2s ease;
-  }
-  #bg-overlay {
-    position: fixed; inset: 0; z-index: 1;
-    transition: background 0.6s;
-  }
-
-  /* ── LAYOUT ──────────────────────────────────────────── */
-  #app { position: relative; z-index: 2; min-height: 100vh; }
-
-  .container {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 28px 20px 60px;
-  }
-
-  /* ── HEADER ──────────────────────────────────────────── */
-  .header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    margin-bottom: 32px;
-  }
-  .header-left {}
-  .location-label {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--accent);
-    opacity: 0.85;
-    margin-bottom: 4px;
-  }
-  .clock {
-    font-family: var(--font-display);
-    font-size: clamp(3rem, 8vw, 6rem);
-    font-weight: 200;
-    line-height: 1;
-    color: var(--text);
-    letter-spacing: -0.02em;
-    text-shadow: 0 0 40px var(--glow);
-  }
-  .date-str {
-    font-family: var(--font-body);
-    font-size: 13px;
-    font-weight: 300;
-    color: var(--text-muted);
-    margin-top: 6px;
-    letter-spacing: 0.05em;
-  }
-  .header-right {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    padding-top: 8px;
-  }
-  .icon-btn {
-    background: var(--card);
-    border: 1px solid var(--card-border);
-    border-radius: 10px;
-    color: var(--text-muted);
-    width: 38px; height: 38px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    font-size: 16px;
-    transition: all 0.2s;
-    backdrop-filter: blur(10px);
-  }
+  html, body { height: 100%; font-family: var(--font-body); color: var(--text); background: var(--bg); overflow: hidden; transition: background 0.6s ease, color 0.4s ease; }
+  #bg-layer { position: fixed; inset: 0; z-index: 0; background-size: cover; background-position: center; transition: opacity 1.2s ease; }
+  #bg-overlay { position: fixed; inset: 0; z-index: 1; transition: background 0.6s; }
+  #app { position: relative; z-index: 2; height: 100dvh; display: flex; flex-direction: column; padding: clamp(12px,2vw,28px) clamp(12px,2.5vw,32px) clamp(8px,1.5vw,20px); gap: var(--gap); overflow: hidden; }
+  .header { display: flex; align-items: flex-end; justify-content: space-between; flex-shrink: 0; gap: var(--gap); }
+  .location-label { font-family: var(--font-mono); font-size: var(--text-2xs); letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); opacity: 0.85; margin-bottom: 0.2em; }
+  .clock { font-family: var(--font-display); font-size: var(--text-4xl); font-weight: 200; line-height: 0.95; color: var(--text); letter-spacing: -0.02em; text-shadow: 0 0 40px var(--glow); }
+  .date-str { font-family: var(--font-body); font-size: var(--text-xs); font-weight: 300; color: var(--text-muted); margin-top: 0.35em; letter-spacing: 0.05em; }
+  .header-right { display: flex; gap: clamp(6px,0.8vw,10px); align-items: center; padding-bottom: 4px; flex-shrink: 0; }
+  .icon-btn { background: var(--card); border: 1px solid var(--card-border); border-radius: clamp(7px,0.8vw,11px); color: var(--text-muted); width: clamp(32px,3vw,40px); height: clamp(32px,3vw,40px); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: var(--text-base); transition: all 0.2s; backdrop-filter: blur(10px); flex-shrink: 0; }
   .icon-btn:hover { color: var(--accent); border-color: var(--accent); background: var(--glow); }
-
-  /* ── CARDS ───────────────────────────────────────────── */
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(12, 1fr);
-    gap: 14px;
-  }
-  .card {
-    background: var(--card);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius);
-    backdrop-filter: blur(20px);
-    padding: 20px 22px;
-    transition: border-color 0.3s, background 0.4s, transform 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
-  .card::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg, transparent, var(--shimmer), transparent);
-    opacity: 0.15;
-  }
+  .grid { flex: 1; display: grid; grid-template-columns: repeat(12, 1fr); grid-template-rows: 1fr 1fr auto; gap: var(--gap); min-height: 0; }
+  .card { background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius); backdrop-filter: blur(20px); padding: var(--pad); transition: border-color 0.3s, background 0.4s, transform 0.2s; position: relative; overflow: hidden; display: flex; flex-direction: column; min-height: 0; }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--shimmer), transparent); opacity: 0.15; pointer-events: none; }
   .card:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--accent) 30%, transparent); }
-  .card-label {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin-bottom: 12px;
-  }
-
-  /* span helpers */
+  .card-label { font-family: var(--font-mono); font-size: var(--text-2xs); letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.75em; flex-shrink: 0; }
   .col-4  { grid-column: span 4; }
   .col-5  { grid-column: span 5; }
-  .col-6  { grid-column: span 6; }
   .col-7  { grid-column: span 7; }
-  .col-8  { grid-column: span 8; }
   .col-12 { grid-column: span 12; }
-
-  @media (max-width: 780px) {
-    .col-4, .col-5, .col-6, .col-7, .col-8 { grid-column: span 12; }
-  }
-
-  /* ── KP / AURORA ─────────────────────────────────────── */
-  .kp-big {
-    font-family: var(--font-display);
-    font-size: 4.5rem;
-    font-weight: 200;
-    line-height: 1;
-    color: var(--accent);
-    text-shadow: 0 0 30px var(--glow);
-  }
-  .kp-label {
-    font-size: 13px;
-    font-weight: 300;
-    margin-top: 4px;
-    color: var(--text-muted);
-  }
-  .kp-chance {
-    font-size: 12px;
-    margin-top: 8px;
-    color: var(--accent);
-    font-family: var(--font-mono);
-  }
-  .kp-bar-track {
-    height: 6px;
-    border-radius: 3px;
-    background: rgba(255,255,255,0.07);
-    margin-top: 14px;
-    overflow: hidden;
-  }
-  .kp-bar-fill {
-    height: 100%;
-    border-radius: 3px;
-    transition: width 0.8s cubic-bezier(.4,0,.2,1);
-  }
-  .kp-ref {
-    font-size: 10px;
-    font-family: var(--font-mono);
-    color: var(--text-muted);
-    margin-top: 8px;
-    opacity: 0.7;
-  }
-  .aurora-rings {
-    position: absolute;
-    top: 12px; right: 16px;
-    width: 60px; height: 60px;
-    pointer-events: none;
-  }
-  .ring {
-    position: absolute;
-    border-radius: 50%;
-    border: 1.5px solid var(--accent);
-    opacity: 0.12;
-    animation: pulse-ring 3s ease-in-out infinite;
-  }
-  .ring:nth-child(1) { inset: 0; }
-  .ring:nth-child(2) { inset: 8px; animation-delay: 0.6s; opacity: 0.18; }
-  .ring:nth-child(3) { inset: 18px; animation-delay: 1.2s; opacity: 0.25; }
-  @keyframes pulse-ring { 0%,100% { transform: scale(1); opacity: inherit; } 50% { transform: scale(1.08); opacity: 0.35; } }
-
-  /* ── WEATHER ─────────────────────────────────────────── */
-  .weather-temp {
-    font-family: var(--font-display);
-    font-size: 3.5rem;
-    font-weight: 200;
-    line-height: 1;
-    letter-spacing: -0.02em;
-  }
-  .weather-desc {
-    font-size: 13px;
-    font-weight: 300;
-    color: var(--text-muted);
-    margin-top: 4px;
-  }
-  .weather-icon { font-size: 2.2rem; margin-bottom: 6px; }
-  .weather-row {
-    display: flex;
-    gap: 16px;
-    margin-top: 14px;
-    flex-wrap: wrap;
-  }
-  .weather-stat {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-  .weather-stat-val {
-    font-family: var(--font-mono);
-    font-size: 13px;
-    color: var(--text);
-  }
-  .weather-stat-key {
-    font-size: 10px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-  }
-  .unit-toggle {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--text-muted);
-    cursor: pointer;
-    border: 1px solid var(--card-border);
-    border-radius: 6px;
-    padding: 2px 7px;
-    background: transparent;
-    margin-left: 6px;
-    transition: all 0.2s;
-    vertical-align: middle;
-  }
+  @media (max-width: 900px) { html, body { overflow: auto; } #app { height: auto; overflow: visible; } .grid { grid-template-rows: auto; } .col-4, .col-5, .col-7 { grid-column: span 6; } }
+  @media (max-width: 560px) { .col-4, .col-5, .col-7 { grid-column: span 12; } }
+  .card-btn { position: absolute; top: var(--pad-sm); right: var(--pad-sm); background: var(--card); border: 1px solid var(--card-border); border-radius: clamp(6px,0.6vw,9px); color: var(--text-muted); width: clamp(26px,2.2vw,32px); height: clamp(26px,2.2vw,32px); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: var(--text-sm); line-height: 1; transition: all 0.25s; backdrop-filter: blur(8px); }
+  .card-btn:hover { color: var(--accent); border-color: var(--accent); background: var(--glow); transform: rotate(180deg); }
+  .kp-big { font-family: var(--font-display); font-size: var(--text-3xl); font-weight: 200; line-height: 1; flex-shrink: 0; }
+  .kp-label { font-size: var(--text-sm); font-weight: 300; margin-top: 0.3em; color: var(--text-muted); }
+  .kp-chance { font-size: var(--text-xs); margin-top: 0.5em; color: var(--accent); font-family: var(--font-mono); }
+  .kp-bar-track { height: clamp(4px,0.5vw,7px); border-radius: 99px; background: rgba(255,255,255,0.07); margin-top: auto; margin-bottom: 0.3em; overflow: hidden; flex-shrink: 0; }
+  .kp-bar-fill { height: 100%; border-radius: 99px; transition: width 0.8s cubic-bezier(.4,0,.2,1); }
+  .kp-ref { font-size: var(--text-2xs); font-family: var(--font-mono); color: var(--text-muted); opacity: 0.6; flex-shrink: 0; }
+  .aurora-rings { position: absolute; top: var(--pad); right: var(--pad); width: clamp(40px,5vw,68px); height: clamp(40px,5vw,68px); pointer-events: none; }
+  .ring { position: absolute; border-radius: 50%; border: 1.5px solid var(--accent); animation: pulse-ring 3s ease-in-out infinite; }
+  .ring:nth-child(1) { inset: 0;   opacity: 0.12; }
+  .ring:nth-child(2) { inset: 20%; opacity: 0.18; animation-delay: 0.6s; }
+  .ring:nth-child(3) { inset: 38%; opacity: 0.28; animation-delay: 1.2s; }
+  @keyframes pulse-ring { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1);opacity:0.4} }
+  .weather-icon { font-size: var(--text-2xl); margin-bottom: 0.25em; flex-shrink: 0; }
+  .weather-temp { font-family: var(--font-display); font-size: var(--text-3xl); font-weight: 200; line-height: 1; letter-spacing: -0.02em; flex-shrink: 0; }
+  .weather-desc { font-size: var(--text-sm); font-weight: 300; color: var(--text-muted); margin-top: 0.25em; flex-shrink: 0; }
+  .weather-row { display: flex; gap: clamp(10px,2vw,20px); margin-top: auto; flex-wrap: wrap; align-items: flex-end; }
+  .weather-stat { display: flex; flex-direction: column; gap: 2px; }
+  .weather-stat-val { font-family: var(--font-mono); font-size: var(--text-sm); color: var(--text); }
+  .weather-stat-key { font-size: var(--text-2xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; }
+  .unit-toggle { font-family: var(--font-mono); font-size: var(--text-2xs); color: var(--text-muted); cursor: pointer; border: 1px solid var(--card-border); border-radius: 5px; padding: 1px 6px; background: transparent; margin-left: 0.4em; transition: all 0.2s; vertical-align: middle; }
   .unit-toggle:hover { color: var(--accent); border-color: var(--accent); }
-
-  /* ── SUN ─────────────────────────────────────────────── */
-  .sun-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-  }
+  .sun-row { display: flex; justify-content: space-between; align-items: center; gap: var(--gap); flex: 1; }
   .sun-item { text-align: center; flex: 1; }
-  .sun-icon { font-size: 1.5rem; margin-bottom: 4px; }
-  .sun-time {
-    font-family: var(--font-mono);
-    font-size: 1.1rem;
-    color: var(--text);
-  }
-  .sun-lbl {
-    font-size: 10px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-top: 2px;
-  }
-  .sun-arc {
-    margin: 14px 0 4px;
-    height: 32px;
-    position: relative;
-  }
+  .sun-icon { font-size: var(--text-xl); margin-bottom: 0.2em; }
+  .sun-time { font-family: var(--font-mono); font-size: var(--text-lg); color: var(--text); }
+  .sun-lbl { font-size: var(--text-2xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 0.2em; }
+  .sun-arc { flex-shrink: 0; height: clamp(24px,3vh,40px); margin: 0.5em 0 0.25em; }
   .sun-arc svg { width: 100%; height: 100%; }
-
-  /* ── QUOTE ───────────────────────────────────────────── */
-  .quote-text {
-    font-family: var(--font-display);
-    font-size: 1.1rem;
-    font-weight: 300;
-    font-style: italic;
-    line-height: 1.6;
-    color: var(--text);
-    margin-bottom: 12px;
-  }
-  .quote-author {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--accent);
-    letter-spacing: 0.1em;
-  }
-  /* ── CARD REFRESH BUTTON (shared) ───────────────────────── */
-  .card-btn {
-    position: absolute;
-    top: 16px; right: 16px;
-    background: var(--card);
-    border: 1px solid var(--card-border);
-    border-radius: 8px;
-    color: var(--text-muted);
-    width: 30px; height: 30px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    font-size: 14px;
-    line-height: 1;
-    transition: all 0.25s;
-    backdrop-filter: blur(8px);
-  }
-  .card-btn:hover {
-    color: var(--accent);
-    border-color: var(--accent);
-    background: var(--glow);
-    transform: rotate(180deg);
-  }
-  .quote-loading {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--text-muted);
-    animation: blink 1.4s ease-in-out infinite;
-  }
-  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
-
-  /* ── ALBUM ───────────────────────────────────────────── */
-  .album-art {
-    width: 68px; height: 68px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, var(--accent2), var(--accent));
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    overflow: hidden;
-  }
-  .album-art img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
+  .sun-status { font-size: var(--text-2xs); color: var(--text-muted); text-align: center; font-family: var(--font-mono); letter-spacing: 0.08em; }
+  .quote-text { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 300; font-style: italic; line-height: 1.55; color: var(--text); flex: 1; display: flex; align-items: center; }
+  .quote-author { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--accent); letter-spacing: 0.1em; margin-top: 0.75em; flex-shrink: 0; }
+  .quote-loading { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted); animation: blink 1.4s ease-in-out infinite; flex: 1; display: flex; align-items: center; }
+  .album-row { display: flex; gap: clamp(10px,1.2vw,16px); align-items: center; margin-bottom: 0.75em; flex-shrink: 0; }
+  .album-art { width: clamp(52px,6vw,80px); height: clamp(52px,6vw,80px); border-radius: clamp(7px,0.8vw,11px); background: linear-gradient(135deg, var(--accent2), var(--accent)); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: var(--text-2xl); overflow: hidden; }
+  .album-art img { width: 100%; height: 100%; object-fit: cover; }
   .album-body { flex: 1; min-width: 0; }
-  .album-title {
-    font-family: var(--font-display);
-    font-size: 1rem;
-    font-weight: 400;
-    color: var(--text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .album-artist {
-    font-size: 12px;
-    color: var(--text-muted);
-    margin-top: 3px;
-  }
-  .album-year {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--accent);
-    margin-top: 6px;
-  }
-  .album-row {
-    display: flex;
-    gap: 14px;
-    align-items: center;
-    margin-bottom: 14px;
-  }
-  .genre-picker {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 4px;
-  }
-  .genre-btn {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    padding: 4px 10px;
-    border-radius: 20px;
-    border: 1px solid var(--card-border);
-    background: transparent;
-    color: var(--text-muted);
-    cursor: pointer;
-    transition: all 0.2s;
-    letter-spacing: 0.08em;
-  }
+  .album-title { font-family: var(--font-display); font-size: var(--text-base); font-weight: 400; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .album-artist { font-size: var(--text-xs); color: var(--text-muted); margin-top: 0.2em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .album-meta { font-family: var(--font-mono); font-size: var(--text-2xs); color: var(--accent); margin-top: 0.4em; }
+  .genre-picker { display: flex; flex-wrap: wrap; gap: clamp(4px,0.5vw,7px); margin-top: auto; }
+  .genre-btn { font-family: var(--font-mono); font-size: var(--text-2xs); padding: 0.3em 0.75em; border-radius: 99px; border: 1px solid var(--card-border); background: transparent; color: var(--text-muted); cursor: pointer; transition: all 0.2s; letter-spacing: 0.06em; white-space: nowrap; }
   .genre-btn:hover { color: var(--text); border-color: var(--text-muted); }
-  .genre-btn.active {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #000;
-    font-weight: 500;
-  }
-  .album-loading {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--text-muted);
-    animation: blink 1.4s ease-in-out infinite;
-    text-align: center;
-    padding: 16px 0;
-  }
-
-  /* ── BG CONTROLS ─────────────────────────────────────── */
-  .bg-topics {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  .topic-btn {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    padding: 4px 10px;
-    border-radius: 20px;
-    border: 1px solid var(--card-border);
-    background: transparent;
-    color: var(--text-muted);
-    cursor: pointer;
-    transition: all 0.2s;
-    letter-spacing: 0.06em;
-  }
+  .genre-btn.active { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 500; }
+  .album-loading { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted); animation: blink 1.4s ease-in-out infinite; flex: 1; display: flex; align-items: center; justify-content: center; }
+  .bg-topics { display: flex; flex-wrap: wrap; gap: clamp(4px,0.5vw,7px); flex: 1; }
+  .topic-btn { font-family: var(--font-mono); font-size: var(--text-2xs); padding: 0.3em 0.75em; border-radius: 99px; border: 1px solid var(--card-border); background: transparent; color: var(--text-muted); cursor: pointer; transition: all 0.2s; letter-spacing: 0.06em; white-space: nowrap; }
   .topic-btn:hover { color: var(--text); border-color: var(--text-muted); }
   .topic-btn.active { background: var(--accent2); border-color: var(--accent2); color: #fff; }
-
-  /* ── SETTINGS PANEL ──────────────────────────────────── */
-  .settings-overlay {
-    position: fixed; inset: 0; z-index: 100;
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(4px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .settings-panel {
-    background: var(--bg);
-    border: 1px solid var(--card-border);
-    border-radius: 24px;
-    padding: 30px;
-    width: min(480px, 92vw);
-    max-height: 80vh;
-    overflow-y: auto;
-  }
-  .settings-title {
-    font-family: var(--font-display);
-    font-size: 1.4rem;
-    font-weight: 300;
-    margin-bottom: 24px;
-    color: var(--text);
-  }
-  .settings-section {
-    margin-bottom: 22px;
-  }
-  .settings-section-label {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin-bottom: 10px;
-  }
-  .settings-input {
-    width: 100%;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid var(--card-border);
-    border-radius: 10px;
-    padding: 10px 14px;
-    color: var(--text);
-    font-family: var(--font-mono);
-    font-size: 13px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
+  .settings-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.65); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; }
+  .settings-panel { background: var(--bg); border: 1px solid var(--card-border); border-radius: calc(var(--radius)*1.3); padding: clamp(20px,3vw,36px); width: min(500px,92vw); max-height: 85dvh; overflow-y: auto; position: relative; }
+  .settings-title { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 300; margin-bottom: 1.4em; color: var(--text); }
+  .settings-section { margin-bottom: 1.4em; }
+  .settings-section-label { font-family: var(--font-mono); font-size: var(--text-2xs); letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.6em; }
+  .settings-hint { font-size: var(--text-xs); color: var(--text-muted); margin-top: 0.4em; line-height: 1.5; }
+  .settings-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--card-border); border-radius: clamp(7px,0.8vw,10px); padding: 0.65em 0.9em; color: var(--text); font-family: var(--font-mono); font-size: var(--text-sm); outline: none; transition: border-color 0.2s; }
   .settings-input:focus { border-color: var(--accent); }
   .settings-input::placeholder { color: var(--text-muted); }
-  .theme-swatches {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-  .theme-swatch {
-    width: 48px; height: 48px;
-    border-radius: 12px;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: all 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
+  .theme-swatches { display: flex; gap: 10px; flex-wrap: wrap; }
+  .theme-swatch { width: clamp(40px,4.5vw,56px); height: clamp(40px,4.5vw,56px); border-radius: clamp(9px,1vw,13px); cursor: pointer; border: 2px solid transparent; transition: all 0.2s; position: relative; overflow: hidden; }
   .theme-swatch.active { border-color: var(--accent); }
-  .theme-swatch span {
-    position: absolute; bottom: 2px; left: 0; right: 0;
-    text-align: center;
-    font-size: 8px;
-    font-family: var(--font-mono);
-    color: rgba(255,255,255,0.8);
-    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-  }
-  .settings-btn {
-    background: var(--accent);
-    color: #000;
-    border: none;
-    border-radius: 10px;
-    padding: 10px 20px;
-    font-family: var(--font-mono);
-    font-size: 12px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: opacity 0.2s;
-    margin-top: 4px;
-  }
+  .theme-swatch span { position: absolute; bottom: 2px; left: 0; right: 0; text-align: center; font-size: 8px; font-family: var(--font-mono); color: rgba(255,255,255,0.85); text-shadow: 0 1px 3px rgba(0,0,0,0.7); }
+  .settings-btn { background: var(--accent); color: #000; border: none; border-radius: clamp(7px,0.8vw,10px); padding: 0.65em 1.4em; font-family: var(--font-mono); font-size: var(--text-sm); cursor: pointer; font-weight: 500; transition: opacity 0.2s; margin-top: 0.4em; }
   .settings-btn:hover { opacity: 0.85; }
-  .settings-close {
-    position: absolute; top: 20px; right: 24px;
-    background: none; border: none;
-    color: var(--text-muted); cursor: pointer; font-size: 20px;
-    transition: color 0.2s;
-  }
+  .settings-close { position: absolute; top: clamp(14px,2vw,22px); right: clamp(16px,2vw,24px); background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: var(--text-lg); transition: color 0.2s; }
   .settings-close:hover { color: var(--text); }
-
-  /* ── UNSPLASH CREDIT ─────────────────────────────────── */
-  .photo-credit {
-    position: fixed;
-    bottom: 14px;
-    right: 18px;
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: rgba(255,255,255,0.45);
-    z-index: 3;
-    text-decoration: none;
-    transition: color 0.2s;
-  }
-  .photo-credit:hover { color: rgba(255,255,255,0.8); }
-
-  /* ── LOADING DOTS ────────────────────────────────────── */
-  .dot-loader { display: inline-flex; gap: 4px; }
-  .dot-loader span {
-    width: 4px; height: 4px; border-radius: 50%;
-    background: var(--text-muted);
-    animation: bounce 1.2s ease-in-out infinite;
-  }
-  .dot-loader span:nth-child(2) { animation-delay: 0.2s; }
-  .dot-loader span:nth-child(3) { animation-delay: 0.4s; }
-  @keyframes bounce { 0%,80%,100% { transform: translateY(0); } 40% { transform: translateY(-5px); } }
-
-  /* ── FADE TRANSITIONS ────────────────────────────────── */
-  .fade-enter-active, .fade-leave-active { transition: opacity 0.35s; }
-  .fade-enter-from, .fade-leave-to { opacity: 0; }
-
-  /* ── MISC ────────────────────────────────────────────── */
-  a { color: inherit; }
-  button { font-family: inherit; }
-
-  /* ── SCROLLBAR ───────────────────────────────────────── */
-  ::-webkit-scrollbar { width: 5px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 3px; }
+  .photo-credit { position: fixed; bottom: clamp(10px,1.5vh,16px); right: clamp(12px,1.5vw,20px); font-family: var(--font-mono); font-size: var(--text-2xs); color: rgba(255,255,255,0.4); z-index: 3; text-decoration: none; transition: color 0.2s; }
+  .photo-credit:hover { color: rgba(255,255,255,0.75); }
+  .dot-loader { display: inline-flex; gap: 4px; align-items: center; }
+  .dot-loader span { width: clamp(3px,0.4vw,5px); height: clamp(3px,0.4vw,5px); border-radius: 50%; background: var(--text-muted); animation: bounce 1.2s ease-in-out infinite; }
+  .dot-loader span:nth-child(2){animation-delay:0.2s} .dot-loader span:nth-child(3){animation-delay:0.4s}
+  @keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-4px)}}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+  .fade-enter-active,.fade-leave-active{transition:opacity 0.3s}
+  .fade-enter-from,.fade-leave-to{opacity:0}
+  button{font-family:inherit} a{color:inherit}
+  ::-webkit-scrollbar{width:4px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:var(--card-border);border-radius:2px}
 </style>
 </head>
 <body>
-
 <div id="bg-layer"></div>
 <div id="bg-overlay"></div>
-
 <div id="app">
-  <div class="container">
-
-    <!-- HEADER / CLOCK -->
-    <div class="header">
-      <div class="header-left">
-        <div class="location-label">{{ locationName || '&mdash;' }}</div>
-        <div class="clock">{{ clockStr }}</div>
-        <div class="date-str">{{ dateStr }}</div>
-      </div>
-      <div class="header-right">
-        <button class="icon-btn" @click="refreshBg" title="New background">↺</button>
-        <button class="icon-btn" @click="showSettings = true" title="Settings">⚙</button>
+  <header class="header">
+    <div>
+      <div class="location-label">{{ locationName || '—' }}</div>
+      <div class="clock">{{ clockStr }}</div>
+      <div class="date-str">{{ dateStr }}</div>
+    </div>
+    <div class="header-right">
+      <button class="icon-btn" @click="refreshBg" title="New background">↺</button>
+      <button class="icon-btn" @click="showSettings = true" title="Settings">⚙</button>
+    </div>
+  </header>
+  <div class="grid">
+    <!-- KP -->
+    <div class="card col-4">
+      <div class="aurora-rings"><div class="ring"></div><div class="ring"></div><div class="ring"></div></div>
+      <div class="card-label">KP Index · Tromsø ref.</div>
+      <template v-if="kp !== null">
+        <div class="kp-big" :style="{ color: kpData.color, textShadow: `0 0 30px ${kpData.color}55` }">{{ kp.toFixed(1) }}</div>
+        <div class="kp-label">{{ kpData.label }}</div>
+        <div class="kp-chance">{{ kpData.chance }}</div>
+        <div class="kp-bar-track"><div class="kp-bar-fill" :style="{ width: Math.min(kp/9*100,100)+'%', background: kpData.color }"></div></div>
+        <div class="kp-ref">Reference: Tromsø, Norway (69°N)</div>
+      </template>
+      <template v-else><div style="flex:1;display:flex;align-items:center"><div class="dot-loader"><span></span><span></span><span></span></div></div></template>
+    </div>
+    <!-- WEATHER -->
+    <div class="card col-4">
+      <div class="card-label">Local Weather</div>
+      <template v-if="weather">
+        <div class="weather-icon">{{ weather.icon }}</div>
+        <div class="weather-temp">
+          {{ useFahrenheit ? cToF(weather.tempC) + '°F' : Math.round(weather.tempC) + '°C' }}
+          <button class="unit-toggle" @click="useFahrenheit = !useFahrenheit">{{ useFahrenheit ? '→°C' : '→°F' }}</button>
+        </div>
+        <div class="weather-desc">{{ weather.description }}</div>
+        <div class="weather-row">
+          <div class="weather-stat"><span class="weather-stat-val">{{ weather.humidity }}%</span><span class="weather-stat-key">Humidity</span></div>
+          <div class="weather-stat"><span class="weather-stat-val">{{ useFahrenheit ? msToMph(weather.windMs)+'mph' : Math.round(weather.windMs*3.6)+'km/h' }}</span><span class="weather-stat-key">Wind</span></div>
+          <div class="weather-stat"><span class="weather-stat-val">{{ useFahrenheit ? cToF(weather.feelsLike)+'°F' : Math.round(weather.feelsLike)+'°C' }}</span><span class="weather-stat-key">Feels like</span></div>
+        </div>
+      </template>
+      <template v-else-if="locationError"><div style="font-size:var(--text-sm);color:var(--text-muted);margin-top:0.5em;flex:1">{{ locationError }}</div></template>
+      <template v-else><div style="flex:1;display:flex;align-items:center"><div class="dot-loader"><span></span><span></span><span></span></div></div></template>
+    </div>
+    <!-- SUN -->
+    <div class="card col-4">
+      <div class="card-label">Sun · {{ locationName || 'Local' }}</div>
+      <template v-if="sunData">
+        <div class="sun-row">
+          <div class="sun-item"><div class="sun-icon">🌅</div><div class="sun-time">{{ sunData.sunrise }}</div><div class="sun-lbl">Sunrise</div></div>
+          <div class="sun-item"><div class="sun-icon">🌞</div><div class="sun-time">{{ sunData.dayLength }}</div><div class="sun-lbl">Daylight</div></div>
+          <div class="sun-item"><div class="sun-icon">🌇</div><div class="sun-time">{{ sunData.sunset }}</div><div class="sun-lbl">Sunset</div></div>
+        </div>
+        <div class="sun-arc">
+          <svg viewBox="0 0 200 36" fill="none" preserveAspectRatio="none">
+            <path d="M 10 32 Q 100 -8 190 32" stroke="var(--card-border)" stroke-width="1.5" fill="none"/>
+            <path :d="`M 10 32 Q 100 -8 ${10+sunProgress*180} ${32-sunArcY}`" stroke="var(--accent)" stroke-width="1.5" fill="none" opacity="0.8"/>
+            <circle :cx="10+sunProgress*180" :cy="32-sunArcY" r="4" fill="var(--accent)"/>
+          </svg>
+        </div>
+        <div class="sun-status">{{ sunData.status }}</div>
+      </template>
+      <template v-else><div style="flex:1;display:flex;align-items:center"><div class="dot-loader"><span></span><span></span><span></span></div></div></template>
+    </div>
+    <!-- QUOTE -->
+    <div class="card col-7">
+      <div class="card-label">Inspiration</div>
+      <button class="card-btn" @click="fetchQuote" title="New quote">↺</button>
+      <template v-if="quote">
+        <div class="quote-text">"{{ quote.text }}"</div>
+        <div class="quote-author">— {{ quote.author }}</div>
+      </template>
+      <template v-else><div class="quote-loading">conjuring something worth reading…</div></template>
+    </div>
+    <!-- ALBUM -->
+    <div class="card col-5">
+      <div class="card-label">Album Rec · Last.fm</div>
+      <button class="card-btn" @click="fetchAlbum(selectedGenre)" title="Another rec">↺</button>
+      <template v-if="album">
+        <div class="album-row">
+          <div class="album-art"><img v-if="album.art" :src="album.art" :alt="album.title" @error="album.art=null"/><template v-else>🎵</template></div>
+          <div class="album-body">
+            <div class="album-title">{{ album.title }}</div>
+            <div class="album-artist">{{ album.artist }}</div>
+            <div class="album-meta">{{ selectedGenre }}</div>
+          </div>
+        </div>
+      </template>
+      <div v-else-if="albumLoading" class="album-loading">searching the stacks…</div>
+      <div v-else style="flex:1"></div>
+      <div class="genre-picker">
+        <button v-for="g in genres" :key="g" class="genre-btn" :class="{active:selectedGenre===g}" @click="pickGenre(g)">{{ g }}</button>
       </div>
     </div>
-
-    <!-- MAIN GRID -->
-    <div class="grid">
-
-      <!-- KP INDEX -->
-      <div class="card col-4">
-        <div class="aurora-rings">
-          <div class="ring"></div><div class="ring"></div><div class="ring"></div>
-        </div>
-        <div class="card-label">KP Index · Tromsø ref.</div>
-        <template v-if="kp !== null">
-          <div class="kp-big" :style="{ color: kpInfo.color, textShadow: `0 0 30px ${kpInfo.color}44` }">
-            {{ kp.toFixed(1) }}
-          </div>
-          <div class="kp-label">{{ kpInfo.label }}</div>
-          <div class="kp-chance">{{ kpInfo.chance }}</div>
-          <div class="kp-bar-track">
-            <div class="kp-bar-fill"
-              :style="{ width: Math.min(kp/9*100,100)+'%', background: kpInfo.color }">
-            </div>
-          </div>
-          <div class="kp-ref">Reference: Tromsø, Norway (69°N)</div>
-        </template>
-        <template v-else>
-          <div style="padding-top:12px"><div class="dot-loader"><span></span><span></span><span></span></div></div>
-        </template>
-      </div>
-
-      <!-- WEATHER -->
-      <div class="card col-4">
-        <div class="card-label">Local Weather</div>
-        <template v-if="weather">
-          <div class="weather-icon">{{ weather.icon }}</div>
-          <div class="weather-temp">
-            {{ useFahrenheit ? cToF(weather.tempC) + '°F' : Math.round(weather.tempC) + '°C' }}
-            <button class="unit-toggle" @click="useFahrenheit = !useFahrenheit">
-              {{ useFahrenheit ? '→°C' : '→°F' }}
-            </button>
-          </div>
-          <div class="weather-desc">{{ weather.description }}</div>
-          <div class="weather-row">
-            <div class="weather-stat">
-              <span class="weather-stat-val">{{ weather.humidity }}%</span>
-              <span class="weather-stat-key">Humidity</span>
-            </div>
-            <div class="weather-stat">
-              <span class="weather-stat-val">{{ useFahrenheit ? msToMph(weather.windMs) + ' mph' : Math.round(weather.windMs * 3.6) + ' km/h' }}</span>
-              <span class="weather-stat-key">Wind</span>
-            </div>
-            <div class="weather-stat">
-              <span class="weather-stat-val">{{ useFahrenheit ? cToF(weather.feelsLike) + '°F' : Math.round(weather.feelsLike) + '°C' }}</span>
-              <span class="weather-stat-key">Feels like</span>
-            </div>
-          </div>
-        </template>
-        <template v-else-if="locationError">
-          <div style="font-size:12px; color:var(--text-muted); margin-top:8px;">{{ locationError }}</div>
-        </template>
-        <template v-else>
-          <div style="padding-top:12px"><div class="dot-loader"><span></span><span></span><span></span></div></div>
-        </template>
-      </div>
-
-      <!-- SUNRISE / SUNSET -->
-      <div class="card col-4">
-        <div class="card-label">Sun · {{ locationName }}</div>
-        <template v-if="sunData">
-          <div class="sun-row">
-            <div class="sun-item">
-              <div class="sun-icon">🌅</div>
-              <div class="sun-time">{{ sunData.sunrise }}</div>
-              <div class="sun-lbl">Sunrise</div>
-            </div>
-            <div class="sun-item">
-              <div class="sun-icon">🌞</div>
-              <div class="sun-time">{{ sunData.dayLength }}</div>
-              <div class="sun-lbl">Daylight</div>
-            </div>
-            <div class="sun-item">
-              <div class="sun-icon">🌇</div>
-              <div class="sun-time">{{ sunData.sunset }}</div>
-              <div class="sun-lbl">Sunset</div>
-            </div>
-          </div>
-          <div class="sun-arc">
-            <svg viewBox="0 0 200 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M 10 32 Q 100 -10 190 32" stroke="var(--card-border)" stroke-width="1.5" fill="none"/>
-              <path :d="`M 10 32 Q 100 -10 ${10 + sunProgress * 180} ${32 - sunArcY}`"
-                stroke="var(--accent)" stroke-width="1.5" fill="none" opacity="0.7"/>
-              <circle :cx="10 + sunProgress * 180" :cy="32 - sunArcY"
-                r="4" fill="var(--accent)" opacity="0.9"/>
-            </svg>
-          </div>
-          <div class="sun-lbl" style="text-align:center; margin-top:2px">
-            {{ sunData.status }}
-          </div>
-        </template>
-        <template v-else>
-          <div style="padding-top:12px"><div class="dot-loader"><span></span><span></span><span></span></div></div>
-        </template>
-      </div>
-
-      <!-- QUOTE -->
-      <div class="card col-7" style="position:relative">
-        <div class="card-label">Inspiration</div>
-        <button class="card-btn" @click="fetchQuote" title="New quote">↺</button>
-        <template v-if="quote">
-          <div class="quote-text">"{{ quote.text }}"</div>
-          <div class="quote-author">— {{ quote.author }}</div>
-        </template>
-        <template v-else>
-          <div class="quote-loading">conjuring something worth reading…</div>
-        </template>
-      </div>
-
-      <!-- ALBUM -->
-      <div class="card col-5" style="position:relative">
-        <div class="card-label">Album Rec</div>
-        <button class="card-btn" @click="fetchAlbum(selectedGenre)" title="New recommendation">↺</button>
-        <template v-if="album">
-          <div class="album-row">
-            <div class="album-art">
-              <img v-if="album.art" :src="album.art" :alt="album.title" />
-              <template v-else>🎵</template>
-            </div>
-            <div class="album-body">
-              <div class="album-title">{{ album.title }}</div>
-              <div class="album-artist">{{ album.artist }}</div>
-              <div class="album-year">{{ album.year }}</div>
-            </div>
-          </div>
-        </template>
-        <div v-else-if="albumLoading" class="album-loading">searching the stacks…</div>
-        <div class="genre-picker">
-          <button v-for="g in genres" :key="g"
-            class="genre-btn" :class="{ active: selectedGenre === g }"
-            @click="pickGenre(g)">{{ g }}</button>
-        </div>
-      </div>
-
-      <!-- BACKGROUND -->
-      <div class="card col-12">
-        <div class="card-label">Background · Unsplash</div>
-        <div class="bg-topics">
-          <button v-for="t in bgTopics" :key="t.key"
-            class="topic-btn" :class="{ active: bgTopic === t.key }"
-            @click="setBgTopic(t.key)">{{ t.label }}</button>
-        </div>
-      </div>
-
-    </div><!-- /grid -->
-
-  </div><!-- /container -->
-
-  <!-- PHOTO CREDIT -->
-  <a v-if="bgCredit" class="photo-credit"
-    :href="bgCredit.link" target="_blank" rel="noopener">
-    📷 {{ bgCredit.name }} · Unsplash
-  </a>
-
-  <!-- SETTINGS PANEL -->
-  <transition name="fade">
-    <div class="settings-overlay" v-if="showSettings" @click.self="showSettings = false">
-      <div class="settings-panel" style="position:relative">
-        <button class="settings-close" @click="showSettings = false">✕</button>
-        <div class="settings-title">Settings</div>
-
-        <div class="settings-section">
-          <div class="settings-section-label">Location (city, country)</div>
-          <input class="settings-input" v-model="locationInput"
-            placeholder="e.g. Asheville, US" @keyup.enter="saveSettings" />
-        </div>
-
-        <div class="settings-section">
-          <div class="settings-section-label">Unsplash Access Key</div>
-          <input class="settings-input" v-model="unsplashKey"
-            placeholder="Paste your key from unsplash.com/developers" type="password" />
-          <div style="font-size:11px; color:var(--text-muted); margin-top:6px;">
-            Free account → New app → get Access Key. Required for photo backgrounds.
-          </div>
-        </div>
-
-        <div class="settings-section">
-          <div class="settings-section-label">Anthropic API Key</div>
-          <input class="settings-input" v-model="anthropicKey"
-            placeholder="sk-ant-..." type="password" />
-          <div style="font-size:11px; color:var(--text-muted); margin-top:6px;">
-            Powers quotes &amp; album recs. From console.anthropic.com.
-          </div>
-        </div>
-
-        <div class="settings-section">
-          <div class="settings-section-label">Theme</div>
-          <div class="theme-swatches">
-            <div v-for="(t, key) in themeMap" :key="key"
-              class="theme-swatch" :class="{ active: currentTheme === key }"
-              :style="{ background: t.bg }"
-              @click="setTheme(key)"
-              :title="t.name">
-              <span>{{ t.name }}</span>
-            </div>
-          </div>
-        </div>
-
-        <button class="settings-btn" @click="saveSettings">Save & Apply</button>
+    <!-- BG ROW -->
+    <div class="card col-12" style="flex-direction:row;align-items:center;gap:var(--gap)">
+      <div class="card-label" style="margin-bottom:0;white-space:nowrap;flex-shrink:0">Background</div>
+      <div class="bg-topics">
+        <button v-for="t in bgTopics" :key="t.key" class="topic-btn" :class="{active:bgTopic===t.key}" @click="setBgTopic(t.key)">{{ t.label }}</button>
       </div>
     </div>
-  </transition>
+  </div>
 </div>
+
+<a v-if="bgCredit" class="photo-credit" :href="bgCredit.link" target="_blank" rel="noopener">📷 {{ bgCredit.name }} · Unsplash</a>
+
+<transition name="fade">
+  <div class="settings-overlay" v-if="showSettings" @click.self="showSettings=false">
+    <div class="settings-panel">
+      <button class="settings-close" @click="showSettings=false">✕</button>
+      <div class="settings-title">Settings</div>
+      <div class="settings-section">
+        <div class="settings-section-label">Location (city, country)</div>
+        <input class="settings-input" v-model="locationInput" placeholder="e.g. Asheville, US" @keyup.enter="saveSettings"/>
+      </div>
+      <div class="settings-section">
+        <div class="settings-section-label">Last.fm API Key</div>
+        <input class="settings-input" v-model="lastfmKey" placeholder="Your Last.fm API key"/>
+        <div class="settings-hint">Free at <a href="https://www.last.fm/api/account/create" target="_blank" style="color:var(--accent)">last.fm/api</a> — powers real album art &amp; picks.</div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-section-label">Unsplash Access Key</div>
+        <input class="settings-input" v-model="unsplashKey" placeholder="Client ID from unsplash.com/developers"/>
+        <div class="settings-hint">Free account → New app → Access Key. Required for photo backgrounds.</div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-section-label">Anthropic API Key</div>
+        <input class="settings-input" v-model="anthropicKey" placeholder="sk-ant-…" type="password"/>
+        <div class="settings-hint">Powers rotating quotes. From <a href="https://console.anthropic.com" target="_blank" style="color:var(--accent)">console.anthropic.com</a>.</div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-section-label">Theme</div>
+        <div class="theme-swatches">
+          <div v-for="(t,key) in themeMap" :key="key" class="theme-swatch" :class="{active:currentTheme===key}" :style="{background:t.bg}" @click="setTheme(key)" :title="t.name"><span>{{ t.name }}</span></div>
+        </div>
+      </div>
+      <button class="settings-btn" @click="saveSettings">Save &amp; Apply</button>
+    </div>
+  </div>
+</transition>
 
 <script type="module">
 import { createApp, ref, computed, onMounted, onUnmounted, watch } from 'https://cdn.jsdelivr.net/npm/vue@3.5.13/dist/vue.esm-browser.min.js';
 
-// ─── WMO WEATHER CODES ────────────────────────────────────────────────────────
-const WMO = {
-  0:  ['Clear sky','☀️'],
-  1:  ['Mainly clear','🌤️'], 2: ['Partly cloudy','⛅'], 3: ['Overcast','☁️'],
-  45: ['Fog','🌫️'], 48: ['Icy fog','🌫️'],
-  51: ['Light drizzle','🌦️'], 53: ['Drizzle','🌦️'], 55: ['Heavy drizzle','🌧️'],
-  61: ['Light rain','🌧️'], 63: ['Rain','🌧️'], 65: ['Heavy rain','🌧️'],
-  71: ['Light snow','❄️'], 73: ['Snow','❄️'], 75: ['Heavy snow','🌨️'],
-  77: ['Snow grains','🌨️'],
-  80: ['Light showers','🌦️'], 81: ['Showers','🌧️'], 82: ['Heavy showers','⛈️'],
-  85: ['Snow showers','🌨️'], 86: ['Heavy snow showers','🌨️'],
-  95: ['Thunderstorm','⛈️'], 96: ['Thunderstorm','⛈️'], 99: ['Thunderstorm','⛈️'],
-};
+const WMO={0:['Clear sky','☀️'],1:['Mainly clear','🌤️'],2:['Partly cloudy','⛅'],3:['Overcast','☁️'],45:['Fog','🌫️'],48:['Icy fog','🌫️'],51:['Light drizzle','🌦️'],53:['Drizzle','🌦️'],55:['Heavy drizzle','🌧️'],61:['Light rain','🌧️'],63:['Rain','🌧️'],65:['Heavy rain','🌧️'],71:['Light snow','❄️'],73:['Snow','❄️'],75:['Heavy snow','🌨️'],77:['Snow grains','🌨️'],80:['Light showers','🌦️'],81:['Showers','🌧️'],82:['Heavy showers','⛈️'],85:['Snow showers','🌨️'],86:['Heavy snow showers','🌨️'],95:['Thunderstorm','⛈️'],96:['Thunderstorm','⛈️'],99:['Thunderstorm','⛈️']};
 
-// ─── KP COLOR ─────────────────────────────────────────────────────────────────
-function kpInfo(kp) {
-  if (kp < 1)  return { label: 'Quiet',           color: '#4ecdc4', chance: 'No activity expected' };
-  if (kp < 2)  return { label: 'Very Low',         color: '#5bc8af', chance: 'Unlikely to see aurora' };
-  if (kp < 3)  return { label: 'Low',              color: '#a8e6cf', chance: 'Polar regions only' };
-  if (kp < 4)  return { label: 'Moderate',         color: '#b8f5e0', chance: 'Good chance in northern Norway' };
-  if (kp < 5)  return { label: 'Active',           color: '#ddf0a0', chance: 'Strong — look north tonight' };
-  if (kp < 6)  return { label: 'Minor Storm (G1)', color: '#ffe066', chance: 'Visible at lower latitudes' };
-  if (kp < 7)  return { label: 'Moderate Storm (G2)', color: '#ffaa44', chance: 'Widespread, even southern Norway' };
-  return { label: 'Severe Storm',                  color: '#ff6b6b', chance: '🚨 Visible across Europe & North America!' };
+function kpDescriptor(k){
+  if(k<1)return{label:'Quiet',color:'#4ecdc4',chance:'No activity expected'};
+  if(k<2)return{label:'Very Low',color:'#5bc8af',chance:'Unlikely to see aurora'};
+  if(k<3)return{label:'Low',color:'#a8e6cf',chance:'Polar regions only'};
+  if(k<4)return{label:'Moderate',color:'#b8f5e0',chance:'Good chance in northern Norway'};
+  if(k<5)return{label:'Active',color:'#ddf0a0',chance:'Strong — look north tonight'};
+  if(k<6)return{label:'Minor Storm (G1)',color:'#ffe066',chance:'Visible at lower latitudes'};
+  if(k<7)return{label:'Moderate Storm (G2)',color:'#ffaa44',chance:'Widespread aurora activity'};
+  return{label:'Severe Storm',color:'#ff6b6b',chance:'🚨 Visible across Europe & North America!'};
 }
 
-// ─── THEMES ───────────────────────────────────────────────────────────────────
-const THEMES = {
-  aurora:   { name:'Aurora',   dark:true,  bg:'#0a0e1a', bg2:'#091a14', accent:'#50dca0', accent2:'#7b6ff0', text:'#e8f4f0', textMuted:'#7a9e92', glow:'rgba(80,220,160,0.18)', shimmer:'#a0f0d0', card:'rgba(10,20,35,0.72)', cardBorder:'rgba(80,220,180,0.13)' },
-  midnight: { name:'Midnight', dark:true,  bg:'#07080f', bg2:'#12091a', accent:'#9d7fff', accent2:'#ff7eb6', text:'#ddd8ff', textMuted:'#6a618a', glow:'rgba(140,100,255,0.2)',  shimmer:'#c4b8ff', card:'rgba(14,13,30,0.78)',  cardBorder:'rgba(120,100,255,0.15)' },
-  dusk:     { name:'Dusk',     dark:true,  bg:'#12060a', bg2:'#0f0a1e', accent:'#ff8c6b', accent2:'#c77dff', text:'#f5ddd8', textMuted:'#8a6060', glow:'rgba(255,120,100,0.18)', shimmer:'#ffb8a0', card:'rgba(20,10,18,0.75)',  cardBorder:'rgba(255,120,100,0.13)' },
-  arctic:   { name:'Arctic',   dark:false, bg:'#e8f4f8', bg2:'#e2eef5', accent:'#1a7fa8', accent2:'#2a9d7a', text:'#1a2a35', textMuted:'#5a7a8a', glow:'rgba(80,160,200,0.12)', shimmer:'#1a7fa8', card:'rgba(255,255,255,0.7)', cardBorder:'rgba(80,160,200,0.2)' },
-  forest:   { name:'Forest',   dark:true,  bg:'#050d08', bg2:'#0a1a0c', accent:'#5ddb6e', accent2:'#a8e063', text:'#d8f0dc', textMuted:'#5a7a5e', glow:'rgba(80,200,100,0.18)', shimmer:'#90e8a0', card:'rgba(8,20,10,0.76)',   cardBorder:'rgba(80,200,100,0.14)' },
+const THEMES={
+  aurora:{name:'Aurora',dark:true,bg:'#0a0e1a',bg2:'#091a14',accent:'#50dca0',accent2:'#7b6ff0',text:'#e8f4f0',textMuted:'#7a9e92',glow:'rgba(80,220,160,0.18)',shimmer:'#a0f0d0',card:'rgba(10,20,35,0.72)',cardBorder:'rgba(80,220,180,0.13)'},
+  midnight:{name:'Midnight',dark:true,bg:'#07080f',bg2:'#12091a',accent:'#9d7fff',accent2:'#ff7eb6',text:'#ddd8ff',textMuted:'#6a618a',glow:'rgba(140,100,255,0.2)',shimmer:'#c4b8ff',card:'rgba(14,13,30,0.78)',cardBorder:'rgba(120,100,255,0.15)'},
+  dusk:{name:'Dusk',dark:true,bg:'#12060a',bg2:'#0f0a1e',accent:'#ff8c6b',accent2:'#c77dff',text:'#f5ddd8',textMuted:'#8a6060',glow:'rgba(255,120,100,0.18)',shimmer:'#ffb8a0',card:'rgba(20,10,18,0.75)',cardBorder:'rgba(255,120,100,0.13)'},
+  arctic:{name:'Arctic',dark:false,bg:'#e8f4f8',bg2:'#e2eef5',accent:'#1a7fa8',accent2:'#2a9d7a',text:'#1a2a35',textMuted:'#5a7a8a',glow:'rgba(80,160,200,0.12)',shimmer:'#1a7fa8',card:'rgba(255,255,255,0.7)',cardBorder:'rgba(80,160,200,0.2)'},
+  forest:{name:'Forest',dark:true,bg:'#050d08',bg2:'#0a1a0c',accent:'#5ddb6e',accent2:'#a8e063',text:'#d8f0dc',textMuted:'#5a7a5e',glow:'rgba(80,200,100,0.18)',shimmer:'#90e8a0',card:'rgba(8,20,10,0.76)',cardBorder:'rgba(80,200,100,0.14)'},
 };
 
-const BG_TOPICS = [
-  { key:'northern-lights', label:'Northern Lights' },
-  { key:'aurora-borealis', label:'Aurora' },
-  { key:'arctic-landscape', label:'Arctic' },
-  { key:'night-sky-stars', label:'Night Sky' },
-  { key:'forest-fog-night', label:'Forest' },
-  { key:'ocean-coast-dark', label:'Coast' },
-  { key:'mountain-snow-night', label:'Mountains' },
-  { key:'minimalist-dark', label:'Minimal' },
+const BG_TOPICS=[{key:'northern-lights',label:'Northern Lights'},{key:'aurora-borealis',label:'Aurora'},{key:'arctic-landscape',label:'Arctic'},{key:'night-sky-stars',label:'Night Sky'},{key:'forest-fog-night',label:'Forest'},{key:'ocean-coast-dark',label:'Coast'},{key:'mountain-snow-night',label:'Mountains'},{key:'minimalist-dark',label:'Minimal'}];
+
+const GENRES=[{label:'ambient',tag:'ambient'},{label:'jazz',tag:'jazz'},{label:'folk',tag:'folk'},{label:'post-rock',tag:'post-rock'},{label:'classical',tag:'classical'},{label:'shoegaze',tag:'shoegaze'},{label:'blues',tag:'blues'},{label:'soul',tag:'soul'},{label:'experimental',tag:'experimental'},{label:'drone',tag:'drone'},{label:'krautrock',tag:'krautrock'},{label:'neo-soul',tag:'neo soul'}];
+
+const FALLBACK_QUOTES=[
+  {text:"The world is quiet here.",author:"Lemony Snicket"},
+  {text:"Not all those who wander are lost.",author:"J.R.R. Tolkien"},
+  {text:"I took a deep breath and listened to the old brag of my heart: I am, I am, I am.",author:"Sylvia Plath"},
+  {text:"One must always maintain one's connection to the past and yet ceaselessly pull away from it.",author:"Gaston Bachelard"},
+  {text:"The sky is everywhere, it begins at your feet.",author:"Jandy Nelson"},
+  {text:"To live is so startling it leaves little time for anything else.",author:"Emily Dickinson"},
+  {text:"The cure for anything is salt water: sweat, tears, or the sea.",author:"Isak Dinesen"},
+  {text:"In the middle of winter, I at last discovered that there was in me an invincible summer.",author:"Albert Camus"},
+  {text:"Stars are not small or gentle. They are writhing and dying and burning.",author:"Tamsyn Muir"},
+  {text:"The most beautiful thing we can experience is the mysterious.",author:"Albert Einstein"},
+  {text:"Everything you can imagine is real.",author:"Pablo Picasso"},
+  {text:"The role of the artist is to ask questions, not answer them.",author:"Anton Chekhov"},
+  {text:"I am not strange. I am just not normal.",author:"Salvador Dalí"},
+  {text:"Without music, life would be a mistake.",author:"Friedrich Nietzsche"},
+  {text:"I have nothing to say and I am saying it.",author:"John Cage"},
 ];
 
-const GENRES = ['ambient','jazz','folk','post-rock','classical','shoegaze','blues','soul','experimental','drone','krautrock','neo-soul'];
+const ALBUM_FALLBACKS={'ambient':{title:'Discreet Music',artist:'Brian Eno'},'jazz':{title:'Kind of Blue',artist:'Miles Davis'},'folk':{title:'For Emma, Forever Ago',artist:'Bon Iver'},'post-rock':{title:'Lift Your Skinny Fists…',artist:'Godspeed You! Black Emperor'},'classical':{title:'Goldberg Variations',artist:'Glenn Gould'},'shoegaze':{title:'Loveless',artist:'My Bloody Valentine'},'blues':{title:'Electric Mud',artist:'Muddy Waters'},'soul':{title:"There's a Riot Goin' On",artist:'Sly & the Family Stone'},'experimental':{title:'Trout Mask Replica',artist:'Captain Beefheart'},'drone':{title:'The Tired Sounds of…',artist:'Stars of the Lid'},'krautrock':{title:'Autobahn',artist:'Kraftwerk'},'neo-soul':{title:'Voodoo',artist:"D'Angelo"}};
 
-// ─── GEOCODING (Open-Meteo) ───────────────────────────────────────────────────
-async function geocode(city) {
-  const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`;
-  const r = await fetch(url);
-  const d = await r.json();
-  if (!d.results?.length) throw new Error('City not found');
-  return { lat: d.results[0].latitude, lon: d.results[0].longitude, name: d.results[0].name + ', ' + d.results[0].country };
+async function geocode(city){
+  const d=await(await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`)).json();
+  if(!d.results?.length)throw new Error('Not found');
+  return{lat:d.results[0].latitude,lon:d.results[0].longitude,name:d.results[0].name+', '+d.results[0].country};
 }
 
-// ─── APP ──────────────────────────────────────────────────────────────────────
 createApp({
-  setup() {
-    // ── clock
-    const now = ref(new Date());
-    let clockTimer;
-    const clockStr = computed(() => {
-      const h = now.value.getHours(), m = now.value.getMinutes();
-      return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+  setup(){
+    const now=ref(new Date()); let clockTimer;
+    const clockStr=computed(()=>`${String(now.value.getHours()).padStart(2,'0')}:${String(now.value.getMinutes()).padStart(2,'0')}`);
+    const dateStr=computed(()=>now.value.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'}));
+
+    const showSettings=ref(false);
+    const locationInput=ref(localStorage.getItem('aurora_location')||'');
+    const unsplashKey=ref(localStorage.getItem('aurora_unsplash')||'');
+    const anthropicKey=ref(localStorage.getItem('aurora_anthropic')||'');
+    const lastfmKey=ref(localStorage.getItem('aurora_lastfm')||'');
+    const currentTheme=ref(localStorage.getItem('aurora_theme')||'aurora');
+    const useFahrenheit=ref(localStorage.getItem('aurora_fahrenheit')==='true');
+    const bgTopic=ref(localStorage.getItem('aurora_bgtopic')||'northern-lights');
+    const selectedGenre=ref(localStorage.getItem('aurora_genre')||'ambient');
+
+    const locationName=ref(''); const locationError=ref('');
+    const weather=ref(null); const sunData=ref(null);
+    const kp=ref(null); const quote=ref(null);
+    const album=ref(null); const albumLoading=ref(false); const bgCredit=ref(null);
+
+    const kpData=computed(()=>kp.value!==null?kpDescriptor(kp.value):null);
+    const sunProgress=computed(()=>{
+      if(!sunData.value)return 0;
+      const[rh,rm]=sunData.value.sunriseRaw.split(':').map(Number);
+      const[sh,sm]=sunData.value.sunsetRaw.split(':').map(Number);
+      const nowMin=now.value.getHours()*60+now.value.getMinutes();
+      return Math.max(0,Math.min(1,(nowMin-(rh*60+rm))/((sh*60+sm)-(rh*60+rm))));
     });
-    const dateStr = computed(() => now.value.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' }));
+    const sunArcY=computed(()=>Math.round(Math.sin(sunProgress.value*Math.PI)*26));
 
-    // ── settings (all from localStorage)
-    const showSettings = ref(false);
-    const locationInput = ref(localStorage.getItem('aurora_location') || '');
-    const unsplashKey   = ref(localStorage.getItem('aurora_unsplash') || '');
-    const anthropicKey  = ref(localStorage.getItem('aurora_anthropic') || '');
-    const currentTheme  = ref(localStorage.getItem('aurora_theme') || 'aurora');
-    const useFahrenheit = ref(localStorage.getItem('aurora_fahrenheit') === 'true');
-    const bgTopic       = ref(localStorage.getItem('aurora_bgtopic') || 'northern-lights');
-    const selectedGenre = ref(localStorage.getItem('aurora_genre') || 'ambient');
+    function applyTheme(key){
+      const t=THEMES[key]||THEMES.aurora,s=document.documentElement.style;
+      s.setProperty('--bg',t.bg);s.setProperty('--card',t.card);s.setProperty('--card-border',t.cardBorder);
+      s.setProperty('--accent',t.accent);s.setProperty('--accent2',t.accent2);
+      s.setProperty('--text',t.text);s.setProperty('--text-muted',t.textMuted);
+      s.setProperty('--glow',t.glow);s.setProperty('--shimmer',t.shimmer);
+      document.body.style.background=t.bg;
+      document.getElementById('bg-overlay').style.background=t.dark?`linear-gradient(135deg,${t.bg}cc 0%,${t.bg2||t.bg}99 100%)`:`linear-gradient(135deg,${t.bg}dd 0%,${t.bg2||t.bg}cc 100%)`;
+    }
+    const setTheme=key=>{currentTheme.value=key;applyTheme(key);};
+    const cToF=c=>Math.round(c*9/5+32);
+    const msToMph=ms=>Math.round(ms*2.237);
 
-    // ── geo + weather
-    const locationName = ref('');
-    const userLat = ref(null); const userLon = ref(null);
-    const weather = ref(null);
-    const locationError = ref('');
-    const sunData = ref(null);
-
-    // ── kp
-    const kp = ref(null);
-    const kpInfoVal = computed(() => kp.value !== null ? kpInfo(kp.value) : null);
-
-    // ── quote
-    const quote = ref(null);
-
-    // ── album
-    const album = ref(null);
-    const albumLoading = ref(false);
-
-    // ── bg
-    const bgCredit = ref(null);
-
-    // ── theme application
-    const themeMap = THEMES;
-
-    function applyTheme(key) {
-      const t = THEMES[key] || THEMES.aurora;
-      const r = document.documentElement.style;
-      r.setProperty('--bg', t.bg);
-      r.setProperty('--card', t.card);
-      r.setProperty('--card-border', t.cardBorder);
-      r.setProperty('--accent', t.accent);
-      r.setProperty('--accent2', t.accent2);
-      r.setProperty('--text', t.text);
-      r.setProperty('--text-muted', t.textMuted);
-      r.setProperty('--glow', t.glow);
-      r.setProperty('--shimmer', t.shimmer);
-
-      // bg overlay
-      const overlay = document.getElementById('bg-overlay');
-      if (t.dark) {
-        overlay.style.background = `linear-gradient(135deg, ${t.bg}cc 0%, ${t.bg2 || t.bg}99 100%)`;
-      } else {
-        overlay.style.background = `linear-gradient(135deg, ${t.bg}dd 0%, ${t.bg2 || t.bg}bb 100%)`;
-      }
-      document.body.style.background = t.bg;
+    async function fetchKP(){
+      try{const d=await(await fetch('https://services.swpc.noaa.gov/json/planetary_k_index_1m.json')).json();kp.value=parseFloat(d[d.length-1].kp_index??d[d.length-1].Kp??0);}catch{kp.value=0;}
     }
 
-    function setTheme(key) {
-      currentTheme.value = key;
-      applyTheme(key);
+    async function fetchWeather(lat,lon){
+      try{
+        const d=await(await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,weather_code&daily=sunrise,sunset&timezone=auto&forecast_days=1`)).json();
+        const c=d.current,[desc,icon]=WMO[c.weather_code]||['Unknown','🌡️'];
+        weather.value={tempC:Math.round(c.temperature_2m),feelsLike:Math.round(c.apparent_temperature),humidity:c.relative_humidity_2m,windMs:c.wind_speed_10m/3.6,description:desc,icon};
+        const sr=new Date(d.daily.sunrise[0]),ss=new Date(d.daily.sunset[0]);
+        const fmt=t=>t.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+        const diffMin=Math.round((ss-sr)/60000);
+        sunData.value={sunrise:fmt(sr),sunset:fmt(ss),sunriseRaw:`${sr.getHours()}:${sr.getMinutes()}`,sunsetRaw:`${ss.getHours()}:${ss.getMinutes()}`,dayLength:`${Math.floor(diffMin/60)}h ${diffMin%60}m`,status:Date.now()<sr.getTime()?'Before sunrise':Date.now()>ss.getTime()?'After sunset':'Sun is up'};
+      }catch{weather.value=null;}
     }
 
-    // ── conversions
-    const cToF = c => Math.round(c * 9/5 + 32);
-    const msToMph = ms => Math.round(ms * 2.237);
-
-    // ── sun arc progress
-    const sunProgress = computed(() => {
-      if (!sunData.value) return 0;
-      const [rh, rm] = sunData.value.sunriseRaw.split(':').map(Number);
-      const [sh, sm] = sunData.value.sunsetRaw.split(':').map(Number);
-      const rMin = rh*60+rm, sMin = sh*60+sm;
-      const nowMin = now.value.getHours()*60+now.value.getMinutes();
-      return Math.max(0, Math.min(1, (nowMin-rMin)/(sMin-rMin)));
-    });
-    const sunArcY = computed(() => {
-      const p = sunProgress.value;
-      return Math.round(Math.sin(p * Math.PI) * 28);
-    });
-
-    // ── KP fetch (NOAA SWPC)
-    async function fetchKP() {
-      try {
-        const r = await fetch('https://services.swpc.noaa.gov/json/planetary_k_index_1m.json');
-        const d = await r.json();
-        const last = d[d.length - 1];
-        kp.value = parseFloat(last.kp_index || last.Kp || 0);
-      } catch { kp.value = 0; }
+    async function locateAndLoad(){
+      const saved=localStorage.getItem('aurora_location');
+      if(saved){try{const g=await geocode(saved);locationName.value=g.name;fetchWeather(g.lat,g.lon);return;}catch{}}
+      if(!navigator.geolocation){locationError.value='Set a city in settings.';return;}
+      navigator.geolocation.getCurrentPosition(async pos=>{
+        const{latitude:lat,longitude:lon}=pos.coords;
+        try{const d=await(await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`)).json();locationName.value=d.address?.city||d.address?.town||d.address?.village||'Your Location';}catch{locationName.value='Your Location';}
+        fetchWeather(lat,lon);
+      },()=>{locationError.value='Allow location or set a city in settings.';});
     }
 
-    // ── Weather + Sun (Open-Meteo)
-    async function fetchWeather(lat, lon) {
-      try {
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,weather_code&daily=sunrise,sunset&timezone=auto&forecast_days=1`;
-        const r = await fetch(url);
-        const d = await r.json();
-        const c = d.current;
-        const [desc, icon] = WMO[c.weather_code] || ['Unknown','🌡️'];
-        weather.value = {
-          tempC: Math.round(c.temperature_2m),
-          feelsLike: Math.round(c.apparent_temperature),
-          humidity: c.relative_humidity_2m,
-          windMs: c.wind_speed_10m / 3.6,
-          description: desc,
-          icon,
-        };
-        // sun
-        const sr = new Date(d.daily.sunrise[0]);
-        const ss = new Date(d.daily.sunset[0]);
-        const fmt = t => t.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
-        const diffMin = Math.round((ss - sr) / 60000);
-        const dlH = Math.floor(diffMin/60), dlM = diffMin%60;
-        const nowMs = Date.now();
-        sunData.value = {
-          sunrise: fmt(sr),
-          sunset: fmt(ss),
-          sunriseRaw: `${sr.getHours()}:${sr.getMinutes()}`,
-          sunsetRaw: `${ss.getHours()}:${ss.getMinutes()}`,
-          dayLength: `${dlH}h ${dlM}m`,
-          status: nowMs < sr.getTime() ? 'Before sunrise' : nowMs > ss.getTime() ? 'After sunset' : 'Sun is up',
-        };
-      } catch(e) {
-        weather.value = null;
-      }
+    async function fetchQuote(){
+      quote.value=null;
+      const key=anthropicKey.value;
+      if(!key){quote.value=FALLBACK_QUOTES[Math.floor(Math.random()*FALLBACK_QUOTES.length)];return;}
+      try{
+        const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:200,system:'Return ONLY JSON: {"text":"quote","author":"full name"}. No markdown. Writers, poets, artists, musicians, philosophers — culture-makers, not billionaires.',messages:[{role:'user',content:'One memorable quote. JSON only.'}]})});
+        const d=await r.json();
+        quote.value=JSON.parse(d.content[0].text.replace(/```json|```/g,'').trim());
+      }catch{quote.value=FALLBACK_QUOTES[Math.floor(Math.random()*FALLBACK_QUOTES.length)];}
     }
 
-    // ── Locate user
-    async function locateAndLoad() {
-      const saved = localStorage.getItem('aurora_location');
-      if (saved) {
-        try {
-          const g = await geocode(saved);
-          userLat.value = g.lat; userLon.value = g.lon; locationName.value = g.name;
-          fetchWeather(g.lat, g.lon);
-          return;
-        } catch {}
-      }
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(async pos => {
-          const { latitude: lat, longitude: lon } = pos.coords;
-          userLat.value = lat; userLon.value = lon;
-          // reverse geocode via Open-Meteo nominatim-lite
-          try {
-            const r2 = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
-            const d2 = await r2.json();
-            locationName.value = d2.address?.city || d2.address?.town || d2.address?.village || 'Your Location';
-          } catch { locationName.value = 'Your Location'; }
-          fetchWeather(lat, lon);
-        }, () => {
-          locationError.value = 'Allow location access or set a city in settings.';
-        });
-      } else {
-        locationError.value = 'Set a city in settings.';
-      }
+    async function fetchAlbum(genreLabel){
+      album.value=null;albumLoading.value=true;
+      const key=lastfmKey.value;
+      const genreObj=GENRES.find(g=>g.label===genreLabel)||GENRES[0];
+      if(!key){album.value=ALBUM_FALLBACKS[genreLabel]||ALBUM_FALLBACKS['ambient'];albumLoading.value=false;return;}
+      try{
+        const d=await(await fetch(`https://ws.audioscrobbler.com/2.0/?method=tag.gettopalbums&tag=${encodeURIComponent(genreObj.tag)}&api_key=${key}&format=json&limit=30`)).json();
+        const albums=(d?.albums?.album||[]).filter(a=>a.name!=='(null)'&&a.artist?.name!=='(null)');
+        if(!albums.length)throw new Error('empty');
+        const pick=albums[Math.floor(Math.random()*Math.min(20,albums.length))];
+        let art=null;
+        try{const info=await(await fetch(`https://ws.audioscrobbler.com/2.0/?method=album.getinfo&artist=${encodeURIComponent(pick.artist.name)}&album=${encodeURIComponent(pick.name)}&api_key=${key}&format=json`)).json();const imgs=info?.album?.image||[];art=(imgs.find(i=>i.size==='extralarge')||imgs.find(i=>i.size==='large'))?.['#text']||null;}catch{}
+        album.value={title:pick.name,artist:pick.artist.name,art};
+      }catch{album.value={title:'Could not load',artist:'Check your Last.fm key',art:null};}
+      albumLoading.value=false;
     }
 
-    // ── Quote (Claude API)
-    async function fetchQuote() {
-      quote.value = null;
-      const key = anthropicKey.value;
-      if (!key) {
-        // fallback curated quotes
-        const fallbacks = [
-          { text: "The world is quiet here.", author: "Lemony Snicket" },
-          { text: "Not all those who wander are lost.", author: "J.R.R. Tolkien" },
-          { text: "I took a deep breath and listened to the old brag of my heart: I am, I am, I am.", author: "Sylvia Plath" },
-          { text: "One must always maintain one's connection to the past and yet ceaselessly pull away from it.", author: "Gaston Bachelard" },
-          { text: "The sky is everywhere, it begins at your feet.", author: "Jandy Nelson" },
-          { text: "To live is so startling it leaves little time for anything else.", author: "Emily Dickinson" },
-          { text: "Wherever you go becomes a part of you somehow.", author: "Anita Desai" },
-          { text: "I am not afraid of storms, for I am learning how to sail my ship.", author: "Louisa May Alcott" },
-          { text: "The cure for anything is salt water: sweat, tears, or the sea.", author: "Isak Dinesen" },
-          { text: "In the middle of winter, I at last discovered that there was in me an invincible summer.", author: "Albert Camus" },
-          { text: "The only way out of the labyrinth of suffering is to forgive.", author: "John Green" },
-          { text: "She was a girl who knew how to be happy even when she was sad. And that's important.", author: "Marilyn Monroe" },
-          { text: "Stars are not small or gentle. They are writhing and dying and burning. They are not friendly.", author: "Tamsyn Muir" },
-          { text: "The most beautiful thing we can experience is the mysterious.", author: "Albert Einstein" },
-          { text: "Everything you can imagine is real.", author: "Pablo Picasso" },
-        ];
-        quote.value = fallbacks[Math.floor(Math.random() * fallbacks.length)];
-        return;
-      }
-      try {
-        const r = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-          body: JSON.stringify({
-            model: 'claude-haiku-4-5-20251001',
-            max_tokens: 200,
-            system: 'You are a quote curator. Return ONLY a JSON object with keys "text" (the quote) and "author" (full name). No markdown, no extra text. Choose from writers, poets, artists, musicians, philosophers, scientists — people who made culture, not money. No tech CEOs, no billionaires. Vary the mood: sometimes melancholy, sometimes fierce, sometimes tender.',
-            messages: [{ role: 'user', content: 'Give me one memorable quote. JSON only.' }]
-          })
-        });
-        const d = await r.json();
-        const raw = d.content[0].text.replace(/```json|```/g,'').trim();
-        quote.value = JSON.parse(raw);
-      } catch { quote.value = { text: "The world is quiet here.", author: "Lemony Snicket" }; }
+    const pickGenre=g=>{selectedGenre.value=g;localStorage.setItem('aurora_genre',g);fetchAlbum(g);};
+
+    async function fetchBg(topic){
+      if(!unsplashKey.value)return;
+      try{
+        const d=await(await fetch(`https://api.unsplash.com/photos/random?query=${encodeURIComponent(topic)}&orientation=landscape&content_filter=high`,{headers:{Authorization:`Client-ID ${unsplashKey.value}`}})).json();
+        if(d.urls?.regular){const bg=document.getElementById('bg-layer');bg.style.opacity='0';setTimeout(()=>{bg.style.backgroundImage=`url(${d.urls.regular})`;bg.style.opacity='1';},400);bgCredit.value={name:d.user?.name||'Unknown',link:d.links?.html||'#'};}
+      }catch{}
     }
 
-    // ── Album (Claude API)
-    async function fetchAlbum(genre) {
-      album.value = null;
-      albumLoading.value = true;
-      const key = anthropicKey.value;
-      if (!key) {
-        const fallbacks = {
-          ambient:     { title: 'Discreet Music',          artist: 'Brian Eno',             year: '1975' },
-          jazz:        { title: 'Kind of Blue',            artist: 'Miles Davis',            year: '1959' },
-          folk:        { title: 'For Emma, Forever Ago',   artist: 'Bon Iver',               year: '2007' },
-          'post-rock': { title: 'Lift Your Skinny Fists…', artist: 'Godspeed You! Black Emperor', year: '2000' },
-          classical:   { title: 'Goldberg Variations',     artist: 'Glenn Gould',            year: '1981' },
-          shoegaze:    { title: 'Loveless',                artist: 'My Bloody Valentine',    year: '1991' },
-          blues:       { title: 'Electric Mud',            artist: 'Muddy Waters',           year: '1968' },
-          soul:        { title: "There's a Riot Goin' On", artist: 'Sly & the Family Stone', year: '1971' },
-          experimental:{ title: 'Trout Mask Replica',      artist: 'Captain Beefheart',      year: '1969' },
-          drone:       { title: 'The Tired Sounds of Stars of the Lid', artist: 'Stars of the Lid', year: '2001' },
-          krautrock:   { title: 'Autobahn',                artist: 'Kraftwerk',              year: '1974' },
-          'neo-soul':  { title: 'Voodoo',                  artist: "D'Angelo",               year: '2000' },
-        };
-        album.value = fallbacks[genre] || fallbacks.ambient;
-        albumLoading.value = false;
-        return;
-      }
-      try {
-        const r = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-          body: JSON.stringify({
-            model: 'claude-haiku-4-5-20251001',
-            max_tokens: 200,
-            system: 'You are a music curator with deep knowledge of album history. Return ONLY a JSON object with keys: "title", "artist", "year", "why" (one short sentence on why it\'s special). No markdown. Pick something genuinely worth hearing — not necessarily famous, but significant.',
-            messages: [{ role: 'user', content: `Recommend one ${genre} album. JSON only.` }]
-          })
-        });
-        const d = await r.json();
-        const raw = d.content[0].text.replace(/```json|```/g,'').trim();
-        album.value = JSON.parse(raw);
-      } catch { album.value = null; }
-      albumLoading.value = false;
+    const refreshBg=()=>fetchBg(bgTopic.value);
+    const setBgTopic=t=>{bgTopic.value=t;localStorage.setItem('aurora_bgtopic',t);fetchBg(t);};
+
+    function saveSettings(){
+      localStorage.setItem('aurora_location',locationInput.value);localStorage.setItem('aurora_unsplash',unsplashKey.value);localStorage.setItem('aurora_anthropic',anthropicKey.value);localStorage.setItem('aurora_lastfm',lastfmKey.value);localStorage.setItem('aurora_theme',currentTheme.value);localStorage.setItem('aurora_fahrenheit',useFahrenheit.value);
+      showSettings.value=false;locateAndLoad();fetchBg(bgTopic.value);fetchQuote();fetchAlbum(selectedGenre.value);
     }
 
-    function pickGenre(g) {
-      selectedGenre.value = g;
-      localStorage.setItem('aurora_genre', g);
-      fetchAlbum(g);
-    }
-
-    // ── Unsplash background
-    async function fetchBg(topic) {
-      const key = unsplashKey.value;
-      if (!key) return;
-      try {
-        const r = await fetch(`https://api.unsplash.com/photos/random?query=${encodeURIComponent(topic)}&orientation=landscape&content_filter=high`, {
-          headers: { Authorization: `Client-ID ${key}` }
-        });
-        const d = await r.json();
-        if (d.urls?.full) {
-          const bg = document.getElementById('bg-layer');
-          bg.style.opacity = '0';
-          setTimeout(() => {
-            bg.style.backgroundImage = `url(${d.urls.regular})`;
-            bg.style.opacity = '1';
-          }, 400);
-          bgCredit.value = { name: d.user?.name || 'Unknown', link: d.links?.html || '#' };
-        }
-      } catch {}
-    }
-
-    function refreshBg() { fetchBg(bgTopic.value); }
-
-    function setBgTopic(t) {
-      bgTopic.value = t;
-      localStorage.setItem('aurora_bgtopic', t);
-      fetchBg(t);
-    }
-
-    // ── Settings save
-    function saveSettings() {
-      localStorage.setItem('aurora_location', locationInput.value);
-      localStorage.setItem('aurora_unsplash', unsplashKey.value);
-      localStorage.setItem('aurora_anthropic', anthropicKey.value);
-      localStorage.setItem('aurora_theme', currentTheme.value);
-      localStorage.setItem('aurora_fahrenheit', useFahrenheit.value);
-      showSettings.value = false;
-      locateAndLoad();
-      fetchBg(bgTopic.value);
-      fetchQuote();
-      fetchAlbum(selectedGenre.value);
-    }
-
-    // ── Mount
-    onMounted(() => {
+    onMounted(()=>{
       applyTheme(currentTheme.value);
-      clockTimer = setInterval(() => { now.value = new Date(); }, 10000);
-
-      locateAndLoad();
-      fetchKP();
-      fetchQuote();
-      fetchAlbum(selectedGenre.value);
-      fetchBg(bgTopic.value);
-
-      // refresh KP every 5 min
-      setInterval(fetchKP, 5 * 60 * 1000);
-      // rotate bg every 15 min if key present
-      setInterval(() => { if (unsplashKey.value) fetchBg(bgTopic.value); }, 15 * 60 * 1000);
+      clockTimer=setInterval(()=>{now.value=new Date();},10000);
+      locateAndLoad();fetchKP();fetchQuote();fetchAlbum(selectedGenre.value);fetchBg(bgTopic.value);
+      setInterval(fetchKP,5*60*1000);
+      setInterval(()=>{if(unsplashKey.value)fetchBg(bgTopic.value);},15*60*1000);
     });
+    onUnmounted(()=>clearInterval(clockTimer));
+    watch(useFahrenheit,v=>localStorage.setItem('aurora_fahrenheit',v));
 
-    onUnmounted(() => clearInterval(clockTimer));
-
-    watch(useFahrenheit, v => localStorage.setItem('aurora_fahrenheit', v));
-
-    return {
-      clockStr, dateStr,
-      showSettings, locationInput, unsplashKey, anthropicKey,
-      currentTheme, useFahrenheit, bgTopic, selectedGenre,
-      locationName, locationError,
-      weather, sunData, sunProgress, sunArcY,
-      kp, kpInfo: kpInfoVal,
-      quote, album, albumLoading, bgCredit,
-      themeMap: THEMES,
-      bgTopics: BG_TOPICS,
-      genres: GENRES,
-      cToF, msToMph,
-      refreshBg, fetchQuote,
-      setBgTopic, pickGenre, setTheme, saveSettings,
-    };
+    return{clockStr,dateStr,showSettings,locationInput,unsplashKey,anthropicKey,lastfmKey,currentTheme,useFahrenheit,bgTopic,selectedGenre,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpData,quote,album,albumLoading,bgCredit,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES.map(g=>g.label),cToF,msToMph,refreshBg,fetchQuote,fetchAlbum,setBgTopic,pickGenre,setTheme,saveSettings};
   }
 }).mount('#app');
 </script>
