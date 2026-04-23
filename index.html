@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Aurora</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌌</text></svg>" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,200;0,9..144,400;1,9..144,300&family=DM+Mono:wght@300;400&family=Outfit:wght@200;300;400&display=swap" rel="stylesheet" />
@@ -951,8 +952,14 @@ createApp({
       const wrap=diceCanvasWrap.value;
       const w=wrap.offsetWidth||300;
       const h=160;
-
-      diceRenderer=new THREE.WebGLRenderer({canvas:diceCanvas.value,antialias:true,alpha:true});
+      // Get the raw DOM element — Vue ref may wrap it
+      const canvasEl = diceCanvas.value instanceof HTMLCanvasElement
+        ? diceCanvas.value
+        : diceCanvas.value.$el || diceCanvas.value;
+      if(!canvasEl || typeof canvasEl.addEventListener !== 'function'){
+        console.warn('dice canvas not a valid DOM element', canvasEl);return;
+      }
+      diceRenderer=new THREE.WebGLRenderer({canvas:canvasEl,antialias:true,alpha:true});
       diceRenderer.setSize(w,h,false); // false = don't set canvas CSS size, let CSS handle it
       diceRenderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
       diceRenderer.setClearColor(0x000000,0);
