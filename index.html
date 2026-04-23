@@ -771,7 +771,11 @@ createApp({
     const savedOrder=JSON.parse(localStorage.getItem('aurora_widget_order')||'null');
     const savedVis=JSON.parse(localStorage.getItem('aurora_widget_vis')||'null');
     const defaultVis={kp:true,weather:true,sun:true,moon:true,aqi:true,tides:false,iss:false,planets:false,quote:true,animal:true,apod:false,soma:false,album:true,notes:false,todo:false,bookmarks:false,dice:true,bg:true};
-    const order=ref(savedOrder||DEFAULT_WIDGET_ORDER);
+    // Merge any new widgets not in the saved order so they always show up in picker
+    const mergedOrder=savedOrder
+      ? [...savedOrder, ...DEFAULT_WIDGET_ORDER.filter(id=>!savedOrder.includes(id))]
+      : DEFAULT_WIDGET_ORDER;
+    const order=ref(mergedOrder);
     const visibility=ref(savedVis||defaultVis);
     const widgetRegistry=computed(()=>order.value.map(id=>({id,...WIDGET_META[id],visible:visibility.value[id]??true})));
     const visibleWidgets=computed(()=>widgetRegistry.value.filter(w=>w.visible));
