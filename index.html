@@ -822,126 +822,176 @@ createApp({
 
     async function fetchAPOD(){try{const key=nasaKey.value||'DEMO_KEY';const r=await fetch(`https://api.nasa.gov/planetary/apod?api_key=${key}`);const d=await r.json();if(d.media_type==='image')apod.value=d;}catch{apod.value=null;}}
 
-    // DICE — Three.js
+    // DICE — ported geometry from github.com/byWulf/threejs-dice (no Cannon dependency)
     const diceTypes=['d4','d6','d8','d10','d12','d20'];
     const activeDie=ref('d20');
     const diceResult=ref(null);
     const diceRolling=ref(false);
     const diceHistory=ref([]);
-    const diceCanvas=ref(null);
-    const diceCanvasWrap=ref(null);
-    let diceScene=null, diceCamera=null, diceRenderer=null, diceMesh=null, diceAnimFrame=null, diceThree=null, diceRollTrigger=null;
+    let diceScene=null,diceCamera=null,diceRenderer=null,diceMesh=null,diceAnimFrame=null,diceThree=null,diceRollTrigger=null;
 
-    function getDiceColors(){
-      const s=getComputedStyle(document.documentElement);
-      return {
-        accent: s.getPropertyValue('--accent').trim()||'#50dca0',
-        accent2: s.getPropertyValue('--accent2').trim()||'#7b6ff0',
-        text: s.getPropertyValue('--text').trim()||'#e8f4f0',
-        card: s.getPropertyValue('--card').trim()||'rgba(10,20,35,0.72)',
-      };
-    }
-
-    function hexToInt(hex){return parseInt(hex.replace('#',''),16);}
-
-    function makeFaceTex(label, accentHex, textHex, sides){
-      const s=256, c=document.createElement('canvas');
-      c.width=s; c.height=s;
-      const ctx=c.getContext('2d');
-      // background
-      ctx.fillStyle=accentHex+'22';
-      ctx.fillRect(0,0,s,s);
-      // border
-      ctx.strokeStyle=accentHex+'99';
-      ctx.lineWidth=8;
-      const r=20;
-      ctx.beginPath();
-      ctx.roundRect(6,6,s-12,s-12,r);
-      ctx.stroke();
-      // subtle inner glow
-      const g=ctx.createRadialGradient(s/2,s/2,20,s/2,s/2,s*0.7);
-      g.addColorStop(0,accentHex+'18');
-      g.addColorStop(1,'transparent');
-      ctx.fillStyle=g; ctx.fillRect(0,0,s,s);
-      // number
-      if(label!==null){
-        ctx.fillStyle=textHex;
-        ctx.font=`bold ${s*0.42}px "DM Mono", monospace`;
-        ctx.textAlign='center';
-        ctx.textBaseline='middle';
-        // underline 6 and 9 to disambiguate
-        const str=String(label);
-        ctx.fillText(str, s/2, s/2+s*0.03);
-        if(str==='6'||str==='9'){
-          const w=ctx.measureText(str).width;
-          ctx.fillStyle=accentHex;
-          ctx.fillRect(s/2-w/2, s/2+s*0.28, w, 5);
+    // ── Geometry helpers (ported from byWulf/threejs-dice) ──────────────────
+    function getChamferGeometry(THREE, vectors, faces, chamfer){
+      let cv=[],cf=[],corner_faces=new Array(vectors.length);
+      for(let i=0;i<vectors.length;i++)corner_faces[i]=[];
+      for(let i=0;i<faces.length;i++){
+        let ii=faces[i],fl=ii.length-1,cp=new THREE.Vector3(),face=new Array(fl);
+        for(let j=0;j<fl;j++){
+          let vv=vectors[ii[j]].clone();cp.add(vv);
+          corner_faces[ii[j]].push(face[j]=cv.push(vv)-1);
+        }
+        cp.divideScalar(fl);
+        for(let j=0;j<fl;j++){let vv=cv[face[j]];vv.subVectors(vv,cp).multiplyScalar(chamfer).addVectors(vv,cp);}
+        face.push(ii[fl]);cf.push(face);
+      }
+      for(let i=0;i<faces.length-1;i++){
+        for(let j=i+1;j<faces.length;j++){
+          let pairs=[],lastm=-1;
+          for(let m=0;m<faces[i].length-1;m++){
+            let n=faces[j].indexOf(faces[i][m]);
+            if(n>=0&&n<faces[j].length-1){
+              if(lastm>=0&&m!==lastm+1)pairs.unshift([i,m],[j,n]);
+              else pairs.push([i,m],[j,n]);lastm=m;
+            }
+          }
+          if(pairs.length!==4)continue;
+          cf.push([cf[pairs[0][0]][pairs[0][1]],cf[pairs[1][0]][pairs[1][1]],cf[pairs[3][0]][pairs[3][1]],cf[pairs[2][0]][pairs[2][1]],-1]);
         }
       }
-      const tex=new diceThree.CanvasTexture(c);
-      return tex;
+      for(let i=0;i<corner_faces.length;i++){
+        let cfi=corner_faces[i],face=[cfi[0]],count=cfi.length-1;
+        while(count){
+          for(let m=faces.length;m<cf.length;m++){
+            let idx=cf[m].indexOf(face[face.length-1]);
+            if(idx>=0&&idx<4){if(--idx===-1)idx=3;let nv=cf[m][idx];if(cfi.indexOf(nv)>=0){face.push(nv);break;}}
+          }--count;
+        }
+        face.push(-1);cf.push(face);
+      }
+      return{vectors:cv,faces:cf};
     }
+
+    function makeGeometry(THREE, vertices, faces, radius, tab, af){
+      let geom=new THREE.Geometry();
+      for(let i=0;i<vertices.length;i++){let v=vertices[i].multiplyScalar(radius);v.index=geom.vertices.push(v)-1;}
+      for(let i=0;i<faces.length;i++){
+        let ii=faces[i],fl=ii.length-1,aa=Math.PI*2/fl;
+        for(let j=0;j<fl-2;j++){
+          geom.faces.push(new THREE.Face3(ii[0],ii[j+1],ii[j+2],[geom.vertices[ii[0]],geom.vertices[ii[j+1]],geom.vertices[ii[j+2]]],0,ii[fl]+1));
+          geom.faceVertexUvs[0].push([
+            new THREE.Vector2((Math.cos(af)+1+tab)/2/(1+tab),(Math.sin(af)+1+tab)/2/(1+tab)),
+            new THREE.Vector2((Math.cos(aa*(j+1)+af)+1+tab)/2/(1+tab),(Math.sin(aa*(j+1)+af)+1+tab)/2/(1+tab)),
+            new THREE.Vector2((Math.cos(aa*(j+2)+af)+1+tab)/2/(1+tab),(Math.sin(aa*(j+2)+af)+1+tab)/2/(1+tab)),
+          ]);
+        }
+      }
+      geom.computeFaceNormals();geom.boundingSphere=new THREE.Sphere(new THREE.Vector3(),radius);
+      return geom;
+    }
+
+    function makeFaceTexture(THREE, text, fgColor, bgColor, size){
+      const ts=Math.max(128,Math.pow(2,Math.floor(Math.log(size/2+size*1.0)/Math.log(2))))*2;
+      const c=document.createElement('canvas');c.width=c.height=ts;
+      const ctx=c.getContext('2d');
+      ctx.fillStyle=bgColor;ctx.fillRect(0,0,ts,ts);
+      ctx.font=`bold ${ts/(1+2*1.0)}px 'DM Mono',monospace`;
+      ctx.fillStyle=fgColor;ctx.textAlign='center';ctx.textBaseline='middle';
+      if(Array.isArray(text)){
+        // d4 special: three numbers around center
+        ctx.font=`bold ${ts/5}px 'DM Mono',monospace`;
+        for(let i=0;i<text.length;i++){
+          ctx.fillText(text[i],ts/2,ts/2-ts*0.3);
+          ctx.translate(ts/2,ts/2);ctx.rotate(Math.PI*2/3);ctx.translate(-ts/2,-ts/2);
+        }
+      } else {
+        ctx.fillText(String(text),ts/2,ts/2);
+        // underline 6 and 9
+        if(text==='6'||text==='9'){
+          const w=ctx.measureText(String(text)).width;
+          ctx.fillStyle=fgColor;ctx.fillRect(ts/2-w/2,ts/2+ts*0.28,w,Math.max(3,ts/40));
+        }
+      }
+      const tex=new THREE.Texture(c);tex.needsUpdate=true;return tex;
+    }
+
+    // ── Dice definitions (vertices, faces, chamfer, tab, af, faceTexts) ─────
+    const DICE_DEFS={
+      d4:{
+        tab:-0.1,af:Math.PI*7/6,chamfer:0.96,scaleFactor:1.2,
+        vertices:[[1,1,1],[-1,-1,1],[-1,1,-1],[1,-1,-1]],
+        faces:[[1,0,2,1],[0,1,3,2],[0,3,2,3],[1,2,3,4]],
+        faceTexts:[null,[['0','0','0']],[['2','4','3']],[['1','3','4']],[['2','1','4']],[['1','2','3']]],
+        textMargin:2.0,
+      },
+      d6:{
+        tab:0.1,af:Math.PI/4,chamfer:0.96,scaleFactor:0.9,
+        vertices:[[-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1],[-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]],
+        faces:[[0,3,2,1,1],[1,2,6,5,2],[0,1,5,4,3],[3,7,6,2,4],[0,4,7,3,5],[4,5,6,7,6]],
+        faceTexts:[null,' ','1','2','3','4','5','6'],
+        textMargin:1.0,
+      },
+      d8:{
+        tab:0,af:-Math.PI/4/2,chamfer:0.965,scaleFactor:1.0,
+        vertices:[[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]],
+        faces:[[0,2,4,1],[0,4,3,2],[0,3,5,3],[0,5,2,4],[1,3,4,5],[1,4,2,6],[1,2,5,7],[1,5,3,8]],
+        faceTexts:[null,' ','1','2','3','4','5','6','7','8'],
+        textMargin:1.2,
+      },
+      d10:{
+        tab:0,af:Math.PI*6/5,chamfer:0.945,scaleFactor:0.9,
+        vertices:(()=>{const v=[];for(let i=0,b=0;i<10;i++,b+=Math.PI*2/10)v.push([Math.cos(b),Math.sin(b),0.105*(i%2?1:-1)]);v.push([0,0,-1],[0,0,1]);return v;})(),
+        faces:[[5,7,11,0],[4,2,10,1],[1,3,11,2],[0,8,10,3],[7,9,11,4],[8,6,10,5],[9,1,11,6],[2,0,10,7],[3,5,11,8],[6,4,10,9],[1,0,2,-1],[1,2,3,-1],[3,2,4,-1],[3,4,5,-1],[5,4,6,-1],[5,6,7,-1],[7,6,8,-1],[7,8,9,-1],[9,8,0,-1],[9,0,1,-1]],
+        faceTexts:[null,' ','1','2','3','4','5','6','7','8','9','10'],
+        textMargin:1.0,
+      },
+      d12:{
+        tab:0.2,af:-Math.PI/4/2,chamfer:0.968,scaleFactor:0.9,
+        vertices:(()=>{const p=(1+Math.sqrt(5))/2,q=1/p;return [[0,q,p],[0,q,-p],[0,-q,p],[0,-q,-p],[p,0,q],[p,0,-q],[-p,0,q],[-p,0,-q],[q,p,0],[q,-p,0],[-q,p,0],[-q,-p,0],[1,1,1],[1,1,-1],[1,-1,1],[1,-1,-1],[-1,1,1],[-1,1,-1],[-1,-1,1],[-1,-1,-1]];})(),
+        faces:[[2,14,4,12,0,1],[15,9,11,19,3,2],[16,10,17,7,6,3],[6,7,19,11,18,4],[6,18,2,0,16,5],[18,11,9,14,2,6],[1,17,10,8,13,7],[1,13,5,15,3,8],[13,8,12,4,5,9],[5,4,14,9,15,10],[0,12,8,10,16,11],[3,19,7,17,1,12]],
+        faceTexts:[null,' ','1','2','3','4','5','6','7','8','9','10','11','12'],
+        textMargin:1.0,
+      },
+      d20:{
+        tab:-0.2,af:-Math.PI/4/2,chamfer:0.955,scaleFactor:1.0,
+        vertices:(()=>{const t=(1+Math.sqrt(5))/2;return [[-1,t,0],[1,t,0],[-1,-t,0],[1,-t,0],[0,-1,t],[0,1,t],[0,-1,-t],[0,1,-t],[t,0,-1],[t,0,1],[-t,0,-1],[-t,0,1]];})(),
+        faces:[[0,11,5,1],[0,5,1,2],[0,1,7,3],[0,7,10,4],[0,10,11,5],[1,5,9,6],[5,11,4,7],[11,10,2,8],[10,7,6,9],[7,1,8,10],[3,9,4,11],[3,4,2,12],[3,2,6,13],[3,6,8,14],[3,8,9,15],[4,9,5,16],[2,4,11,17],[6,2,10,18],[8,6,7,19],[9,8,1,20]],
+        faceTexts:[null,' ','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20'],
+        textMargin:1.0,
+      },
+    };
 
     function buildDiceMesh(type){
       if(!diceThree)return null;
       const THREE=diceThree;
+      const def=DICE_DEFS[type];
+      if(!def)return null;
       const cols=getDiceColors();
-      const accent=cols.accent;
-      const textCol=cols.text;
-      const accentInt=hexToInt(accent.startsWith('#')?accent:'#50dca0');
-      const sides=parseInt(type.slice(1));
-      let geo, mats;
+      const accentHex=cols.accent.trim();
+      const textHex=cols.text.trim();
+      const bgHex=accentHex+'22';
+      const size=55;
+      const radius=size*def.scaleFactor;
 
-      if(type==='d6'){
-        geo=new THREE.BoxGeometry(1,1,1);
-        // BoxGeometry has 6 faces in order: +x,-x,+y,-y,+z,-z → right,left,top,bottom,front,back
-        // Standard d6: opposite faces sum to 7
-        const faceNums=[2,5,1,6,3,4];
-        mats=faceNums.map(n=>new THREE.MeshStandardMaterial({map:makeFaceTex(n,accent,textCol,6),roughness:.25,metalness:.15}));
-      } else if(type==='d4'){
-        geo=new THREE.TetrahedronGeometry(0.9,0);
-        // 4 faces
-        const nums=[1,2,3,4];
-        mats=new THREE.MeshStandardMaterial({map:makeFaceTex(null,accent,textCol,4),roughness:.3,metalness:.1,color:accentInt});
-        // For non-box we use a single material with a label shown via result display
-        mats=[mats];
-      } else if(type==='d8'){
-        geo=new THREE.OctahedronGeometry(0.85,0);
-        mats=[new THREE.MeshStandardMaterial({color:accentInt,roughness:.25,metalness:.2,
-          emissive:accentInt,emissiveIntensity:.04})];
-      } else if(type==='d10'){
-        // No built-in d10 — approximate with a lathe geometry
-        const pts=[];
-        for(let i=0;i<=10;i++){
-          const a=(i/10)*Math.PI;
-          pts.push(new THREE.Vector2(Math.sin(a)*0.7, Math.cos(a)*0.9));
-        }
-        geo=new THREE.LatheGeometry(pts,10);
-        mats=[new THREE.MeshStandardMaterial({color:accentInt,roughness:.3,metalness:.15,
-          emissive:accentInt,emissiveIntensity:.04,side:THREE.DoubleSide})];
-      } else if(type==='d12'){
-        geo=new THREE.DodecahedronGeometry(0.85,0);
-        mats=[new THREE.MeshStandardMaterial({color:accentInt,roughness:.25,metalness:.2,
-          emissive:accentInt,emissiveIntensity:.04})];
-      } else { // d20
-        geo=new THREE.IcosahedronGeometry(0.9,0);
-        mats=[new THREE.MeshStandardMaterial({color:accentInt,roughness:.2,metalness:.25,
-          emissive:accentInt,emissiveIntensity:.06})];
+      // Build vectors
+      const vectors=def.vertices.map(v=>new THREE.Vector3(...v).normalize());
+      const chamfered=getChamferGeometry(THREE,vectors,def.faces,def.chamfer);
+      const geom=makeGeometry(THREE,chamfered.vectors,chamfered.faces,radius,def.tab,def.af);
+
+      // Build per-face materials
+      const mats=[new THREE.MeshPhongMaterial({color:0x111111,specular:0x172022,shininess:20})]; // index 0 = blank/chamfer faces
+      const texts=def.faceTexts;
+      for(let i=1;i<texts.length;i++){
+        const tex=makeFaceTexture(THREE,texts[i],textHex,bgHex,size);
+        mats.push(new THREE.MeshPhongMaterial({map:tex,specular:0x172022,shininess:30,shading:THREE.FlatShading}));
       }
 
-      // For d6 use multi-material, others single
-      const mesh = type==='d6'
-        ? new THREE.Mesh(geo, mats)
-        : new THREE.Mesh(geo, mats[0]);
-
-      // Add wireframe overlay for all non-d6
-      if(type!=='d6'){
-        const wire=new THREE.WireframeGeometry(geo);
-        const lineMat=new THREE.LineBasicMaterial({color:accentInt,opacity:.35,transparent:true});
-        const wf=new THREE.LineSegments(wire,lineMat);
-        mesh.add(wf);
-      }
+      const mesh=new THREE.Mesh(geom,mats);
       return mesh;
+    }
+
+    function getDiceColors(){
+      const s=getComputedStyle(document.documentElement);
+      return{accent:s.getPropertyValue('--accent').trim()||'#50dca0',text:s.getPropertyValue('--text').trim()||'#e8f4f0'};
     }
 
     function initDice(){
@@ -950,84 +1000,66 @@ createApp({
       const THREE=diceThree;
       const canvasEl=document.getElementById('dice-canvas');
       const wrap=document.getElementById('dice-wrap');
-      if(!canvasEl||!wrap){console.warn('dice elements not in DOM yet');return;}
-      const w=wrap.offsetWidth||300;
-      const h=160;
+      if(!canvasEl||!wrap){console.warn('dice elements not in DOM');return;}
+      if(typeof canvasEl.addEventListener!=='function'){console.warn('not a canvas');return;}
+      const w=wrap.offsetWidth||300,h=160;
+
       diceRenderer=new THREE.WebGLRenderer({canvas:canvasEl,antialias:true,alpha:true});
       diceRenderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-      diceRenderer.setSize(w,h); // sets both buffer AND canvas element size
+      diceRenderer.setSize(w,h);
       diceRenderer.setClearColor(0x000000,0);
 
       diceScene=new THREE.Scene();
-      diceCamera=new THREE.PerspectiveCamera(45,w/h,0.1,100);
-      diceCamera.position.set(0,0,3.5);
+      diceCamera=new THREE.PerspectiveCamera(45,w/h,0.1,1000);
+      diceCamera.position.set(0,0,220);
 
       // Lighting
-      const ambient=new THREE.AmbientLight(0xffffff,0.6);
-      diceScene.add(ambient);
-      const cols=getDiceColors();
-      const accentInt=hexToInt(cols.accent.startsWith('#')?cols.accent:'#50dca0');
-      const dirLight=new THREE.DirectionalLight(0xffffff,1.2);
-      dirLight.position.set(2,3,4);
-      diceScene.add(dirLight);
-      const fillLight=new THREE.DirectionalLight(accentInt,0.4);
-      fillLight.position.set(-3,-2,1);
-      diceScene.add(fillLight);
-      const rimLight=new THREE.DirectionalLight(0xffffff,0.3);
-      rimLight.position.set(0,0,-4);
-      diceScene.add(rimLight);
+      diceScene.add(new THREE.AmbientLight(0xffffff,0.5));
+      const dir=new THREE.DirectionalLight(0xffffff,1.2);dir.position.set(100,150,200);diceScene.add(dir);
+      const fill=new THREE.DirectionalLight(0xffffff,0.4);fill.position.set(-100,-100,50);diceScene.add(fill);
 
       diceMesh=buildDiceMesh(activeDie.value);
       if(diceMesh)diceScene.add(diceMesh);
 
-      // Idle rotation loop
-      let rollVx=0, rollVy=0, rollVz=0;
-      let rolling=false, rollDuration=0, rollStart=0, rollTarget={x:0,y:0,z:0};
-
+      // Animation loop with roll state
+      let rolling=false,rollStart=0,rollDuration=800,rollTarget={startX:0,startY:0,startZ:0,dx:0,dy:0,dz:0};
       function animate(){
         diceAnimFrame=requestAnimationFrame(animate);
         if(!diceMesh)return;
         if(rolling){
-          const elapsed=Date.now()-rollStart;
-          const t=Math.min(elapsed/rollDuration,1);
+          const t=Math.min((Date.now()-rollStart)/rollDuration,1);
           const ease=1-Math.pow(1-t,3);
-          diceMesh.rotation.x=rollTarget.startX+rollTarget.dx*ease+(Math.PI*8*Math.sin(t*Math.PI));
-          diceMesh.rotation.y=rollTarget.startY+rollTarget.dy*ease+(Math.PI*6*Math.sin(t*Math.PI*0.7));
-          diceMesh.rotation.z=rollTarget.startZ+rollTarget.dz*ease+(Math.PI*4*Math.sin(t*Math.PI*1.3));
-          if(t>=1){rolling=false;}
+          const spin=Math.sin(t*Math.PI);
+          diceMesh.rotation.x=rollTarget.startX+rollTarget.dx*ease+Math.PI*6*spin;
+          diceMesh.rotation.y=rollTarget.startY+rollTarget.dy*ease+Math.PI*4*spin;
+          diceMesh.rotation.z=rollTarget.startZ+rollTarget.dz*ease+Math.PI*2*spin;
+          if(t>=1)rolling=false;
         } else {
-          diceMesh.rotation.x+=0.003;
-          diceMesh.rotation.y+=0.005;
+          diceMesh.rotation.x+=0.004;
+          diceMesh.rotation.y+=0.006;
         }
         diceRenderer.render(diceScene,diceCamera);
       }
       animate();
 
-      // Expose roll trigger via module-level var
-      diceRollTrigger=(targetRot)=>{
+      diceRollTrigger=(rot)=>{
         if(!diceMesh)return;
-        rolling=true;
-        rollDuration=800;
-        rollStart=Date.now();
-        rollTarget={
-          startX:diceMesh.rotation.x, startY:diceMesh.rotation.y, startZ:diceMesh.rotation.z,
-          dx:targetRot.x-diceMesh.rotation.x,
-          dy:targetRot.y-diceMesh.rotation.y,
-          dz:targetRot.z-diceMesh.rotation.z,
-        };
+        rolling=true;rollStart=Date.now();
+        rollTarget={startX:diceMesh.rotation.x,startY:diceMesh.rotation.y,startZ:diceMesh.rotation.z,
+          dx:rot.x-diceMesh.rotation.x,dy:rot.y-diceMesh.rotation.y,dz:rot.z-diceMesh.rotation.z};
       };
     }
 
     function teardownDice(){
       if(diceAnimFrame)cancelAnimationFrame(diceAnimFrame);
       if(diceRenderer)diceRenderer.dispose();
-      diceScene=null; diceCamera=null; diceRenderer=null; diceMesh=null; diceAnimFrame=null; diceRollTrigger=null;
+      diceScene=null;diceCamera=null;diceRenderer=null;diceMesh=null;diceAnimFrame=null;diceRollTrigger=null;
     }
 
     function switchDie(type){
-      activeDie.value=type; diceResult.value=null;
+      activeDie.value=type;diceResult.value=null;
       if(diceScene&&diceThree){
-        if(diceMesh){diceScene.remove(diceMesh); diceMesh.geometry?.dispose();}
+        if(diceMesh){diceScene.remove(diceMesh);diceMesh.geometry?.dispose();}
         diceMesh=buildDiceMesh(type);
         if(diceMesh)diceScene.add(diceMesh);
       }
@@ -1037,15 +1069,17 @@ createApp({
       if(diceRolling.value)return;
       const sides=parseInt(activeDie.value.slice(1));
       const result=Math.floor(Math.random()*sides)+1;
-      diceRolling.value=true; diceResult.value=null;
+      diceRolling.value=true;diceResult.value=null;
       if(diceRollTrigger){
-        diceRollTrigger({x:Math.random()*Math.PI*6,y:Math.random()*Math.PI*6,z:Math.random()*Math.PI*3});
+        diceRollTrigger({x:Math.random()*Math.PI*4,y:Math.random()*Math.PI*4,z:Math.random()*Math.PI*2});
       }
       setTimeout(()=>{
-        diceResult.value=result; diceRolling.value=false;
+        diceResult.value=result;diceRolling.value=false;
         diceHistory.value=[{die:activeDie.value,val:result},...diceHistory.value].slice(0,10);
       },820);
     }
+
+
 
     async function fetchAlbum(genre){album.value=null;albumLoading.value=true;const key=lastfmKey.value;if(!key){album.value=ALBUM_FALLBACKS[genre]||ALBUM_FALLBACKS['ambient'];albumLoading.value=false;return;}try{const page=Math.ceil(Math.random()*3);const r=await fetch(`https://ws.audioscrobbler.com/2.0/?method=tag.gettopalbums&tag=${encodeURIComponent(genre)}&api_key=${key}&format=json&limit=20&page=${page}`);const d=await r.json();const albums=d?.albums?.album?.filter(a=>a.artist?.name&&!a.artist.name.toLowerCase().includes('various'));if(!albums?.length)throw new Error('no results');const pick=albums[Math.floor(Math.random()*albums.length)];const ri=await fetch(`https://ws.audioscrobbler.com/2.0/?method=album.getinfo&artist=${encodeURIComponent(pick.artist.name)}&album=${encodeURIComponent(pick.name)}&api_key=${key}&format=json`);const di=await ri.json();const info=di?.album;const images=info?.image||pick.image||[];const art=images.find(i=>i.size==='extralarge')||images.find(i=>i.size==='large');album.value={title:info?.name||pick.name,artist:info?.artist||pick.artist?.name,year:info?.wiki?.published?new Date(info.wiki.published).getFullYear():null,art:art?.['#text']&&art['#text']!==''?art['#text']:null,url:info?.url||pick.url||null,why:info?.wiki?.summary?info.wiki.summary.replace(/<[^>]+>/g,'').split('.')[0].trim()+'.':null};}catch{album.value=ALBUM_FALLBACKS[genre]||ALBUM_FALLBACKS['ambient'];}albumLoading.value=false;}
     function pickGenre(g){selectedGenre.value=g;localStorage.setItem('aurora_genre',g);fetchAlbum(g);}
