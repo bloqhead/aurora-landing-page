@@ -1000,11 +1000,9 @@ createApp({
       const THREE=diceThree;
       const canvasEl=document.getElementById('dice-canvas');
       const wrap=document.getElementById('dice-wrap');
-      console.log('[dice] initDice called, canvas:', canvasEl, 'wrap:', wrap);
-      if(!canvasEl||!wrap){console.warn('[dice] elements not in DOM');return;}
-      if(typeof canvasEl.addEventListener!=='function'){console.warn('[dice] not a canvas');return;}
+      if(!canvasEl||!wrap){return;}
+      if(typeof canvasEl.addEventListener!=='function'){return;}
       const w=wrap.offsetWidth||300,h=160;
-      console.log('[dice] size:', w, h);
 
       diceRenderer=new THREE.WebGLRenderer({canvas:canvasEl,antialias:true,alpha:true});
       diceRenderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
@@ -1020,12 +1018,7 @@ createApp({
       const fill=new THREE.DirectionalLight(0xffffff,0.4);fill.position.set(-100,-100,50);diceScene.add(fill);
 
       diceMesh=buildDiceMesh(activeDie.value);
-      console.log('[dice] mesh built:', diceMesh, diceMesh?.geometry?.boundingSphere);
       if(diceMesh)diceScene.add(diceMesh);
-
-      // Render one frame immediately to test
-      diceRenderer.render(diceScene,diceCamera);
-      console.log('[dice] first frame rendered');
 
       let rolling=false,rollStart=0,rollDuration=800,rollTarget={startX:0,startY:0,startZ:0,dx:0,dy:0,dz:0};
       function animate(){
