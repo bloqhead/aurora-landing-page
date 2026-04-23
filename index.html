@@ -56,6 +56,8 @@ body{font-family:var(--font-body);font-size:var(--t-md);line-height:1.5;color:va
 .drag-handle:active{cursor:grabbing;}
 .drag-handle span{display:block;height:2px;background:var(--text-muted);border-radius:1px;}
 .card:hover .drag-handle{opacity:.5;}
+/* Prevent drag hijacking on all interactive card children */
+.card input,.card button,.card select,.card textarea,.card a{-webkit-user-drag:none;user-drag:none;}
 .card-label{font-family:var(--font-mono);font-size:var(--t-xs);letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:var(--s-sm);padding-left:24px;}
 .card-btn{position:absolute;top:var(--s-sm);right:var(--s-sm);background:var(--card);border:1px solid var(--card-border);border-radius:8px;color:var(--text-muted);width:clamp(26px,2.2vw,34px);height:clamp(26px,2.2vw,34px);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:var(--t-md);line-height:1;transition:all .25s;backdrop-filter:blur(8px);}
 .card-btn:hover{color:var(--accent);border-color:var(--accent);background:var(--glow);transform:rotate(180deg);}
@@ -712,7 +714,7 @@ createApp({
 
     // drag-on-grid
     const dragging=ref(null); const dragTarget=ref(null);
-    function onDragStart(e,id){dragging.value=id;e.dataTransfer.effectAllowed='move';}
+    function onDragStart(e,id){if(!e.target.closest('.drag-handle')){e.preventDefault();return;}dragging.value=id;e.dataTransfer.effectAllowed='move';}
     function onDragOver(e,id){if(dragging.value&&dragging.value!==id)dragTarget.value=id;}
     function onDrop(e,id){if(!dragging.value||dragging.value===id)return;const visible=visibleWidgets.value.map(w=>w.id);const fi=visible.indexOf(dragging.value),ti=visible.indexOf(id);if(fi<0||ti<0)return;const newVis=[...visible];newVis.splice(fi,1);newVis.splice(ti,0,dragging.value);// rebuild full order: put visible ones in new order, hidden ones stay
     const hidden=order.value.filter(id=>!visible.includes(id));order.value=[...newVis,...hidden];saveWidgetState();dragging.value=null;dragTarget.value=null;}
