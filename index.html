@@ -289,6 +289,7 @@ body{font-family:var(--font-body);font-size:var(--t-md);line-height:1.5;color:va
 .fade-enter-active,.fade-leave-active{transition:opacity .35s;}
 .fade-enter-from,.fade-leave-to{opacity:0;}
 a{color:inherit;} button{font-family:inherit;}
+[v-cloak]{display:none!important;}
 ::-webkit-scrollbar{width:5px;} ::-webkit-scrollbar-track{background:transparent;} ::-webkit-scrollbar-thumb{background:var(--card-border);border-radius:3px;}
 
 /* KP ALERT */
@@ -327,7 +328,7 @@ a{color:inherit;} button{font-family:inherit;}
 <body>
 <div id="bg-layer"></div>
 <div id="bg-overlay"></div>
-<div id="app">
+<div id="app" v-cloak>
   <div class="container">
     <div class="header">
       <div class="header-left">
