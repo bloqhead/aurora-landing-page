@@ -290,6 +290,38 @@ body{font-family:var(--font-body);font-size:var(--t-md);line-height:1.5;color:va
 .fade-enter-from,.fade-leave-to{opacity:0;}
 a{color:inherit;} button{font-family:inherit;}
 ::-webkit-scrollbar{width:5px;} ::-webkit-scrollbar-track{background:transparent;} ::-webkit-scrollbar-thumb{background:var(--card-border);border-radius:3px;}
+
+/* KP ALERT */
+.kp-alert{position:fixed;top:var(--s-md);left:50%;transform:translateX(-50%);z-index:200;background:linear-gradient(135deg,rgba(255,224,102,.15),rgba(255,170,68,.15));border:1px solid #ffe06688;border-radius:14px;padding:var(--s-sm) var(--s-md);display:flex;align-items:center;gap:var(--s-sm);backdrop-filter:blur(16px);box-shadow:0 4px 24px rgba(0,0,0,.3);max-width:min(480px,90vw);}
+.kp-alert-icon{font-size:var(--t-lg);}
+.kp-alert-text{font-family:var(--font-mono);font-size:var(--t-xs);color:var(--text);flex:1;line-height:1.4;}
+.kp-alert-close{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:var(--t-md);padding:0 4px;transition:color .2s;line-height:1;}
+.kp-alert-close:hover{color:var(--text);}
+
+/* DICE MODIFIER */
+.dice-modifier-row{display:flex;align-items:center;gap:var(--s-xs);margin-top:var(--s-xs);}
+.dice-mod-btn{width:28px;height:28px;border-radius:8px;border:1px solid var(--card-border);background:transparent;color:var(--text-muted);cursor:pointer;font-size:var(--t-lg);display:flex;align-items:center;justify-content:center;transition:all .2s;line-height:1;}
+.dice-mod-btn:hover{color:var(--accent);border-color:var(--accent);}
+.dice-mod-val{font-family:var(--font-mono);font-size:var(--t-sm);color:var(--text);min-width:36px;text-align:center;}
+.dice-mod-label{font-family:var(--font-mono);font-size:var(--t-xs);color:var(--text-muted);}
+
+/* APOD VIDEO */
+.apod-video{width:100%;height:clamp(140px,16vw,220px);border-radius:calc(var(--radius) - 4px);margin-bottom:var(--s-sm);border:none;display:block;}
+
+/* MOBILE */
+@media(max-width:600px){
+  .header{flex-direction:column;gap:var(--s-sm);}
+  .header-right{padding-top:0;align-self:flex-end;}
+  .clock{font-size:clamp(2.4rem,14vw,3.8rem);}
+  .masonry{flex-direction:column;}
+  .masonry-col{flex:none;width:100%;}
+  .picker-panel,.settings-panel{padding:var(--s-md);width:96vw;}
+  .album-row{flex-wrap:wrap;}
+  .album-why{min-width:0;width:100%;}
+}
+
+/* PICKER TOUCH */
+.picker-item{touch-action:none;}
 </style>
 </head>
 <body>
@@ -448,7 +480,12 @@ a{color:inherit;} button{font-family:inherit;}
         <!-- APOD -->
         <div v-else-if="wid.id==='apod'" class="card">          <div class="card-label">NASA · Astronomy Picture of the Day</div>
           <template v-if="apod">
-            <a :href="apod.hdurl||apod.url" target="_blank" rel="noopener"><img :src="apod.url" :alt="apod.title" class="apod-img" /></a>
+            <template v-if="apod.media_type==='video'">
+              <iframe :src="apod.url" class="apod-video" allowfullscreen></iframe>
+            </template>
+            <template v-else>
+              <a :href="apod.hdurl||apod.url" target="_blank" rel="noopener"><img :src="apod.url" :alt="apod.title" class="apod-img" /></a>
+            </template>
             <div class="apod-title">{{ apod.title }}</div>
             <div class="apod-date">{{ apod.date }}</div>
             <div class="apod-exp">{{ apod.explanation }}</div>
@@ -545,14 +582,24 @@ a{color:inherit;} button{font-family:inherit;}
               <div class="dice-click-hint">click to roll</div>
             </div>
             <div v-if="diceResult!==null">
-              <div class="dice-result-big" :style="{color:diceResult===20&&activeDie==='d20'?'#ffd700':diceResult===1&&activeDie==='d20'?'#ff6b6b':'var(--accent)'}">{{ diceResult }}</div>
-              <div class="dice-result-label">{{ diceResult===20&&activeDie==='d20'?'⚔️ Natural 20!':diceResult===1&&activeDie==='d20'?'💀 Critical Fail':activeDie }}</div>
+              <div class="dice-result-big" :style="{color:diceResult+diceMod===20+diceMod&&activeDie==='d20'?'#ffd700':diceResult===1&&activeDie==='d20'?'#ff6b6b':'var(--accent)'}">
+                {{ diceResult }}<span v-if="diceMod!==0" style="font-size:var(--t-lg);opacity:.7">{{ diceMod>0?'+'+diceMod:diceMod }}</span>
+                <span v-if="diceMod!==0" style="font-size:var(--t-md);color:var(--accent);margin-left:4px">= {{ diceResult+diceMod }}</span>
+              </div>
+              <div class="dice-result-label">{{ diceResult===20&&activeDie==='d20'?'⚔️ Natural 20!':diceResult===1&&activeDie==='d20'?'💀 Critical Fail':activeDie+(diceMod!==0?(diceMod>0?'+'+diceMod:String(diceMod)):'') }}</div>
             </div>
             <div v-else class="dice-result-label" style="text-align:center;padding:8px 0">Click to roll</div>
             <div class="dice-history" v-if="diceHistory.length">
               <span v-for="(h,i) in diceHistory" :key="i" class="dice-hist-pip" :class="{'nat20':h.val===20&&h.die==='d20','nat1':h.val===1&&h.die==='d20'}">{{ h.die }}:{{ h.val }}</span>
             </div>
-            <button class="dice-roll-btn" @click="rollDice">Roll {{ activeDie }}</button>
+            <div class="dice-modifier-row">
+              <span class="dice-mod-label">Modifier</span>
+              <button class="dice-mod-btn" @click="diceMod=Math.max(-20,diceMod-1)">−</button>
+              <span class="dice-mod-val">{{ diceMod>0?'+'+diceMod:diceMod }}</span>
+              <button class="dice-mod-btn" @click="diceMod=Math.min(20,diceMod+1)">+</button>
+              <button v-if="diceMod!==0" class="dice-mod-btn" @click="diceMod=0" style="font-size:var(--t-xs);width:auto;padding:0 8px">reset</button>
+            </div>
+            <button class="dice-roll-btn" @click="rollDice">Roll {{ activeDie }}{{ diceMod!==0?(diceMod>0?'+'+diceMod:String(diceMod)):'' }}</button>
           </div>
         </div>
 
@@ -569,6 +616,15 @@ a{color:inherit;} button{font-family:inherit;}
 
   <a v-if="bgCredit" class="photo-credit" :href="bgCredit.link" target="_blank" rel="noopener">📷 {{ bgCredit.name }} · Unsplash</a>
 
+  <!-- KP ALERT -->
+  <transition name="fade">
+    <div class="kp-alert" v-if="kpAlert">
+      <div class="kp-alert-icon">🌌</div>
+      <div class="kp-alert-text">KP {{ kp?.toFixed(1) }} — {{ kpInfo?.label }}. {{ kpInfo?.chance }}.</div>
+      <button class="kp-alert-close" @click="dismissKpAlert">✕</button>
+    </div>
+  </transition>
+
   <!-- WIDGET PICKER -->
   <transition name="fade">
     <div class="picker-overlay" v-if="showPicker" @click.self="showPicker=false">
@@ -579,9 +635,13 @@ a{color:inherit;} button{font-family:inherit;}
         <div class="picker-list">
           <div v-for="wid in widgetRegistry" :key="wid.id" class="picker-item"
             :class="{'dragging-picker':pickerDragging===wid.id,'drag-over-picker':pickerTarget===wid.id}"
+            :data-wid="wid.id"
             draggable="true"
             @dragstart="onPickerDragStart($event,wid.id)" @dragover.prevent="onPickerDragOver($event,wid.id)"
-            @drop="onPickerDrop($event,wid.id)" @dragend="onPickerDragEnd">
+            @drop="onPickerDrop($event,wid.id)" @dragend="onPickerDragEnd"
+            @touchstart.passive="onPickerTouchStart($event,wid.id)"
+            @touchmove="onPickerTouchMove($event)"
+            @touchend="onPickerTouchEnd">
             <div class="picker-item-drag">⠿</div>
             <div class="picker-item-icon">{{ wid.icon }}</div>
             <div class="picker-item-info">
@@ -732,12 +792,32 @@ createApp({
     function updateNumCols(){numCols.value=window.innerWidth<600?1:window.innerWidth<960?2:3;}
     const masonryColumns=computed(()=>{const n=numCols.value;const cols=Array.from({length:n},()=>[]);const heights=new Array(n).fill(0);for(const wid of visibleWidgets.value){const shortest=heights.indexOf(Math.min(...heights));cols[shortest].push(wid);heights[shortest]+=(WIDGET_META[wid.id]?.weight||1);}return cols;});
 
-    // drag-in-picker
+    // drag-in-picker (mouse + touch)
     const pickerDragging=ref(null); const pickerTarget=ref(null);
-    function onPickerDragStart(e,id){pickerDragging.value=id;e.dataTransfer.effectAllowed='move';}
+    function onPickerDragStart(e,id){pickerDragging.value=id;e.dataTransfer&&(e.dataTransfer.effectAllowed='move');}
     function onPickerDragOver(e,id){if(pickerDragging.value&&pickerDragging.value!==id)pickerTarget.value=id;}
     function onPickerDrop(e,id){if(!pickerDragging.value||pickerDragging.value===id)return;const arr=[...order.value];const fi=arr.indexOf(pickerDragging.value),ti=arr.indexOf(id);if(fi<0||ti<0)return;arr.splice(fi,1);arr.splice(ti,0,pickerDragging.value);order.value=arr;saveWidgetState();pickerDragging.value=null;pickerTarget.value=null;}
     function onPickerDragEnd(){pickerDragging.value=null;pickerTarget.value=null;}
+
+    // Touch drag for picker
+    let touchDragId=null,touchDragOver=null;
+    function onPickerTouchStart(e,id){touchDragId=id;e.currentTarget.style.opacity='.5';}
+    function onPickerTouchMove(e){
+      e.preventDefault();
+      const t=e.touches[0];
+      const el=document.elementFromPoint(t.clientX,t.clientY)?.closest('[data-wid]');
+      touchDragOver=el?.dataset?.wid||null;
+      document.querySelectorAll('.picker-item').forEach(i=>i.classList.remove('drag-over-picker'));
+      if(el)el.closest('.picker-item')?.classList.add('drag-over-picker');
+    }
+    function onPickerTouchEnd(){
+      document.querySelectorAll('.picker-item').forEach(i=>{i.classList.remove('drag-over-picker');i.style.opacity='';});
+      if(touchDragId&&touchDragOver&&touchDragId!==touchDragOver){
+        const arr=[...order.value];const fi=arr.indexOf(touchDragId),ti=arr.indexOf(touchDragOver);
+        if(fi>=0&&ti>=0){arr.splice(fi,1);arr.splice(ti,0,touchDragId);order.value=arr;saveWidgetState();}
+      }
+      touchDragId=null;touchDragOver=null;
+    }
 
     // data
     const locationName=ref(''); const locationError=ref('');
@@ -820,9 +900,22 @@ createApp({
 
     async function fetchAnimal(){animalLoading.value=true;animal.value=null;try{const page=Math.floor(Math.random()*20)+1;const r=await fetch(`https://api.inaturalist.org/v1/observations?quality_grade=research&photos=true&order=random&per_page=1&page=${page}&iconic_taxa=Mammalia,Aves,Reptilia,Amphibia,Actinopterygii,Insecta,Arachnida,Mollusca`);const d=await r.json();const obs=d.results?.[0];if(!obs)throw new Error('no obs');const commonName=obs.taxon?.preferred_common_name||obs.taxon?.name||'Unknown species';const scientificName=obs.taxon?.name||'';const photo=obs.photos?.[0]?.url?.replace('square','medium')||null;const place=obs.place_guess||null;const date=obs.observed_on?new Date(obs.observed_on).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}):null;const observer=obs.user?.login||null;let fact=null;if(scientificName){try{const wr=await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(scientificName.replace(/ /g,'_'))}`);const wd=await wr.json();if(wd.extract){const s=wd.extract.split(/(?<=[.!?])\s/)[0];fact=s.length>220?s.slice(0,217)+'…':s;}}catch{}}animal.value={commonName,scientificName,photo,place,date,observer,fact};}catch{animal.value=null;}animalLoading.value=false;}
 
-    async function fetchAPOD(){try{const key=nasaKey.value||'DEMO_KEY';const r=await fetch(`https://api.nasa.gov/planetary/apod?api_key=${key}`);const d=await r.json();if(d.media_type==='image')apod.value=d;}catch{apod.value=null;}}
+    async function fetchAPOD(){try{const key=nasaKey.value||'DEMO_KEY';const r=await fetch(`https://api.nasa.gov/planetary/apod?api_key=${key}`);const d=await r.json();if(d.media_type==='image'||d.media_type==='video')apod.value=d;}catch{apod.value=null;}}
 
-    // DICE — ported geometry from github.com/byWulf/threejs-dice (no Cannon dependency)
+    // KP ALERT
+    const kpAlert=ref(false);
+    const KP_THRESHOLD=5;
+    const KP_SNOOZE_KEY='aurora_kp_snooze';
+    function checkKpAlert(){
+      if(kp.value===null)return;
+      const snooze=localStorage.getItem(KP_SNOOZE_KEY);
+      if(snooze&&Date.now()<parseInt(snooze))return;
+      kpAlert.value=kp.value>=KP_THRESHOLD;
+    }
+    function dismissKpAlert(){kpAlert.value=false;localStorage.setItem(KP_SNOOZE_KEY,Date.now()+3*60*60*1000);}// snooze 3h
+
+    // DICE MODIFIER
+    const diceMod=ref(0);
     const diceTypes=['d4','d6','d8','d10','d12','d20'];
     const activeDie=ref('d20');
     const diceResult=ref(null);
@@ -1112,9 +1205,22 @@ createApp({
         },100);
       }
     },{immediate:true});
+
+    // Theme-aware dice — rebuild mesh when accent color changes
+    watch(currentTheme,()=>{
+      if(diceScene&&diceThree&&diceMesh){
+        diceScene.remove(diceMesh);diceMesh.geometry?.dispose();
+        diceMesh=buildDiceMesh(activeDie.value);
+        if(diceMesh)diceScene.add(diceMesh);
+      }
+    });
+
+    // KP alert watcher
+    watch(kp,()=>checkKpAlert());
+
     watch(useFahrenheit,v=>localStorage.setItem('aurora_fahrenheit',v));
 
-    return{clockStr,dateStr,showSettings,showPicker,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,rollDice,switchDie,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings};
+    return{clockStr,dateStr,showSettings,showPicker,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings};
   }
 }).mount('#app');
 </script>
