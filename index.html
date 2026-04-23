@@ -38,13 +38,9 @@ body{font-family:var(--font-body);font-size:var(--t-md);line-height:1.5;color:va
 .icon-btn{background:var(--card);border:1px solid var(--card-border);border-radius:clamp(8px,.9vw,12px);color:var(--text-muted);width:clamp(34px,2.8vw,44px);height:clamp(34px,2.8vw,44px);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:var(--t-lg);transition:all .2s;backdrop-filter:blur(10px);}
 .icon-btn:hover{color:var(--accent);border-color:var(--accent);background:var(--glow);}
 
-/* GRID */
-.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:clamp(10px,1.1vw,16px);flex:1;align-content:start;}
-.col-3{grid-column:span 3;} .col-4{grid-column:span 4;} .col-5{grid-column:span 5;}
-.col-6{grid-column:span 6;} .col-7{grid-column:span 7;} .col-8{grid-column:span 8;}
-.col-9{grid-column:span 9;} .col-12{grid-column:span 12;}
-@media(max-width:960px){.col-3,.col-4{grid-column:span 6;}.col-5,.col-7,.col-8,.col-9{grid-column:span 12;}}
-@media(max-width:560px){.col-3,.col-4,.col-6{grid-column:span 12;}}
+/* MASONRY */
+.masonry{display:flex;gap:clamp(10px,1.1vw,16px);flex:1;align-items:flex-start;}
+.masonry-col{display:flex;flex-direction:column;gap:clamp(10px,1.1vw,16px);flex:1;min-width:0;}
 
 /* CARD */
 .card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);backdrop-filter:blur(20px);padding:var(--s-md);transition:border-color .3s,background .4s,transform .2s,box-shadow .2s;position:relative;overflow:hidden;}
@@ -300,8 +296,9 @@ a{color:inherit;} button{font-family:inherit;}
       </div>
     </div>
 
-    <div class="grid">
-      <template v-for="wid in visibleWidgets" :key="wid.id">
+    <div class="masonry">
+      <div v-for="(col, ci) in masonryColumns" :key="ci" class="masonry-col">
+        <template v-for="wid in col" :key="wid.id">
 
         <!-- KP INDEX -->
         <div v-if="wid.id==='kp'" :class="['card', `col-${wid.cols}`, {dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}]" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd">
@@ -563,7 +560,8 @@ a{color:inherit;} button{font-family:inherit;}
           </div>
         </div>
 
-      </template>
+        </template>
+      </div>
     </div>
   </div>
 
@@ -675,7 +673,7 @@ const ALBUM_FALLBACKS={'ambient':{title:'Discreet Music',artist:'Brian Eno',year
 const QUOTES=[{text:"The world is quiet here.",author:"Lemony Snicket"},{text:"Not all those who wander are lost.",author:"J.R.R. Tolkien"},{text:"I took a deep breath and listened to the old brag of my heart: I am, I am, I am.",author:"Sylvia Plath"},{text:"The sky is everywhere, it begins at your feet.",author:"Jandy Nelson"},{text:"To live is so startling it leaves little time for anything else.",author:"Emily Dickinson"},{text:"The cure for anything is salt water: sweat, tears, or the sea.",author:"Isak Dinesen"},{text:"In the middle of winter, I at last discovered that there was in me an invincible summer.",author:"Albert Camus"},{text:"Stars are not small or gentle. They are writhing and dying and burning.",author:"Tamsyn Muir"},{text:"The most beautiful thing we can experience is the mysterious.",author:"Albert Einstein"},{text:"Everything you can imagine is real.",author:"Pablo Picasso"},{text:"There is no exquisite beauty without some strangeness in the proportion.",author:"Edgar Allan Poe"},{text:"I am not afraid of storms, for I am learning how to sail my ship.",author:"Louisa May Alcott"},{text:"Wherever you go becomes a part of you somehow.",author:"Anita Desai"},{text:"We shall not cease from exploration.",author:"T.S. Eliot"},{text:"One must always maintain one's connection to the past and yet ceaselessly pull away from it.",author:"Gaston Bachelard"},{text:"I would rather die of passion than of boredom.",author:"Vincent van Gogh"},{text:"The job of the artist is always to deepen the mystery.",author:"Francis Bacon"},{text:"You can't use up creativity. The more you use, the more you have.",author:"Maya Angelou"},{text:"To photograph is to appropriate the thing photographed.",author:"Susan Sontag"},{text:"The aim of art is to represent not the outward appearance of things, but their inward significance.",author:"Aristotle"}];
 
 const DEFAULT_WIDGET_ORDER=['kp','weather','sun','moon','aqi','tides','iss','planets','quote','animal','apod','soma','album','notes','todo','bookmarks','bg'];
-const WIDGET_META={kp:{label:'KP Index',icon:'🌌',desc:'Aurora activity — updated every 5 min',cols:4},weather:{label:'Weather',icon:'🌤️',desc:'Local conditions from Open-Meteo',cols:4},sun:{label:'Sunrise & Sunset',icon:'🌅',desc:'Daily sun arc with daylight duration',cols:4},moon:{label:'Moon Phase',icon:'🌕',desc:'Calculated phase, illumination & next full moon',cols:3},aqi:{label:'Air Quality',icon:'🌬️',desc:'AQI, PM2.5, PM10 and ozone',cols:3},tides:{label:'Tides',icon:'🌊',desc:'Tide highs and lows from Open-Meteo Marine',cols:5},iss:{label:'ISS Pass Times',icon:'📡',desc:'When the space station flies over you',cols:4},planets:{label:'Planets Tonight',icon:'🔭',desc:'Calculated visibility for naked-eye planets',cols:4},quote:{label:'Inspiration',icon:'💬',desc:'Curated quotes from writers, artists, thinkers',cols:6},animal:{label:'Animal of the Day',icon:'🦎',desc:'Random wildlife observation + Wikipedia fact',cols:5},apod:{label:'NASA APOD',icon:'🌌',desc:'Astronomy Picture of the Day',cols:6},soma:{label:'SomaFM Radio',icon:'📻',desc:'Curated ambient & electronic streams',cols:5},album:{label:'Album Rec',icon:'🎵',desc:'Last.fm genre recommendations',cols:8},notes:{label:'Notes',icon:'📋',desc:'Quick scratchpad, auto-saved locally',cols:5},todo:{label:'To-Do',icon:'✅',desc:'Simple checklist, persisted locally',cols:4},bookmarks:{label:'Bookmarks',icon:'🔗',desc:'Your personal speed-dial links',cols:12},bg:{label:'Background',icon:'🖼️',desc:'Unsplash photo topic picker',cols:7}};
+const WIDGET_META={kp:{label:'KP Index',icon:'🌌',desc:'Aurora activity — updated every 5 min',cols:4,weight:3},weather:{label:'Weather',icon:'🌤️',desc:'Local conditions from Open-Meteo',cols:4,weight:3},sun:{label:'Sunrise & Sunset',icon:'🌅',desc:'Daily sun arc with daylight duration',cols:4,weight:3},moon:{label:'Moon Phase',icon:'🌕',desc:'Calculated phase, illumination & next full moon',cols:3,weight:2},aqi:{label:'Air Quality',icon:'🌬️',desc:'AQI, PM2.5, PM10 and ozone',cols:3,weight:2},tides:{label:'Tides',icon:'🌊',desc:'Tide highs and lows from Open-Meteo Marine',cols:5,weight:3},iss:{label:'ISS Pass Times',icon:'📡',desc:'When the space station flies over you',cols:4,weight:3},planets:{label:'Planets Tonight',icon:'🔭',desc:'Calculated visibility for naked-eye planets',cols:4,weight:4},quote:{label:'Inspiration',icon:'💬',desc:'Curated quotes from writers, artists, thinkers',cols:6,weight:2},animal:{label:'Animal of the Day',icon:'🦎',desc:'Random wildlife observation + Wikipedia fact',cols:5,weight:5},apod:{label:'NASA APOD',icon:'🌌',desc:'Astronomy Picture of the Day',cols:6,weight:5},soma:{label:'SomaFM Radio',icon:'📻',desc:'Curated ambient & electronic streams',cols:5,weight:3},album:{label:'Album Rec',icon:'🎵',desc:'Last.fm genre recommendations',cols:8,weight:4},notes:{label:'Notes',icon:'📋',desc:'Quick scratchpad, auto-saved locally',cols:5,weight:3},todo:{label:'To-Do',icon:'✅',desc:'Simple checklist, persisted locally',cols:4,weight:3},bookmarks:{label:'Bookmarks',icon:'🔗',desc:'Your personal speed-dial links',cols:12,weight:2},bg:{label:'Background',icon:'🖼️',desc:'Unsplash photo topic picker',cols:7,weight:2}};
 
 async function geocode(city){const r=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`);const d=await r.json();if(!d.results?.length)throw new Error('not found');return{lat:d.results[0].latitude,lon:d.results[0].longitude,name:d.results[0].name+', '+d.results[0].country};}
 
@@ -712,7 +710,10 @@ createApp({
     function toggleWidget(id){visibility.value={...visibility.value,[id]:!visibility.value[id]};saveWidgetState();}
     function saveWidgetState(){localStorage.setItem('aurora_widget_order',JSON.stringify(order.value));localStorage.setItem('aurora_widget_vis',JSON.stringify(visibility.value));}
 
-    // drag-on-grid
+    // masonry columns — distribute widgets shortest-column-first
+    const numCols=ref(3);
+    function updateNumCols(){numCols.value=window.innerWidth<600?1:window.innerWidth<960?2:3;}
+    const masonryColumns=computed(()=>{const n=numCols.value;const cols=Array.from({length:n},()=>[]);const heights=new Array(n).fill(0);for(const wid of visibleWidgets.value){const shortest=heights.indexOf(Math.min(...heights));cols[shortest].push(wid);heights[shortest]+=(WIDGET_META[wid.id]?.weight||1);}return cols;});
     const dragging=ref(null); const dragTarget=ref(null);
     function onDragStart(e,id){if(!e.target.closest('.drag-handle')){e.preventDefault();return;}dragging.value=id;e.dataTransfer.effectAllowed='move';}
     function onDragOver(e,id){if(dragging.value&&dragging.value!==id)dragTarget.value=id;}
@@ -799,11 +800,11 @@ createApp({
 
     function saveSettings(){localStorage.setItem('aurora_location',locationInput.value);localStorage.setItem('aurora_unsplash',unsplashKey.value);localStorage.setItem('aurora_lastfm',lastfmKey.value);localStorage.setItem('aurora_nasa',nasaKey.value);localStorage.setItem('aurora_musicapp',musicApp.value);localStorage.setItem('aurora_theme',currentTheme.value);localStorage.setItem('aurora_fahrenheit',useFahrenheit.value);bookmarks.value=bookmarkEdits.value.filter(b=>b.url);localStorage.setItem('aurora_bookmarks',JSON.stringify(bookmarks.value));showSettings.value=false;locateAndLoad();fetchBg(bgTopic.value);fetchAlbum(selectedGenre.value);fetchAPOD();}
 
-    onMounted(()=>{applyTheme(currentTheme.value);clockTimer=setInterval(()=>{now.value=new Date();},10000);locateAndLoad();fetchKP();fetchQuote();fetchAlbum(selectedGenre.value);fetchBg(bgTopic.value);fetchAnimal();fetchAPOD();setInterval(fetchKP,5*60*1000);setInterval(()=>{if(unsplashKey.value)fetchBg(bgTopic.value);},15*60*1000);});
-    onUnmounted(()=>clearInterval(clockTimer));
+    onMounted(()=>{applyTheme(currentTheme.value);updateNumCols();window.addEventListener('resize',updateNumCols);clockTimer=setInterval(()=>{now.value=new Date();},10000);locateAndLoad();fetchKP();fetchQuote();fetchAlbum(selectedGenre.value);fetchBg(bgTopic.value);fetchAnimal();fetchAPOD();setInterval(fetchKP,5*60*1000);setInterval(()=>{if(unsplashKey.value)fetchBg(bgTopic.value);},15*60*1000);});
+    onUnmounted(()=>{clearInterval(clockTimer);window.removeEventListener('resize',updateNumCols);});
     watch(useFahrenheit,v=>localStorage.setItem('aurora_fahrenheit',v));
 
-    return{clockStr,dateStr,showSettings,showPicker,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,dragging,dragTarget,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onDragStart,onDragOver,onDrop,onDragEnd,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings};
+    return{clockStr,dateStr,showSettings,showPicker,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,dragging,dragTarget,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onDragStart,onDragOver,onDrop,onDragEnd,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings};
   }
 }).mount('#app');
 </script>
