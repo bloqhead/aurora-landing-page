@@ -213,7 +213,7 @@ body{font-family:var(--font-body);font-size:var(--t-md);line-height:1.5;color:va
 .dice-type-btn:hover{color:var(--text);border-color:var(--text-muted);}
 .dice-type-btn.active{background:var(--accent2);border-color:var(--accent2);color:#fff;}
 .dice-canvas-wrap{width:100%;height:160px;cursor:pointer;border-radius:calc(var(--radius) - 4px);overflow:hidden;position:relative;background:radial-gradient(ellipse at 50% 60%, color-mix(in srgb,var(--accent) 6%, transparent), transparent 70%);}
-.dice-canvas-wrap canvas{display:block;width:100%!important;height:100%!important;}
+.dice-canvas-wrap canvas{display:block;}
 .dice-result-big{font-family:var(--font-display);font-size:var(--t-2xl);font-weight:200;text-align:center;line-height:1;color:var(--accent);text-shadow:0 0 20px var(--glow);transition:all .3s;}
 .dice-result-label{font-family:var(--font-mono);font-size:var(--t-xs);color:var(--text-muted);text-align:center;margin-top:2px;}
 .dice-history{display:flex;gap:5px;flex-wrap:wrap;margin-top:var(--s-xs);}
@@ -945,14 +945,15 @@ createApp({
 
     function initDice(){
       if(!diceCanvas.value||!diceCanvasWrap.value)return;
-      if(!window.THREE){console.warn('THREE not loaded');return;}
+      if(!window.THREE){console.warn('THREE not loaded yet');return;}
       diceThree=window.THREE;
       const THREE=diceThree;
       const wrap=diceCanvasWrap.value;
-      const w=wrap.clientWidth, h=wrap.clientHeight||160;
+      const w=wrap.offsetWidth||300;
+      const h=160;
 
       diceRenderer=new THREE.WebGLRenderer({canvas:diceCanvas.value,antialias:true,alpha:true});
-      diceRenderer.setSize(w,h);
+      diceRenderer.setSize(w,h,false); // false = don't set canvas CSS size, let CSS handle it
       diceRenderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
       diceRenderer.setClearColor(0x000000,0);
 
@@ -1069,11 +1070,21 @@ createApp({
 
     function saveSettings(){localStorage.setItem('aurora_location',locationInput.value);localStorage.setItem('aurora_unsplash',unsplashKey.value);localStorage.setItem('aurora_lastfm',lastfmKey.value);localStorage.setItem('aurora_nasa',nasaKey.value);localStorage.setItem('aurora_musicapp',musicApp.value);localStorage.setItem('aurora_theme',currentTheme.value);localStorage.setItem('aurora_fahrenheit',useFahrenheit.value);bookmarks.value=bookmarkEdits.value.filter(b=>b.url);localStorage.setItem('aurora_bookmarks',JSON.stringify(bookmarks.value));showSettings.value=false;locateAndLoad();fetchBg(bgTopic.value);fetchAlbum(selectedGenre.value);fetchAPOD();}
 
-    onMounted(()=>{applyTheme(currentTheme.value);updateNumCols();window.addEventListener('resize',updateNumCols);clockTimer=setInterval(()=>{now.value=new Date();},10000);locateAndLoad();fetchKP();fetchQuote();fetchAlbum(selectedGenre.value);fetchBg(bgTopic.value);fetchAnimal();fetchAPOD();setInterval(fetchKP,5*60*1000);setInterval(()=>{if(unsplashKey.value)fetchBg(bgTopic.value);},15*60*1000);
-      // Init Three.js dice after next tick so canvas ref is mounted
-      setTimeout(()=>initDice(),100);
-    });
+    onMounted(()=>{applyTheme(currentTheme.value);updateNumCols();window.addEventListener('resize',updateNumCols);clockTimer=setInterval(()=>{now.value=new Date();},10000);locateAndLoad();fetchKP();fetchQuote();fetchAlbum(selectedGenre.value);fetchBg(bgTopic.value);fetchAnimal();fetchAPOD();setInterval(fetchKP,5*60*1000);setInterval(()=>{if(unsplashKey.value)fetchBg(bgTopic.value);},15*60*1000);});
     onUnmounted(()=>{clearInterval(clockTimer);window.removeEventListener('resize',updateNumCols);teardownDice();});
+
+    // Watch for canvas ref to become available (dice widget may not be visible on mount)
+    watch(diceCanvas, (canvas)=>{
+      if(canvas && !diceRenderer){
+        // Poll for THREE since CDN script may still be loading
+        let attempts=0;
+        const poll=setInterval(()=>{
+          attempts++;
+          if(window.THREE){clearInterval(poll);initDice();}
+          else if(attempts>40)clearInterval(poll);
+        },100);
+      }
+    });
     watch(useFahrenheit,v=>localStorage.setItem('aurora_fahrenheit',v));
 
     return{clockStr,dateStr,showSettings,showPicker,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceCanvas,diceCanvasWrap,rollDice,switchDie,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings};
