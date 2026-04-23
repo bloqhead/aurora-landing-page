@@ -540,8 +540,8 @@ a{color:inherit;} button{font-family:inherit;}
             <div class="dice-types">
               <button v-for="d in diceTypes" :key="d" class="dice-type-btn" :class="{active:activeDie===d}" @click="switchDie(d)">{{ d }}</button>
             </div>
-            <div class="dice-canvas-wrap" ref="diceCanvasWrap" @click="rollDice">
-              <canvas ref="diceCanvas"></canvas>
+            <div class="dice-canvas-wrap" id="dice-wrap" @click="rollDice">
+              <canvas id="dice-canvas"></canvas>
               <div class="dice-click-hint">click to roll</div>
             </div>
             <div v-if="diceResult!==null">
@@ -945,20 +945,14 @@ createApp({
     }
 
     function initDice(){
-      if(!diceCanvas.value||!diceCanvasWrap.value)return;
       if(!window.THREE){console.warn('THREE not loaded yet');return;}
       diceThree=window.THREE;
       const THREE=diceThree;
-      const wrap=diceCanvasWrap.value;
+      const canvasEl=document.getElementById('dice-canvas');
+      const wrap=document.getElementById('dice-wrap');
+      if(!canvasEl||!wrap){console.warn('dice elements not in DOM yet');return;}
       const w=wrap.offsetWidth||300;
       const h=160;
-      // Get the raw DOM element — Vue ref may wrap it
-      const canvasEl = diceCanvas.value instanceof HTMLCanvasElement
-        ? diceCanvas.value
-        : diceCanvas.value.$el || diceCanvas.value;
-      if(!canvasEl || typeof canvasEl.addEventListener !== 'function'){
-        console.warn('dice canvas not a valid DOM element', canvasEl);return;
-      }
       diceRenderer=new THREE.WebGLRenderer({canvas:canvasEl,antialias:true,alpha:true});
       diceRenderer.setSize(w,h,false); // false = don't set canvas CSS size, let CSS handle it
       diceRenderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
@@ -1032,7 +1026,6 @@ createApp({
 
     function switchDie(type){
       activeDie.value=type; diceResult.value=null;
-      // Rebuild mesh for new die type
       if(diceScene&&diceThree){
         if(diceMesh){diceScene.remove(diceMesh); diceMesh.geometry?.dispose();}
         diceMesh=buildDiceMesh(type);
@@ -1045,13 +1038,9 @@ createApp({
       const sides=parseInt(activeDie.value.slice(1));
       const result=Math.floor(Math.random()*sides)+1;
       diceRolling.value=true; diceResult.value=null;
-      // Trigger Three.js roll animation
-      if(diceCanvasWrap.value?._triggerRoll){
-        diceCanvasWrap.value._triggerRoll({
-          x:Math.random()*Math.PI*4,
-          y:Math.random()*Math.PI*4,
-          z:Math.random()*Math.PI*2,
-        });
+      const wrap=document.getElementById('dice-wrap');
+      if(wrap?._triggerRoll){
+        wrap._triggerRoll({x:Math.random()*Math.PI*4,y:Math.random()*Math.PI*4,z:Math.random()*Math.PI*2});
       }
       setTimeout(()=>{
         diceResult.value=result; diceRolling.value=false;
@@ -1080,21 +1069,21 @@ createApp({
     onMounted(()=>{applyTheme(currentTheme.value);updateNumCols();window.addEventListener('resize',updateNumCols);clockTimer=setInterval(()=>{now.value=new Date();},10000);locateAndLoad();fetchKP();fetchQuote();fetchAlbum(selectedGenre.value);fetchBg(bgTopic.value);fetchAnimal();fetchAPOD();setInterval(fetchKP,5*60*1000);setInterval(()=>{if(unsplashKey.value)fetchBg(bgTopic.value);},15*60*1000);});
     onUnmounted(()=>{clearInterval(clockTimer);window.removeEventListener('resize',updateNumCols);teardownDice();});
 
-    // Watch for canvas ref to become available (dice widget may not be visible on mount)
-    watch(diceCanvas, (canvas)=>{
-      if(canvas && !diceRenderer){
-        // Poll for THREE since CDN script may still be loading
+    // Watch for dice canvas to appear in DOM (widget may not be visible on mount)
+    watch(visibleWidgets, ()=>{
+      if(visibleWidgets.value.find(w=>w.id==='dice') && !diceRenderer){
         let attempts=0;
         const poll=setInterval(()=>{
           attempts++;
-          if(window.THREE){clearInterval(poll);initDice();}
+          const el=document.getElementById('dice-canvas');
+          if(el && window.THREE){clearInterval(poll);initDice();}
           else if(attempts>40)clearInterval(poll);
         },100);
       }
-    });
+    },{immediate:true});
     watch(useFahrenheit,v=>localStorage.setItem('aurora_fahrenheit',v));
 
-    return{clockStr,dateStr,showSettings,showPicker,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceCanvas,diceCanvasWrap,rollDice,switchDie,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings};
+    return{clockStr,dateStr,showSettings,showPicker,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,rollDice,switchDie,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings};
   }
 }).mount('#app');
 </script>
