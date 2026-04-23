@@ -563,6 +563,7 @@ a{color:inherit;} button{font-family:inherit;}
         <div class="settings-section">
           <div class="settings-section-label">Location (city, country)</div>
           <input class="settings-input" v-model="locationInput" placeholder="e.g. Asheville, US" @keyup.enter="saveSettings" />
+          <div v-if="locationError" style="font-size:var(--t-xs);color:#ff8c6b;margin-top:var(--s-xs);">{{ locationError }}</div>
         </div>
         <div class="settings-section">
           <div class="settings-section-label">Unsplash Access Key</div>
@@ -727,7 +728,36 @@ createApp({
 
     function formatISSTime(unix){return new Date(unix*1000).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});}
 
-    async function locateAndLoad(){const saved=localStorage.getItem('aurora_location');if(saved){try{const g=await geocode(saved);locationName.value=g.name;userLat.value=g.lat;userLon.value=g.lon;loadLocationData(g.lat,g.lon);return;}catch{}}if(navigator.geolocation){navigator.geolocation.getCurrentPosition(async pos=>{const{latitude:lat,longitude:lon}=pos.coords;userLat.value=lat;userLon.value=lon;try{const r2=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);const d2=await r2.json();locationName.value=d2.address?.city||d2.address?.town||d2.address?.village||'Your Location';}catch{locationName.value='Your Location';}loadLocationData(lat,lon);},()=>{locationError.value='Allow location or set city in settings.';});}else{locationError.value='Set a city in settings.';}}
+    async function locateAndLoad(){
+      const saved=localStorage.getItem('aurora_location');
+      // Reset stale state so failures are visible
+      locationError.value='';
+      if(saved&&saved.trim()){
+        try{
+          const g=await geocode(saved.trim());
+          locationName.value=g.name;
+          userLat.value=g.lat;
+          userLon.value=g.lon;
+          weather.value=null;
+          sunData.value=null;
+          loadLocationData(g.lat,g.lon);
+          return;
+        }catch{
+          locationError.value=`Couldn't find "${saved}" — check the spelling and try again.`;
+          return;
+        }
+      }
+      // No saved city — fall back to browser geolocation
+      if(navigator.geolocation){
+        navigator.geolocation.getCurrentPosition(async pos=>{
+          const{latitude:lat,longitude:lon}=pos.coords;
+          userLat.value=lat;userLon.value=lon;
+          try{const r2=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);const d2=await r2.json();locationName.value=d2.address?.city||d2.address?.town||d2.address?.village||'Your Location';}
+          catch{locationName.value='Your Location';}
+          loadLocationData(lat,lon);
+        },()=>{locationError.value='Allow location access or set a city in settings.';});
+      }else{locationError.value='Set a city in settings.';}
+    }
     function loadLocationData(lat,lon){fetchWeather(lat,lon);fetchAQI(lat,lon);fetchTides(lat,lon);fetchISS();}
 
     let lastQuoteIdx=-1;
