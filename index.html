@@ -99,15 +99,15 @@ body{font-family:var(--font-body);font-size:var(--t-md);line-height:1.5;color:va
 .quote-author{font-family:var(--font-mono);font-size:var(--t-xs);color:var(--accent);letter-spacing:.1em;}
 
 /* ALBUM */
-.album-row{display:flex;gap:var(--s-md);align-items:flex-start;margin-bottom:var(--s-sm);}
+.album-row{display:flex;gap:var(--s-md);align-items:flex-start;margin-bottom:var(--s-sm);flex-wrap:wrap;}
 .album-art{width:clamp(52px,6vw,72px);height:clamp(52px,6vw,72px);border-radius:clamp(8px,.8vw,12px);background:linear-gradient(135deg,var(--accent2),var(--accent));flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:var(--t-xl);overflow:hidden;}
 .album-art img{width:100%;height:100%;object-fit:cover;border-radius:inherit;}
-.album-body{flex:1;min-width:0;}
+.album-body{flex:0 1 auto;min-width:160px;max-width:260px;}
 .album-title{font-family:var(--font-display);font-size:var(--t-md);font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .album-title a{text-decoration:none;color:inherit;transition:color .2s;} .album-title a:hover{color:var(--accent);}
 .album-artist{font-size:var(--t-sm);color:var(--text-muted);margin-top:2px;}
 .album-year{font-family:var(--font-mono);font-size:var(--t-xs);color:var(--accent);margin-top:var(--s-xs);}
-.album-why{font-size:var(--t-xs);color:var(--text-muted);margin-top:var(--s-xs);font-style:italic;line-height:1.45;flex:1;min-width:160px;}
+.album-why{font-size:var(--t-xs);color:var(--text-muted);font-style:italic;line-height:1.5;flex:1;min-width:180px;align-self:center;}
 .album-links{display:flex;gap:var(--s-xs);margin-top:var(--s-sm);flex-wrap:wrap;}
 .album-link{font-family:var(--font-mono);font-size:var(--t-xs);padding:3px 9px;border-radius:20px;border:1px solid var(--card-border);color:var(--text-muted);text-decoration:none;transition:all .2s;}
 .album-link:hover{color:var(--accent);border-color:var(--accent);}
@@ -304,7 +304,7 @@ a{color:inherit;} button{font-family:inherit;}
       <template v-for="wid in visibleWidgets" :key="wid.id">
 
         <!-- KP INDEX -->
-        <div v-if="wid.id==='kp'" :class="['card','col-4']" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class2="dragTarget===wid.id?'drag-over':''">
+        <div v-if="wid.id==='kp'" :class="['card', `col-${wid.cols}`, {dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}]" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd">
           <div class="drag-handle"><span></span><span></span><span></span></div>
           <div class="aurora-rings"><div class="ring"></div><div class="ring"></div><div class="ring"></div></div>
           <div class="card-label">KP Index · Tromsø ref.</div>
@@ -319,7 +319,7 @@ a{color:inherit;} button{font-family:inherit;}
         </div>
 
         <!-- WEATHER -->
-        <div v-else-if="wid.id==='weather'" class="card col-4" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
+        <div v-else-if="wid.id==='weather'" :class="['card', `col-${wid.cols}`]" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
           <div class="drag-handle"><span></span><span></span><span></span></div>
           <div class="card-label">Local Weather</div>
           <template v-if="weather">
@@ -337,7 +337,7 @@ a{color:inherit;} button{font-family:inherit;}
         </div>
 
         <!-- SUN -->
-        <div v-else-if="wid.id==='sun'" class="card col-4" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
+        <div v-else-if="wid.id==='sun'" :class="['card', `col-${wid.cols}`]" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
           <div class="drag-handle"><span></span><span></span><span></span></div>
           <div class="card-label">Sun · {{ locationName }}</div>
           <template v-if="sunData">
@@ -353,7 +353,7 @@ a{color:inherit;} button{font-family:inherit;}
         </div>
 
         <!-- MOON -->
-        <div v-else-if="wid.id==='moon'" class="card col-4" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
+        <div v-else-if="wid.id==='moon'" :class="['card', `col-${wid.cols}`]" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
           <div class="drag-handle"><span></span><span></span><span></span></div>
           <div class="card-label">Moon Phase</div>
           <div class="moon-face">{{ moon.emoji }}</div>
@@ -364,7 +364,7 @@ a{color:inherit;} button{font-family:inherit;}
         </div>
 
         <!-- AQI -->
-        <div v-else-if="wid.id==='aqi'" class="card col-4" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
+        <div v-else-if="wid.id==='aqi'" :class="['card', `col-${wid.cols}`]" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
           <div class="drag-handle"><span></span><span></span><span></span></div>
           <div class="card-label">Air Quality</div>
           <template v-if="aqi">
@@ -381,7 +381,7 @@ a{color:inherit;} button{font-family:inherit;}
         </div>
 
         <!-- TIDES -->
-        <div v-else-if="wid.id==='tides'" class="card col-4" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
+        <div v-else-if="wid.id==='tides'" :class="['card', `col-${wid.cols}`]" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
           <div class="drag-handle"><span></span><span></span><span></span></div>
           <div class="card-label">Tides 🌊</div>
           <template v-if="tides && tides.length">
@@ -398,7 +398,7 @@ a{color:inherit;} button{font-family:inherit;}
         </div>
 
         <!-- ISS -->
-        <div v-else-if="wid.id==='iss'" class="card col-4" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
+        <div v-else-if="wid.id==='iss'" :class="['card', `col-${wid.cols}`]" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
           <div class="drag-handle"><span></span><span></span><span></span></div>
           <div class="card-label">ISS Pass Times 📡</div>
           <template v-if="issPasses && issPasses.length">
@@ -415,7 +415,7 @@ a{color:inherit;} button{font-family:inherit;}
         </div>
 
         <!-- PLANETS -->
-        <div v-else-if="wid.id==='planets'" class="card col-4" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
+        <div v-else-if="wid.id==='planets'" :class="['card', `col-${wid.cols}`]" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
           <div class="drag-handle"><span></span><span></span><span></span></div>
           <div class="card-label">Planets Tonight 🔭</div>
           <div class="planets-list">
@@ -429,7 +429,7 @@ a{color:inherit;} button{font-family:inherit;}
         </div>
 
         <!-- QUOTE -->
-        <div v-else-if="wid.id==='quote'" class="card col-6" style="position:relative" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
+        <div v-else-if="wid.id==='quote'" :class="['card', `col-${wid.cols}`, {dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}]" style="position:relative" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd">
           <div class="drag-handle"><span></span><span></span><span></span></div>
           <div class="card-label">Inspiration</div>
           <button class="card-btn" @click="fetchQuote" title="New quote">↺</button>
@@ -438,7 +438,7 @@ a{color:inherit;} button{font-family:inherit;}
         </div>
 
         <!-- ANIMAL -->
-        <div v-else-if="wid.id==='animal'" class="card col-6" style="position:relative" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
+        <div v-else-if="wid.id==='animal'" :class="['card', `col-${wid.cols}`, {dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}]" style="position:relative" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd">
           <div class="drag-handle"><span></span><span></span><span></span></div>
           <div class="card-label">Animal of the Day · iNaturalist</div>
           <button class="card-btn" @click="fetchAnimal" title="Next animal">→</button>
@@ -455,7 +455,7 @@ a{color:inherit;} button{font-family:inherit;}
         </div>
 
         <!-- APOD -->
-        <div v-else-if="wid.id==='apod'" class="card col-6" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
+        <div v-else-if="wid.id==='apod'" :class="['card', `col-${wid.cols}`]" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
           <div class="drag-handle"><span></span><span></span><span></span></div>
           <div class="card-label">NASA · Astronomy Picture of the Day</div>
           <template v-if="apod">
@@ -468,7 +468,7 @@ a{color:inherit;} button{font-family:inherit;}
         </div>
 
         <!-- SOMA FM -->
-        <div v-else-if="wid.id==='soma'" class="card col-6" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
+        <div v-else-if="wid.id==='soma'" :class="['card', `col-${wid.cols}`]" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
           <div class="drag-handle"><span></span><span></span><span></span></div>
           <div class="card-label">SomaFM Radio 📻</div>
           <div class="soma-player">
@@ -491,7 +491,7 @@ a{color:inherit;} button{font-family:inherit;}
         </div>
 
         <!-- ALBUM -->
-        <div v-else-if="wid.id==='album'" class="card col-12" style="position:relative" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
+        <div v-else-if="wid.id==='album'" :class="['card', `col-${wid.cols}`, {dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}]" style="position:relative" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd">
           <div class="drag-handle"><span></span><span></span><span></span></div>
           <div class="card-label">Album Rec · Last.fm</div>
           <button class="card-btn" @click="fetchAlbum(selectedGenre)" title="New recommendation">↺</button>
@@ -517,7 +517,7 @@ a{color:inherit;} button{font-family:inherit;}
         </div>
 
         <!-- NOTES -->
-        <div v-else-if="wid.id==='notes'" class="card col-6" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
+        <div v-else-if="wid.id==='notes'" :class="['card', `col-${wid.cols}`]" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
           <div class="drag-handle"><span></span><span></span><span></span></div>
           <div class="card-label">Notes 📋</div>
           <textarea class="notes-area" v-model="notes" placeholder="Just start typing…" @input="saveNotes"></textarea>
@@ -525,7 +525,7 @@ a{color:inherit;} button{font-family:inherit;}
         </div>
 
         <!-- TODO -->
-        <div v-else-if="wid.id==='todo'" class="card col-6" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
+        <div v-else-if="wid.id==='todo'" :class="['card', `col-${wid.cols}`]" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
           <div class="drag-handle"><span></span><span></span><span></span></div>
           <div class="card-label">To-Do ✅</div>
           <div class="todo-input-row">
@@ -542,7 +542,7 @@ a{color:inherit;} button{font-family:inherit;}
         </div>
 
         <!-- BOOKMARKS -->
-        <div v-else-if="wid.id==='bookmarks'" class="card col-12" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
+        <div v-else-if="wid.id==='bookmarks'" :class="['card', `col-${wid.cols}`]" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
           <div class="drag-handle"><span></span><span></span><span></span></div>
           <div class="card-label">Bookmarks 🔗</div>
           <div class="bookmark-grid">
@@ -555,7 +555,7 @@ a{color:inherit;} button{font-family:inherit;}
         </div>
 
         <!-- BG -->
-        <div v-else-if="wid.id==='bg'" class="card col-12" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
+        <div v-else-if="wid.id==='bg'" :class="['card', `col-${wid.cols}`]" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
           <div class="drag-handle"><span></span><span></span><span></span></div>
           <div class="card-label">Background · Unsplash</div>
           <div class="bg-topics">
@@ -675,7 +675,7 @@ const ALBUM_FALLBACKS={'ambient':{title:'Discreet Music',artist:'Brian Eno',year
 const QUOTES=[{text:"The world is quiet here.",author:"Lemony Snicket"},{text:"Not all those who wander are lost.",author:"J.R.R. Tolkien"},{text:"I took a deep breath and listened to the old brag of my heart: I am, I am, I am.",author:"Sylvia Plath"},{text:"The sky is everywhere, it begins at your feet.",author:"Jandy Nelson"},{text:"To live is so startling it leaves little time for anything else.",author:"Emily Dickinson"},{text:"The cure for anything is salt water: sweat, tears, or the sea.",author:"Isak Dinesen"},{text:"In the middle of winter, I at last discovered that there was in me an invincible summer.",author:"Albert Camus"},{text:"Stars are not small or gentle. They are writhing and dying and burning.",author:"Tamsyn Muir"},{text:"The most beautiful thing we can experience is the mysterious.",author:"Albert Einstein"},{text:"Everything you can imagine is real.",author:"Pablo Picasso"},{text:"There is no exquisite beauty without some strangeness in the proportion.",author:"Edgar Allan Poe"},{text:"I am not afraid of storms, for I am learning how to sail my ship.",author:"Louisa May Alcott"},{text:"Wherever you go becomes a part of you somehow.",author:"Anita Desai"},{text:"We shall not cease from exploration.",author:"T.S. Eliot"},{text:"One must always maintain one's connection to the past and yet ceaselessly pull away from it.",author:"Gaston Bachelard"},{text:"I would rather die of passion than of boredom.",author:"Vincent van Gogh"},{text:"The job of the artist is always to deepen the mystery.",author:"Francis Bacon"},{text:"You can't use up creativity. The more you use, the more you have.",author:"Maya Angelou"},{text:"To photograph is to appropriate the thing photographed.",author:"Susan Sontag"},{text:"The aim of art is to represent not the outward appearance of things, but their inward significance.",author:"Aristotle"}];
 
 const DEFAULT_WIDGET_ORDER=['kp','weather','sun','moon','aqi','tides','iss','planets','quote','animal','apod','soma','album','notes','todo','bookmarks','bg'];
-const WIDGET_META={kp:{label:'KP Index',icon:'🌌',desc:'Aurora activity — updated every 5 min'},weather:{label:'Weather',icon:'🌤️',desc:'Local conditions from Open-Meteo'},sun:{label:'Sunrise & Sunset',icon:'🌅',desc:'Daily sun arc with daylight duration'},moon:{label:'Moon Phase',icon:'🌕',desc:'Calculated phase, illumination & next full moon'},aqi:{label:'Air Quality',icon:'🌬️',desc:'AQI, PM2.5, PM10 and ozone'},tides:{label:'Tides',icon:'🌊',desc:'Tide highs and lows from Open-Meteo Marine'},iss:{label:'ISS Pass Times',icon:'📡',desc:'When the space station flies over you'},planets:{label:'Planets Tonight',icon:'🔭',desc:'Calculated visibility for naked-eye planets'},quote:{label:'Inspiration',icon:'💬',desc:'Curated quotes from writers, artists, thinkers'},animal:{label:'Animal of the Day',icon:'🦎',desc:'Random wildlife observation + Wikipedia fact'},apod:{label:'NASA APOD',icon:'🌌',desc:'Astronomy Picture of the Day'},soma:{label:'SomaFM Radio',icon:'📻',desc:'Curated ambient & electronic streams'},album:{label:'Album Rec',icon:'🎵',desc:'Last.fm genre recommendations'},notes:{label:'Notes',icon:'📋',desc:'Quick scratchpad, auto-saved locally'},todo:{label:'To-Do',icon:'✅',desc:'Simple checklist, persisted locally'},bookmarks:{label:'Bookmarks',icon:'🔗',desc:'Your personal speed-dial links'},bg:{label:'Background',icon:'🖼️',desc:'Unsplash photo topic picker'}};
+const WIDGET_META={kp:{label:'KP Index',icon:'🌌',desc:'Aurora activity — updated every 5 min',cols:4},weather:{label:'Weather',icon:'🌤️',desc:'Local conditions from Open-Meteo',cols:4},sun:{label:'Sunrise & Sunset',icon:'🌅',desc:'Daily sun arc with daylight duration',cols:4},moon:{label:'Moon Phase',icon:'🌕',desc:'Calculated phase, illumination & next full moon',cols:3},aqi:{label:'Air Quality',icon:'🌬️',desc:'AQI, PM2.5, PM10 and ozone',cols:3},tides:{label:'Tides',icon:'🌊',desc:'Tide highs and lows from Open-Meteo Marine',cols:5},iss:{label:'ISS Pass Times',icon:'📡',desc:'When the space station flies over you',cols:4},planets:{label:'Planets Tonight',icon:'🔭',desc:'Calculated visibility for naked-eye planets',cols:4},quote:{label:'Inspiration',icon:'💬',desc:'Curated quotes from writers, artists, thinkers',cols:6},animal:{label:'Animal of the Day',icon:'🦎',desc:'Random wildlife observation + Wikipedia fact',cols:5},apod:{label:'NASA APOD',icon:'🌌',desc:'Astronomy Picture of the Day',cols:6},soma:{label:'SomaFM Radio',icon:'📻',desc:'Curated ambient & electronic streams',cols:5},album:{label:'Album Rec',icon:'🎵',desc:'Last.fm genre recommendations',cols:8},notes:{label:'Notes',icon:'📋',desc:'Quick scratchpad, auto-saved locally',cols:5},todo:{label:'To-Do',icon:'✅',desc:'Simple checklist, persisted locally',cols:4},bookmarks:{label:'Bookmarks',icon:'🔗',desc:'Your personal speed-dial links',cols:12},bg:{label:'Background',icon:'🖼️',desc:'Unsplash photo topic picker',cols:7}};
 
 async function geocode(city){const r=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`);const d=await r.json();if(!d.results?.length)throw new Error('not found');return{lat:d.results[0].latitude,lon:d.results[0].longitude,name:d.results[0].name+', '+d.results[0].country};}
 
