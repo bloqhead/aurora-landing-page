@@ -10,9 +10,6 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* ── FLUID TYPE + SPACE SCALE ────────────────────────────
-     Utopia-style clamp() — interpolates from 400px to 1400px.
-     vi unit = viewport inline axis (same as vw in horizontal writing).  */
   :root {
     --bg: #0a0e1a;
     --card: rgba(10,20,35,0.72);
@@ -27,7 +24,6 @@
     --font-display: 'Fraunces', serif;
     --font-body: 'Outfit', sans-serif;
     --font-mono: 'DM Mono', monospace;
-
     --t-xs:  clamp(0.62rem, 0.58rem + 0.18vi, 0.72rem);
     --t-sm:  clamp(0.75rem, 0.70rem + 0.24vi, 0.88rem);
     --t-md:  clamp(0.88rem, 0.82rem + 0.28vi, 1.02rem);
@@ -35,7 +31,6 @@
     --t-xl:  clamp(1.35rem, 1.12rem + 1.0vi,  1.82rem);
     --t-2xl: clamp(1.8rem,  1.35rem + 2.0vi,  2.8rem);
     --t-3xl: clamp(2.5rem,  1.7rem  + 3.5vi,  4.4rem);
-
     --s-xs: clamp(4px,  0.38vi, 7px);
     --s-sm: clamp(8px,  0.72vi, 13px);
     --s-md: clamp(13px, 1.2vi,  20px);
@@ -44,127 +39,61 @@
   }
 
   html, body { height: 100%; }
+  body { font-family: var(--font-body); font-size: var(--t-md); line-height: 1.5; color: var(--text); background: var(--bg); min-height: 100vh; overflow-x: hidden; transition: background 0.6s ease, color 0.4s ease; }
 
-  body {
-    font-family: var(--font-body);
-    font-size: var(--t-md);
-    line-height: 1.5;
-    color: var(--text);
-    background: var(--bg);
-    min-height: 100vh;
-    overflow-x: hidden;
-    transition: background 0.6s ease, color 0.4s ease;
-  }
-
-  #bg-layer {
-    position: fixed; inset: 0; z-index: 0;
-    background-size: cover; background-position: center;
-    transition: opacity 1.2s ease;
-  }
+  #bg-layer { position: fixed; inset: 0; z-index: 0; background-size: cover; background-position: center; transition: opacity 1.2s ease; }
   #bg-overlay { position: fixed; inset: 0; z-index: 1; transition: background 0.6s; }
-
   #app { position: relative; z-index: 2; min-height: 100vh; display: flex; flex-direction: column; }
+  .container { flex: 1; width: min(1440px, 100%); margin: 0 auto; padding: var(--s-lg) var(--s-md) var(--s-xl); display: flex; flex-direction: column; }
 
-  .container {
-    flex: 1;
-    width: min(1440px, 100%);
-    margin: 0 auto;
-    padding: var(--s-lg) var(--s-md) var(--s-xl);
-    display: flex; flex-direction: column;
-  }
-
-  /* ── HEADER ──────────────────────────────────────────── */
-  .header {
-    display: flex; align-items: flex-start;
-    justify-content: space-between;
-    margin-bottom: var(--s-lg);
-  }
-  .location-label {
-    font-family: var(--font-mono); font-size: var(--t-xs);
-    letter-spacing: 0.16em; text-transform: uppercase;
-    color: var(--accent); opacity: 0.85; margin-bottom: var(--s-xs);
-  }
-  .clock {
-    font-family: var(--font-display); font-size: var(--t-3xl);
-    font-weight: 200; line-height: 1; letter-spacing: -0.02em;
-    text-shadow: 0 0 40px var(--glow);
-  }
-  .date-str {
-    font-size: var(--t-sm); font-weight: 300;
-    color: var(--text-muted); margin-top: var(--s-xs); letter-spacing: 0.05em;
-  }
+  /* ── HEADER ── */
+  .header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: var(--s-lg); }
+  .location-label { font-family: var(--font-mono); font-size: var(--t-xs); letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); opacity: 0.85; margin-bottom: var(--s-xs); }
+  .clock { font-family: var(--font-display); font-size: var(--t-3xl); font-weight: 200; line-height: 1; letter-spacing: -0.02em; text-shadow: 0 0 40px var(--glow); }
+  .date-str { font-size: var(--t-sm); font-weight: 300; color: var(--text-muted); margin-top: var(--s-xs); letter-spacing: 0.05em; }
   .header-right { display: flex; gap: var(--s-sm); align-items: center; padding-top: var(--s-sm); flex-shrink: 0; }
-  .icon-btn {
-    background: var(--card); border: 1px solid var(--card-border);
-    border-radius: clamp(8px, 0.9vw, 12px); color: var(--text-muted);
-    width: clamp(34px, 2.8vw, 44px); height: clamp(34px, 2.8vw, 44px);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; font-size: var(--t-lg); transition: all 0.2s; backdrop-filter: blur(10px);
-  }
+  .icon-btn { background: var(--card); border: 1px solid var(--card-border); border-radius: clamp(8px, 0.9vw, 12px); color: var(--text-muted); width: clamp(34px, 2.8vw, 44px); height: clamp(34px, 2.8vw, 44px); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: var(--t-lg); transition: all 0.2s; backdrop-filter: blur(10px); }
   .icon-btn:hover { color: var(--accent); border-color: var(--accent); background: var(--glow); }
 
-  /* ── GRID ────────────────────────────────────────────── */
-  .grid {
-    display: grid; grid-template-columns: repeat(12, 1fr);
-    gap: clamp(10px, 1.1vw, 16px); flex: 1; align-content: start;
-  }
+  /* ── GRID ── */
+  .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: clamp(10px, 1.1vw, 16px); flex: 1; align-content: start; }
+  .col-3  { grid-column: span 3; }
   .col-4  { grid-column: span 4; }
   .col-5  { grid-column: span 5; }
+  .col-6  { grid-column: span 6; }
   .col-7  { grid-column: span 7; }
+  .col-8  { grid-column: span 8; }
+  .col-9  { grid-column: span 9; }
   .col-12 { grid-column: span 12; }
   @media (max-width: 960px) {
-    .col-4 { grid-column: span 6; }
-    .col-5, .col-7 { grid-column: span 12; }
+    .col-3, .col-4 { grid-column: span 6; }
+    .col-5, .col-7, .col-8, .col-9 { grid-column: span 12; }
   }
-  @media (max-width: 560px) { .col-4 { grid-column: span 12; } }
+  @media (max-width: 560px) { .col-3, .col-4, .col-6 { grid-column: span 12; } }
 
-  /* ── CARD ────────────────────────────────────────────── */
-  .card {
-    background: var(--card); border: 1px solid var(--card-border);
-    border-radius: var(--radius); backdrop-filter: blur(20px);
-    padding: var(--s-md);
-    transition: border-color 0.3s, background 0.4s, transform 0.2s;
-    position: relative; overflow: hidden;
-  }
-  .card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg, transparent, var(--shimmer), transparent); opacity: 0.15;
-  }
+  /* ── CARD ── */
+  .card { background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius); backdrop-filter: blur(20px); padding: var(--s-md); transition: border-color 0.3s, background 0.4s, transform 0.2s; position: relative; overflow: hidden; }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--shimmer), transparent); opacity: 0.15; }
   .card:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--accent) 30%, transparent); }
-  .card-label {
-    font-family: var(--font-mono); font-size: var(--t-xs);
-    letter-spacing: 0.14em; text-transform: uppercase;
-    color: var(--text-muted); margin-bottom: var(--s-sm);
-  }
-  .card-btn {
-    position: absolute; top: var(--s-sm); right: var(--s-sm);
-    background: var(--card); border: 1px solid var(--card-border);
-    border-radius: 8px; color: var(--text-muted);
-    width: clamp(26px, 2.2vw, 34px); height: clamp(26px, 2.2vw, 34px);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; font-size: var(--t-md); line-height: 1;
-    transition: all 0.25s; backdrop-filter: blur(8px);
-  }
+  .card-label { font-family: var(--font-mono); font-size: var(--t-xs); letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); margin-bottom: var(--s-sm); }
+  .card-btn { position: absolute; top: var(--s-sm); right: var(--s-sm); background: var(--card); border: 1px solid var(--card-border); border-radius: 8px; color: var(--text-muted); width: clamp(26px, 2.2vw, 34px); height: clamp(26px, 2.2vw, 34px); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: var(--t-md); line-height: 1; transition: all 0.25s; backdrop-filter: blur(8px); }
   .card-btn:hover { color: var(--accent); border-color: var(--accent); background: var(--glow); transform: rotate(180deg); }
 
-  /* ── KP ──────────────────────────────────────────────── */
+  /* ── KP ── */
   .kp-big { font-family: var(--font-display); font-size: var(--t-2xl); font-weight: 200; line-height: 1; }
   .kp-label { font-size: var(--t-sm); font-weight: 300; margin-top: var(--s-xs); color: var(--text-muted); }
   .kp-chance { font-size: var(--t-xs); margin-top: var(--s-sm); color: var(--accent); font-family: var(--font-mono); }
   .kp-bar-track { height: 5px; border-radius: 3px; background: rgba(255,255,255,0.07); margin-top: var(--s-md); overflow: hidden; }
   .kp-bar-fill { height: 100%; border-radius: 3px; transition: width 0.8s cubic-bezier(.4,0,.2,1); }
   .kp-ref { font-size: var(--t-xs); font-family: var(--font-mono); color: var(--text-muted); margin-top: var(--s-sm); opacity: 0.7; }
-  .aurora-rings {
-    position: absolute; top: var(--s-sm); right: var(--s-md);
-    width: clamp(40px, 5vw, 64px); height: clamp(40px, 5vw, 64px); pointer-events: none;
-  }
+  .aurora-rings { position: absolute; top: var(--s-sm); right: var(--s-md); width: clamp(40px, 5vw, 64px); height: clamp(40px, 5vw, 64px); pointer-events: none; }
   .ring { position: absolute; border-radius: 50%; border: 1.5px solid var(--accent); opacity: 0.12; animation: pulse-ring 3s ease-in-out infinite; }
   .ring:nth-child(1) { inset: 0; }
   .ring:nth-child(2) { inset: 8px; animation-delay: 0.6s; opacity: 0.18; }
   .ring:nth-child(3) { inset: 18px; animation-delay: 1.2s; opacity: 0.25; }
   @keyframes pulse-ring { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); opacity: 0.35; } }
 
-  /* ── WEATHER ─────────────────────────────────────────── */
+  /* ── WEATHER ── */
   .weather-icon { font-size: var(--t-xl); margin-bottom: var(--s-xs); }
   .weather-temp { font-family: var(--font-display); font-size: var(--t-2xl); font-weight: 200; line-height: 1; letter-spacing: -0.02em; }
   .weather-desc { font-size: var(--t-sm); font-weight: 300; color: var(--text-muted); margin-top: var(--s-xs); }
@@ -172,15 +101,10 @@
   .weather-stat { display: flex; flex-direction: column; gap: 2px; }
   .weather-stat-val { font-family: var(--font-mono); font-size: var(--t-sm); }
   .weather-stat-key { font-size: var(--t-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; }
-  .unit-toggle {
-    font-family: var(--font-mono); font-size: var(--t-xs); color: var(--text-muted);
-    cursor: pointer; border: 1px solid var(--card-border); border-radius: 6px;
-    padding: 2px 7px; background: transparent; margin-left: var(--s-xs);
-    transition: all 0.2s; vertical-align: middle;
-  }
+  .unit-toggle { font-family: var(--font-mono); font-size: var(--t-xs); color: var(--text-muted); cursor: pointer; border: 1px solid var(--card-border); border-radius: 6px; padding: 2px 7px; background: transparent; margin-left: var(--s-xs); transition: all 0.2s; vertical-align: middle; }
   .unit-toggle:hover { color: var(--accent); border-color: var(--accent); }
 
-  /* ── SUN ─────────────────────────────────────────────── */
+  /* ── SUN ── */
   .sun-row { display: flex; justify-content: space-between; align-items: center; gap: var(--s-sm); }
   .sun-item { text-align: center; flex: 1; }
   .sun-icon { font-size: var(--t-lg); margin-bottom: var(--s-xs); }
@@ -189,108 +113,78 @@
   .sun-arc { margin: var(--s-md) 0 var(--s-xs); height: clamp(28px, 3vw, 40px); }
   .sun-arc svg { width: 100%; height: 100%; }
 
-  /* ── QUOTE ───────────────────────────────────────────── */
-  .quote-text {
-    font-family: var(--font-display); font-size: var(--t-lg);
-    font-weight: 300; font-style: italic; line-height: 1.55; margin-bottom: var(--s-sm);
-  }
+  /* ── QUOTE ── */
+  .quote-text { font-family: var(--font-display); font-size: var(--t-lg); font-weight: 300; font-style: italic; line-height: 1.55; margin-bottom: var(--s-sm); }
   .quote-author { font-family: var(--font-mono); font-size: var(--t-xs); color: var(--accent); letter-spacing: 0.1em; }
-  .quote-loading { font-family: var(--font-mono); font-size: var(--t-sm); color: var(--text-muted); animation: blink 1.4s ease-in-out infinite; }
-  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-  /* ── ALBUM ───────────────────────────────────────────── */
+  /* ── ALBUM ── */
   .album-row { display: flex; gap: var(--s-md); align-items: center; margin-bottom: var(--s-sm); }
-  .album-art {
-    width: clamp(52px, 6vw, 80px); height: clamp(52px, 6vw, 80px);
-    border-radius: clamp(8px, 0.8vw, 12px);
-    background: linear-gradient(135deg, var(--accent2), var(--accent));
-    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-    font-size: var(--t-xl); overflow: hidden;
-  }
+  .album-art { width: clamp(52px, 6vw, 80px); height: clamp(52px, 6vw, 80px); border-radius: clamp(8px, 0.8vw, 12px); background: linear-gradient(135deg, var(--accent2), var(--accent)); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: var(--t-xl); overflow: hidden; }
   .album-art img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
   .album-body { flex: 1; min-width: 0; }
   .album-title { font-family: var(--font-display); font-size: var(--t-md); font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .album-title a { text-decoration: none; color: inherit; transition: color 0.2s; }
+  .album-title a:hover { color: var(--accent); }
   .album-artist { font-size: var(--t-sm); color: var(--text-muted); margin-top: 2px; }
   .album-year { font-family: var(--font-mono); font-size: var(--t-xs); color: var(--accent); margin-top: var(--s-xs); }
   .album-why { font-size: var(--t-xs); color: var(--text-muted); margin-top: var(--s-xs); font-style: italic; line-height: 1.45; }
+  .album-links { display: flex; gap: var(--s-xs); margin-top: var(--s-sm); flex-wrap: wrap; }
+  .album-link { font-family: var(--font-mono); font-size: var(--t-xs); padding: 3px 9px; border-radius: 20px; border: 1px solid var(--card-border); color: var(--text-muted); text-decoration: none; transition: all 0.2s; }
+  .album-link:hover { color: var(--accent); border-color: var(--accent); }
   .album-loading { font-family: var(--font-mono); font-size: var(--t-sm); color: var(--text-muted); animation: blink 1.4s ease-in-out infinite; padding: var(--s-md) 0; }
-
-  /* ── GENRE ───────────────────────────────────────────── */
-  .genre-picker { display: flex; flex-wrap: wrap; gap: var(--s-xs); margin-top: var(--s-xs); }
-  .genre-btn {
-    font-family: var(--font-mono); font-size: var(--t-xs); padding: 4px 10px; border-radius: 20px;
-    border: 1px solid var(--card-border); background: transparent; color: var(--text-muted);
-    cursor: pointer; transition: all 0.2s; letter-spacing: 0.07em;
-  }
+  .genre-picker { display: flex; flex-wrap: wrap; gap: var(--s-xs); margin-top: var(--s-sm); }
+  .genre-btn { font-family: var(--font-mono); font-size: var(--t-xs); padding: 4px 10px; border-radius: 20px; border: 1px solid var(--card-border); background: transparent; color: var(--text-muted); cursor: pointer; transition: all 0.2s; letter-spacing: 0.07em; }
   .genre-btn:hover { color: var(--text); border-color: var(--text-muted); }
   .genre-btn.active { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 500; }
 
-  /* ── BG TOPICS ───────────────────────────────────────── */
+  /* ── ANIMAL ── */
+  .animal-photo { width: 100%; height: clamp(140px, 16vw, 220px); object-fit: cover; border-radius: calc(var(--radius) - 4px); margin-bottom: var(--s-sm); display: block; }
+  .animal-photo-placeholder { width: 100%; height: clamp(140px, 16vw, 220px); border-radius: calc(var(--radius) - 4px); margin-bottom: var(--s-sm); background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01)); display: flex; align-items: center; justify-content: center; font-size: var(--t-2xl); }
+  .animal-common { font-family: var(--font-display); font-size: var(--t-lg); font-weight: 300; line-height: 1.2; }
+  .animal-scientific { font-family: var(--font-mono); font-size: var(--t-xs); color: var(--accent); font-style: italic; margin-top: 2px; }
+  .animal-meta { font-size: var(--t-xs); color: var(--text-muted); margin-top: var(--s-xs); display: flex; gap: var(--s-sm); flex-wrap: wrap; }
+  .animal-fact { font-size: var(--t-xs); color: var(--text-muted); margin-top: var(--s-sm); line-height: 1.5; border-left: 2px solid var(--card-border); padding-left: var(--s-sm); }
+  .animal-observer { font-family: var(--font-mono); font-size: var(--t-xs); color: var(--text-muted); margin-top: var(--s-sm); opacity: 0.6; }
+  .animal-nav { display: flex; gap: var(--s-xs); margin-top: var(--s-sm); }
+  .animal-nav-btn { font-family: var(--font-mono); font-size: var(--t-xs); padding: 4px 12px; border-radius: 20px; border: 1px solid var(--card-border); background: transparent; color: var(--text-muted); cursor: pointer; transition: all 0.2s; }
+  .animal-nav-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* ── BG TOPICS ── */
   .bg-topics { display: flex; flex-wrap: wrap; gap: var(--s-xs); }
-  .topic-btn {
-    font-family: var(--font-mono); font-size: var(--t-xs); padding: 4px 10px; border-radius: 20px;
-    border: 1px solid var(--card-border); background: transparent; color: var(--text-muted);
-    cursor: pointer; transition: all 0.2s; letter-spacing: 0.06em;
-  }
+  .topic-btn { font-family: var(--font-mono); font-size: var(--t-xs); padding: 4px 10px; border-radius: 20px; border: 1px solid var(--card-border); background: transparent; color: var(--text-muted); cursor: pointer; transition: all 0.2s; letter-spacing: 0.06em; }
   .topic-btn:hover { color: var(--text); border-color: var(--text-muted); }
   .topic-btn.active { background: var(--accent2); border-color: var(--accent2); color: #fff; }
 
-  /* ── SETTINGS ────────────────────────────────────────── */
-  .settings-overlay {
-    position: fixed; inset: 0; z-index: 100;
-    background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
-    display: flex; align-items: center; justify-content: center;
-  }
-  .settings-panel {
-    background: var(--bg); border: 1px solid var(--card-border);
-    border-radius: clamp(16px, 2vw, 28px); padding: clamp(20px, 2.5vw, 36px);
-    width: min(500px, 92vw); max-height: 85vh; overflow-y: auto; position: relative;
-  }
+  /* ── SETTINGS ── */
+  .settings-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; }
+  .settings-panel { background: var(--bg); border: 1px solid var(--card-border); border-radius: clamp(16px, 2vw, 28px); padding: clamp(20px, 2.5vw, 36px); width: min(500px, 92vw); max-height: 85vh; overflow-y: auto; position: relative; }
   .settings-title { font-family: var(--font-display); font-size: var(--t-xl); font-weight: 300; margin-bottom: var(--s-lg); }
   .settings-section { margin-bottom: var(--s-lg); }
   .settings-section-label { font-family: var(--font-mono); font-size: var(--t-xs); letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); margin-bottom: var(--s-sm); }
-  .settings-input {
-    width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--card-border);
-    border-radius: 10px; padding: 10px 14px; color: var(--text);
-    font-family: var(--font-mono); font-size: var(--t-sm); outline: none; transition: border-color 0.2s;
-  }
+  .settings-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--card-border); border-radius: 10px; padding: 10px 14px; color: var(--text); font-family: var(--font-mono); font-size: var(--t-sm); outline: none; transition: border-color 0.2s; }
   .settings-input:focus { border-color: var(--accent); }
   .settings-input::placeholder { color: var(--text-muted); }
   .settings-hint { font-size: var(--t-xs); color: var(--text-muted); margin-top: var(--s-xs); }
+  .settings-select { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--card-border); border-radius: 10px; padding: 10px 14px; color: var(--text); font-family: var(--font-mono); font-size: var(--t-sm); outline: none; cursor: pointer; transition: border-color 0.2s; appearance: none; }
+  .settings-select:focus { border-color: var(--accent); }
   .theme-swatches { display: flex; gap: var(--s-sm); flex-wrap: wrap; }
-  .theme-swatch {
-    width: clamp(40px, 4vw, 54px); height: clamp(40px, 4vw, 54px); border-radius: clamp(8px, 1vw, 14px);
-    cursor: pointer; border: 2px solid transparent; transition: all 0.2s; position: relative; overflow: hidden;
-  }
+  .theme-swatch { width: clamp(40px, 4vw, 54px); height: clamp(40px, 4vw, 54px); border-radius: clamp(8px, 1vw, 14px); cursor: pointer; border: 2px solid transparent; transition: all 0.2s; position: relative; overflow: hidden; }
   .theme-swatch.active { border-color: var(--accent); }
-  .theme-swatch span {
-    position: absolute; bottom: 2px; left: 0; right: 0; text-align: center;
-    font-size: 8px; font-family: var(--font-mono); color: rgba(255,255,255,0.85); text-shadow: 0 1px 3px rgba(0,0,0,0.6);
-  }
-  .settings-btn {
-    background: var(--accent); color: #000; border: none; border-radius: 10px; padding: 10px 22px;
-    font-family: var(--font-mono); font-size: var(--t-sm); cursor: pointer; font-weight: 500;
-    transition: opacity 0.2s; margin-top: var(--s-xs);
-  }
+  .theme-swatch span { position: absolute; bottom: 2px; left: 0; right: 0; text-align: center; font-size: 8px; font-family: var(--font-mono); color: rgba(255,255,255,0.85); text-shadow: 0 1px 3px rgba(0,0,0,0.6); }
+  .settings-btn { background: var(--accent); color: #000; border: none; border-radius: 10px; padding: 10px 22px; font-family: var(--font-mono); font-size: var(--t-sm); cursor: pointer; font-weight: 500; transition: opacity 0.2s; margin-top: var(--s-xs); }
   .settings-btn:hover { opacity: 0.85; }
-  .settings-close {
-    position: absolute; top: var(--s-md); right: var(--s-md);
-    background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: var(--t-lg); line-height: 1; transition: color 0.2s;
-  }
+  .settings-close { position: absolute; top: var(--s-md); right: var(--s-md); background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: var(--t-lg); line-height: 1; transition: color 0.2s; }
   .settings-close:hover { color: var(--text); }
 
-  .photo-credit {
-    position: fixed; bottom: var(--s-sm); right: var(--s-md);
-    font-family: var(--font-mono); font-size: var(--t-xs);
-    color: rgba(255,255,255,0.4); z-index: 3; text-decoration: none; transition: color 0.2s;
-  }
+  .photo-credit { position: fixed; bottom: var(--s-sm); right: var(--s-md); font-family: var(--font-mono); font-size: var(--t-xs); color: rgba(255,255,255,0.4); z-index: 3; text-decoration: none; transition: color 0.2s; }
   .photo-credit:hover { color: rgba(255,255,255,0.8); }
 
   .dot-loader { display: inline-flex; gap: 4px; }
   .dot-loader span { width: 4px; height: 4px; border-radius: 50%; background: var(--text-muted); animation: bounce 1.2s ease-in-out infinite; }
   .dot-loader span:nth-child(2) { animation-delay: 0.2s; }
   .dot-loader span:nth-child(3) { animation-delay: 0.4s; }
-  @keyframes bounce { 0%,80%,100% { transform: translateY(0); } 40% { transform: translateY(-5px); } }
+  @keyframes bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-5px)} }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
   .fade-enter-active, .fade-leave-active { transition: opacity 0.35s; }
   .fade-enter-from, .fade-leave-to { opacity: 0; }
@@ -308,6 +202,7 @@
 <div id="app">
   <div class="container">
 
+    <!-- HEADER -->
     <div class="header">
       <div class="header-left">
         <div class="location-label">{{ locationName || '&mdash;' }}</div>
@@ -342,13 +237,13 @@
         <template v-if="weather">
           <div class="weather-icon">{{ weather.icon }}</div>
           <div class="weather-temp">
-            {{ useFahrenheit ? cToF(weather.tempC) + '°F' : weather.tempC + '°C' }}
+            {{ useFahrenheit ? cToF(weather.tempC)+'°F' : weather.tempC+'°C' }}
             <button class="unit-toggle" @click="useFahrenheit = !useFahrenheit">{{ useFahrenheit ? '→°C' : '→°F' }}</button>
           </div>
           <div class="weather-desc">{{ weather.description }}</div>
           <div class="weather-row">
             <div class="weather-stat"><span class="weather-stat-val">{{ weather.humidity }}%</span><span class="weather-stat-key">Humidity</span></div>
-            <div class="weather-stat"><span class="weather-stat-val">{{ useFahrenheit ? msToMph(weather.windMs)+'mph' : Math.round(weather.windMs*3.6)+'km/h' }}</span><span class="weather-stat-key">Wind</span></div>
+            <div class="weather-stat"><span class="weather-stat-val">{{ useFahrenheit ? msToMph(weather.windMs)+' mph' : Math.round(weather.windMs*3.6)+' km/h' }}</span><span class="weather-stat-key">Wind</span></div>
             <div class="weather-stat"><span class="weather-stat-val">{{ useFahrenheit ? cToF(weather.feelsLike)+'°F' : weather.feelsLike+'°C' }}</span><span class="weather-stat-key">Feels like</span></div>
           </div>
         </template>
@@ -378,18 +273,38 @@
       </div>
 
       <!-- QUOTE -->
-      <div class="card col-7" style="position:relative">
+      <div class="card col-6" style="position:relative">
         <div class="card-label">Inspiration</div>
         <button class="card-btn" @click="fetchQuote" title="New quote">↺</button>
         <template v-if="quote">
           <div class="quote-text">"{{ quote.text }}"</div>
           <div class="quote-author">— {{ quote.author }}</div>
         </template>
-        <template v-else><div class="quote-loading">conjuring something worth reading…</div></template>
+        <template v-else><div style="font-family:var(--font-mono);font-size:var(--t-sm);color:var(--text-muted);animation:blink 1.4s ease-in-out infinite">conjuring something worth reading…</div></template>
+      </div>
+
+      <!-- ANIMAL OF THE DAY -->
+      <div class="card col-6" style="position:relative">
+        <div class="card-label">Animal of the Day · iNaturalist</div>
+        <button class="card-btn" @click="fetchAnimal" title="Next animal">→</button>
+        <template v-if="animal">
+          <img v-if="animal.photo" :src="animal.photo" :alt="animal.commonName" class="animal-photo" />
+          <div v-else class="animal-photo-placeholder">🦎</div>
+          <div class="animal-common">{{ animal.commonName || animal.scientificName }}</div>
+          <div class="animal-scientific" v-if="animal.commonName">{{ animal.scientificName }}</div>
+          <div class="animal-meta">
+            <span v-if="animal.place">📍 {{ animal.place }}</span>
+            <span v-if="animal.date">🗓 {{ animal.date }}</span>
+          </div>
+          <div class="animal-fact" v-if="animal.fact">{{ animal.fact }}</div>
+          <div class="animal-observer" v-if="animal.observer">Observed by {{ animal.observer }}</div>
+        </template>
+        <template v-else-if="animalLoading"><div style="padding-top:12px"><div class="dot-loader"><span></span><span></span><span></span></div></div></template>
+        <template v-else><div style="font-size:var(--t-sm);color:var(--text-muted);margin-top:8px">Could not load observation.</div></template>
       </div>
 
       <!-- ALBUM (Last.fm) -->
-      <div class="card col-5" style="position:relative">
+      <div class="card col-12" style="position:relative">
         <div class="card-label">Album Rec · Last.fm</div>
         <button class="card-btn" @click="fetchAlbum(selectedGenre)" title="New recommendation">↺</button>
         <template v-if="album">
@@ -399,12 +314,19 @@
               <template v-else>🎵</template>
             </div>
             <div class="album-body">
-              <div class="album-title">{{ album.title }}</div>
+              <div class="album-title">
+                <a v-if="album.url" :href="album.url" target="_blank" rel="noopener">{{ album.title }}</a>
+                <template v-else>{{ album.title }}</template>
+              </div>
               <div class="album-artist">{{ album.artist }}</div>
               <div class="album-year" v-if="album.year">{{ album.year }}</div>
+              <div class="album-links">
+                <a v-if="album.url" :href="album.url" target="_blank" rel="noopener" class="album-link">Last.fm</a>
+                <a v-if="musicAppLink(album)" :href="musicAppLink(album)" target="_blank" rel="noopener" class="album-link">{{ musicAppLabel }}</a>
+              </div>
             </div>
+            <div class="album-why" v-if="album.why" style="flex:1;min-width:180px">{{ album.why }}</div>
           </div>
-          <div class="album-why" v-if="album.why">{{ album.why }}</div>
         </template>
         <div v-else-if="albumLoading" class="album-loading">searching the stacks…</div>
         <div class="genre-picker">
@@ -425,30 +347,42 @@
 
   <a v-if="bgCredit" class="photo-credit" :href="bgCredit.link" target="_blank" rel="noopener">📷 {{ bgCredit.name }} · Unsplash</a>
 
+  <!-- SETTINGS -->
   <transition name="fade">
     <div class="settings-overlay" v-if="showSettings" @click.self="showSettings = false">
       <div class="settings-panel">
         <button class="settings-close" @click="showSettings = false">✕</button>
         <div class="settings-title">Settings</div>
+
         <div class="settings-section">
           <div class="settings-section-label">Location (city, country)</div>
           <input class="settings-input" v-model="locationInput" placeholder="e.g. Asheville, US" @keyup.enter="saveSettings" />
         </div>
+
         <div class="settings-section">
           <div class="settings-section-label">Unsplash Access Key</div>
           <input class="settings-input" v-model="unsplashKey" placeholder="From unsplash.com/developers" type="password" />
           <div class="settings-hint">Free account → New app → Access Key. Enables photo backgrounds.</div>
         </div>
+
         <div class="settings-section">
           <div class="settings-section-label">Last.fm API Key</div>
           <input class="settings-input" v-model="lastfmKey" placeholder="From last.fm/api" type="password" />
-          <div class="settings-hint">Free at last.fm/api/account — powers real album recommendations by genre.</div>
+          <div class="settings-hint">Free at last.fm/api/account — powers album recommendations.</div>
         </div>
+
         <div class="settings-section">
-          <div class="settings-section-label">Anthropic API Key</div>
-          <input class="settings-input" v-model="anthropicKey" placeholder="sk-ant-…" type="password" />
-          <div class="settings-hint">From console.anthropic.com — powers AI-generated quotes.</div>
+          <div class="settings-section-label">Music App for Album Links</div>
+          <select class="settings-select" v-model="musicApp">
+            <option value="lastfm">Last.fm only</option>
+            <option value="spotify">Spotify</option>
+            <option value="apple">Apple Music</option>
+            <option value="tidal">Tidal</option>
+            <option value="youtube">YouTube Music</option>
+          </select>
+          <div class="settings-hint">Album cards will include a direct search link for your app.</div>
         </div>
+
         <div class="settings-section">
           <div class="settings-section-label">Theme</div>
           <div class="theme-swatches">
@@ -457,6 +391,7 @@
             </div>
           </div>
         </div>
+
         <button class="settings-btn" @click="saveSettings">Save &amp; Apply</button>
       </div>
     </div>
@@ -476,22 +411,22 @@ const WMO = {
 };
 
 function kpInfo(kp) {
-  if (kp < 1) return { label:'Quiet',              color:'#4ecdc4', chance:'No activity expected' };
-  if (kp < 2) return { label:'Very Low',            color:'#5bc8af', chance:'Unlikely to see aurora' };
-  if (kp < 3) return { label:'Low',                 color:'#a8e6cf', chance:'Polar regions only' };
-  if (kp < 4) return { label:'Moderate',            color:'#b8f5e0', chance:'Good chance near Tromsø' };
-  if (kp < 5) return { label:'Active',              color:'#ddf0a0', chance:'Look north tonight' };
-  if (kp < 6) return { label:'Minor Storm (G1)',    color:'#ffe066', chance:'Visible at lower latitudes' };
-  if (kp < 7) return { label:'Moderate Storm (G2)', color:'#ffaa44', chance:'Widespread activity' };
-  return       { label:'Severe Storm',              color:'#ff6b6b', chance:'🚨 Visible across continents!' };
+  if (kp < 1) return {label:'Quiet',color:'#4ecdc4',chance:'No activity expected'};
+  if (kp < 2) return {label:'Very Low',color:'#5bc8af',chance:'Unlikely to see aurora'};
+  if (kp < 3) return {label:'Low',color:'#a8e6cf',chance:'Polar regions only'};
+  if (kp < 4) return {label:'Moderate',color:'#b8f5e0',chance:'Good chance near Tromsø'};
+  if (kp < 5) return {label:'Active',color:'#ddf0a0',chance:'Look north tonight'};
+  if (kp < 6) return {label:'Minor Storm (G1)',color:'#ffe066',chance:'Visible at lower latitudes'};
+  if (kp < 7) return {label:'Moderate Storm (G2)',color:'#ffaa44',chance:'Widespread activity'};
+  return {label:'Severe Storm',color:'#ff6b6b',chance:'🚨 Visible across continents!'};
 }
 
 const THEMES = {
-  aurora:   { name:'Aurora',   dark:true,  bg:'#0a0e1a', bg2:'#091a14', accent:'#50dca0', accent2:'#7b6ff0', text:'#e8f4f0', textMuted:'#7a9e92', glow:'rgba(80,220,160,0.18)',  shimmer:'#a0f0d0', card:'rgba(10,20,35,0.72)',  cardBorder:'rgba(80,220,180,0.13)' },
-  midnight: { name:'Midnight', dark:true,  bg:'#07080f', bg2:'#12091a', accent:'#9d7fff', accent2:'#ff7eb6', text:'#ddd8ff', textMuted:'#6a618a', glow:'rgba(140,100,255,0.2)',  shimmer:'#c4b8ff', card:'rgba(14,13,30,0.78)',  cardBorder:'rgba(120,100,255,0.15)' },
-  dusk:     { name:'Dusk',     dark:true,  bg:'#12060a', bg2:'#0f0a1e', accent:'#ff8c6b', accent2:'#c77dff', text:'#f5ddd8', textMuted:'#8a6060', glow:'rgba(255,120,100,0.18)', shimmer:'#ffb8a0', card:'rgba(20,10,18,0.75)',  cardBorder:'rgba(255,120,100,0.13)' },
-  arctic:   { name:'Arctic',   dark:false, bg:'#e8f4f8', bg2:'#e2eef5', accent:'#1a7fa8', accent2:'#2a9d7a', text:'#1a2a35', textMuted:'#5a7a8a', glow:'rgba(80,160,200,0.12)', shimmer:'#1a7fa8', card:'rgba(255,255,255,0.7)', cardBorder:'rgba(80,160,200,0.2)'  },
-  forest:   { name:'Forest',   dark:true,  bg:'#050d08', bg2:'#0a1a0c', accent:'#5ddb6e', accent2:'#a8e063', text:'#d8f0dc', textMuted:'#5a7a5e', glow:'rgba(80,200,100,0.18)', shimmer:'#90e8a0', card:'rgba(8,20,10,0.76)',   cardBorder:'rgba(80,200,100,0.14)' },
+  aurora:   {name:'Aurora',  dark:true, bg:'#0a0e1a',bg2:'#091a14',accent:'#50dca0',accent2:'#7b6ff0',text:'#e8f4f0',textMuted:'#7a9e92',glow:'rgba(80,220,160,0.18)', shimmer:'#a0f0d0',card:'rgba(10,20,35,0.72)', cardBorder:'rgba(80,220,180,0.13)'},
+  midnight: {name:'Midnight',dark:true, bg:'#07080f',bg2:'#12091a',accent:'#9d7fff',accent2:'#ff7eb6',text:'#ddd8ff',textMuted:'#6a618a',glow:'rgba(140,100,255,0.2)', shimmer:'#c4b8ff',card:'rgba(14,13,30,0.78)', cardBorder:'rgba(120,100,255,0.15)'},
+  dusk:     {name:'Dusk',    dark:true, bg:'#12060a',bg2:'#0f0a1e',accent:'#ff8c6b',accent2:'#c77dff',text:'#f5ddd8',textMuted:'#8a6060',glow:'rgba(255,120,100,0.18)',shimmer:'#ffb8a0',card:'rgba(20,10,18,0.75)', cardBorder:'rgba(255,120,100,0.13)'},
+  arctic:   {name:'Arctic',  dark:false,bg:'#e8f4f8',bg2:'#e2eef5',accent:'#1a7fa8',accent2:'#2a9d7a',text:'#1a2a35',textMuted:'#5a7a8a',glow:'rgba(80,160,200,0.12)', shimmer:'#1a7fa8', card:'rgba(255,255,255,0.7)',cardBorder:'rgba(80,160,200,0.2)'},
+  forest:   {name:'Forest',  dark:true, bg:'#050d08',bg2:'#0a1a0c',accent:'#5ddb6e',accent2:'#a8e063',text:'#d8f0dc',textMuted:'#5a7a5e',glow:'rgba(80,200,100,0.18)', shimmer:'#90e8a0',card:'rgba(8,20,10,0.76)',  cardBorder:'rgba(80,200,100,0.14)'},
 };
 
 const BG_TOPICS = [
@@ -504,233 +439,274 @@ const BG_TOPICS = [
 const GENRES = ['ambient','jazz','folk','post-rock','classical','shoegaze','blues','soul','experimental','drone','krautrock','neo-soul'];
 
 const ALBUM_FALLBACKS = {
-  'ambient':     {title:'Discreet Music',artist:'Brian Eno',year:'1975',why:'The blueprint for ambient music — designed to be ignored as much as listened to.'},
-  'jazz':        {title:'Kind of Blue',artist:'Miles Davis',year:'1959',why:'Still the best-selling jazz album ever made, and still perfect.'},
-  'folk':        {title:'For Emma, Forever Ago',artist:'Bon Iver',year:'2007',why:'Recorded alone in a Wisconsin cabin over one winter.'},
-  'post-rock':   {title:'Lift Your Skinny Fists…',artist:'Godspeed You! Black Emperor',year:'2000',why:'Sprawling, cinematic, and unlike anything before or after.'},
-  'classical':   {title:'Goldberg Variations',artist:'Glenn Gould',year:'1981',why:'Gould\'s final studio recording — a quiet, introspective goodbye.'},
-  'shoegaze':    {title:'Loveless',artist:'My Bloody Valentine',year:'1991',why:'Nearly bankrupted Creation Records. Changed guitar music forever.'},
-  'blues':       {title:'Electric Mud',artist:'Muddy Waters',year:'1968',why:'Chess Records told Muddy to go psychedelic. He did it brilliantly.'},
-  'soul':        {title:"There's a Riot Goin' On",artist:'Sly & the Family Stone',year:'1971',why:'Dark, claustrophobic, brilliant — the sound of utopia collapsing.'},
-  'experimental':{title:'Trout Mask Replica',artist:'Captain Beefheart',year:'1969',why:'Simultaneously the most difficult and most rewarding album ever made.'},
-  'drone':       {title:'The Tired Sounds of Stars of the Lid',artist:'Stars of the Lid',year:'2001',why:'Two discs of orchestral drone that makes time feel elastic.'},
-  'krautrock':   {title:'Autobahn',artist:'Kraftwerk',year:'1974',why:'The album that invented electronic pop and convinced Bowie to move to Berlin.'},
-  'neo-soul':    {title:'Voodoo',artist:"D'Angelo",year:'2000',why:'Seven years in the making — worth every single minute of the wait.'},
+  'ambient':     {title:'Discreet Music',artist:'Brian Eno',year:'1975',url:null,why:'The blueprint for ambient music — designed to be ignored as much as listened to.'},
+  'jazz':        {title:'Kind of Blue',artist:'Miles Davis',year:'1959',url:null,why:'Still the best-selling jazz album ever made, and still perfect.'},
+  'folk':        {title:'For Emma, Forever Ago',artist:'Bon Iver',year:'2007',url:null,why:'Recorded alone in a Wisconsin cabin over one winter.'},
+  'post-rock':   {title:'Lift Your Skinny Fists…',artist:'Godspeed You! Black Emperor',year:'2000',url:null,why:'Sprawling, cinematic, and unlike anything before or after.'},
+  'classical':   {title:'Goldberg Variations',artist:'Glenn Gould',year:'1981',url:null,why:"Gould's final studio recording — a quiet, introspective goodbye."},
+  'shoegaze':    {title:'Loveless',artist:'My Bloody Valentine',year:'1991',url:null,why:'Nearly bankrupted Creation Records. Changed guitar music forever.'},
+  'blues':       {title:'Electric Mud',artist:'Muddy Waters',year:'1968',url:null,why:'Chess Records told Muddy to go psychedelic. He did it brilliantly.'},
+  'soul':        {title:"There's a Riot Goin' On",artist:'Sly & the Family Stone',year:'1971',url:null,why:'Dark, claustrophobic — the sound of utopia collapsing.'},
+  'experimental':{title:'Trout Mask Replica',artist:'Captain Beefheart',year:'1969',url:null,why:'Simultaneously the most difficult and most rewarding album ever made.'},
+  'drone':       {title:'The Tired Sounds of Stars of the Lid',artist:'Stars of the Lid',year:'2001',url:null,why:'Two discs of orchestral drone that make time feel elastic.'},
+  'krautrock':   {title:'Autobahn',artist:'Kraftwerk',year:'1974',url:null,why:'The album that invented electronic pop and convinced Bowie to move to Berlin.'},
+  'neo-soul':    {title:'Voodoo',artist:"D'Angelo",year:'2000',url:null,why:'Seven years in the making — worth every minute of the wait.'},
 };
 
 async function geocode(city) {
   const r = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`);
   const d = await r.json();
   if (!d.results?.length) throw new Error('City not found');
-  return { lat:d.results[0].latitude, lon:d.results[0].longitude, name:d.results[0].name+', '+d.results[0].country };
+  return {lat:d.results[0].latitude,lon:d.results[0].longitude,name:d.results[0].name+', '+d.results[0].country};
 }
 
 createApp({
   setup() {
     const now = ref(new Date());
     let clockTimer;
-    const clockStr = computed(() => `${String(now.value.getHours()).padStart(2,'0')}:${String(now.value.getMinutes()).padStart(2,'0')}`);
-    const dateStr  = computed(() => now.value.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'}));
+    const clockStr = computed(()=>`${String(now.value.getHours()).padStart(2,'0')}:${String(now.value.getMinutes()).padStart(2,'0')}`);
+    const dateStr  = computed(()=>now.value.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'}));
 
+    // settings
     const showSettings  = ref(false);
-    const locationInput = ref(localStorage.getItem('aurora_location') || '');
-    const unsplashKey   = ref(localStorage.getItem('aurora_unsplash') || '');
-    const lastfmKey     = ref(localStorage.getItem('aurora_lastfm') || '');
-    const anthropicKey  = ref(localStorage.getItem('aurora_anthropic') || '');
-    const currentTheme  = ref(localStorage.getItem('aurora_theme') || 'aurora');
-    const useFahrenheit = ref(localStorage.getItem('aurora_fahrenheit') === 'true');
-    const bgTopic       = ref(localStorage.getItem('aurora_bgtopic') || 'northern-lights');
-    const selectedGenre = ref(localStorage.getItem('aurora_genre') || 'ambient');
+    const locationInput = ref(localStorage.getItem('aurora_location')||'');
+    const unsplashKey   = ref(localStorage.getItem('aurora_unsplash')||'');
+    const lastfmKey     = ref(localStorage.getItem('aurora_lastfm')||'');
+    const musicApp      = ref(localStorage.getItem('aurora_musicapp')||'lastfm');
+    const currentTheme  = ref(localStorage.getItem('aurora_theme')||'aurora');
+    const useFahrenheit = ref(localStorage.getItem('aurora_fahrenheit')==='true');
+    const bgTopic       = ref(localStorage.getItem('aurora_bgtopic')||'northern-lights');
+    const selectedGenre = ref(localStorage.getItem('aurora_genre')||'ambient');
 
+    // data
     const locationName  = ref('');
     const locationError = ref('');
     const weather       = ref(null);
     const sunData       = ref(null);
     const kp            = ref(null);
-    const kpInfoVal     = computed(() => kp.value !== null ? kpInfo(kp.value) : null);
+    const kpInfoVal     = computed(()=>kp.value!==null?kpInfo(kp.value):null);
     const quote         = ref(null);
     const album         = ref(null);
     const albumLoading  = ref(false);
+    const animal        = ref(null);
+    const animalLoading = ref(false);
     const bgCredit      = ref(null);
 
+    // music app link builder
+    const musicAppLabel = computed(()=>({lastfm:'Last.fm',spotify:'Spotify',apple:'Apple Music',tidal:'Tidal',youtube:'YouTube Music'}[musicApp.value]||'Listen'));
+    function musicAppLink(alb) {
+      if (!alb) return null;
+      const q = encodeURIComponent(`${alb.artist} ${alb.title}`);
+      switch(musicApp.value) {
+        case 'spotify': return `https://open.spotify.com/search/${q}`;
+        case 'apple':   return `https://music.apple.com/search?term=${q}`;
+        case 'tidal':   return `https://listen.tidal.com/search?q=${q}`;
+        case 'youtube': return `https://music.youtube.com/search?q=${q}`;
+        default: return null; // lastfm — url already shown
+      }
+    }
+
+    // theme
     function applyTheme(key) {
-      const t = THEMES[key] || THEMES.aurora;
-      const s = document.documentElement.style;
-      s.setProperty('--bg', t.bg); s.setProperty('--card', t.card); s.setProperty('--card-border', t.cardBorder);
-      s.setProperty('--accent', t.accent); s.setProperty('--accent2', t.accent2); s.setProperty('--text', t.text);
-      s.setProperty('--text-muted', t.textMuted); s.setProperty('--glow', t.glow); s.setProperty('--shimmer', t.shimmer);
+      const t=THEMES[key]||THEMES.aurora, s=document.documentElement.style;
+      s.setProperty('--bg',t.bg); s.setProperty('--card',t.card); s.setProperty('--card-border',t.cardBorder);
+      s.setProperty('--accent',t.accent); s.setProperty('--accent2',t.accent2); s.setProperty('--text',t.text);
+      s.setProperty('--text-muted',t.textMuted); s.setProperty('--glow',t.glow); s.setProperty('--shimmer',t.shimmer);
       document.getElementById('bg-overlay').style.background = t.dark
         ? `linear-gradient(135deg,${t.bg}cc 0%,${t.bg2||t.bg}99 100%)`
         : `linear-gradient(135deg,${t.bg}dd 0%,${t.bg2||t.bg}bb 100%)`;
       document.body.style.background = t.bg;
     }
-    function setTheme(key) { currentTheme.value = key; applyTheme(key); }
+    function setTheme(key){currentTheme.value=key;applyTheme(key);}
 
-    const cToF    = c  => Math.round(c * 9/5 + 32);
-    const msToMph = ms => Math.round(ms * 2.237);
+    const cToF=c=>Math.round(c*9/5+32);
+    const msToMph=ms=>Math.round(ms*2.237);
 
-    const sunProgress = computed(() => {
-      if (!sunData.value) return 0;
-      const [rh,rm] = sunData.value.sunriseRaw.split(':').map(Number);
-      const [sh,sm] = sunData.value.sunsetRaw.split(':').map(Number);
-      const nowMin = now.value.getHours()*60+now.value.getMinutes();
+    const sunProgress=computed(()=>{
+      if(!sunData.value)return 0;
+      const[rh,rm]=sunData.value.sunriseRaw.split(':').map(Number);
+      const[sh,sm]=sunData.value.sunsetRaw.split(':').map(Number);
+      const nowMin=now.value.getHours()*60+now.value.getMinutes();
       return Math.max(0,Math.min(1,(nowMin-rh*60-rm)/((sh*60+sm)-(rh*60+rm))));
     });
-    const sunArcY = computed(() => Math.round(Math.sin(sunProgress.value*Math.PI)*28));
+    const sunArcY=computed(()=>Math.round(Math.sin(sunProgress.value*Math.PI)*28));
 
-    async function fetchKP() {
-      try {
-        const r = await fetch('https://services.swpc.noaa.gov/json/planetary_k_index_1m.json');
-        const d = await r.json();
-        kp.value = parseFloat(d[d.length-1].kp_index ?? d[d.length-1].Kp ?? 0);
-      } catch { kp.value = 0; }
+    async function fetchKP(){
+      try{const r=await fetch('https://services.swpc.noaa.gov/json/planetary_k_index_1m.json');const d=await r.json();kp.value=parseFloat(d[d.length-1].kp_index??d[d.length-1].Kp??0);}
+      catch{kp.value=0;}
     }
 
-    async function fetchWeather(lat, lon) {
-      try {
-        const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,weather_code&daily=sunrise,sunset&timezone=auto&forecast_days=1`);
-        const d = await r.json();
-        const c = d.current;
-        const [desc,icon] = WMO[c.weather_code] || ['Unknown','🌡️'];
-        weather.value = { tempC:Math.round(c.temperature_2m), feelsLike:Math.round(c.apparent_temperature), humidity:c.relative_humidity_2m, windMs:c.wind_speed_10m/3.6, description:desc, icon };
-        const sr = new Date(d.daily.sunrise[0]), ss = new Date(d.daily.sunset[0]);
-        const fmt = t => t.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-        const dm = Math.round((ss-sr)/60000);
-        sunData.value = {
-          sunrise:fmt(sr), sunset:fmt(ss),
-          sunriseRaw:`${sr.getHours()}:${sr.getMinutes()}`, sunsetRaw:`${ss.getHours()}:${ss.getMinutes()}`,
-          dayLength:`${Math.floor(dm/60)}h ${dm%60}m`,
-          status:Date.now()<sr.getTime()?'Before sunrise':Date.now()>ss.getTime()?'After sunset':'Sun is up',
-        };
-      } catch { weather.value = null; }
+    async function fetchWeather(lat,lon){
+      try{
+        const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,weather_code&daily=sunrise,sunset&timezone=auto&forecast_days=1`);
+        const d=await r.json(),c=d.current;
+        const[desc,icon]=WMO[c.weather_code]||['Unknown','🌡️'];
+        weather.value={tempC:Math.round(c.temperature_2m),feelsLike:Math.round(c.apparent_temperature),humidity:c.relative_humidity_2m,windMs:c.wind_speed_10m/3.6,description:desc,icon};
+        const sr=new Date(d.daily.sunrise[0]),ss=new Date(d.daily.sunset[0]);
+        const fmt=t=>t.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+        const dm=Math.round((ss-sr)/60000);
+        sunData.value={sunrise:fmt(sr),sunset:fmt(ss),sunriseRaw:`${sr.getHours()}:${sr.getMinutes()}`,sunsetRaw:`${ss.getHours()}:${ss.getMinutes()}`,dayLength:`${Math.floor(dm/60)}h ${dm%60}m`,status:Date.now()<sr.getTime()?'Before sunrise':Date.now()>ss.getTime()?'After sunset':'Sun is up'};
+      }catch{weather.value=null;}
     }
 
-    async function locateAndLoad() {
-      const saved = localStorage.getItem('aurora_location');
-      if (saved) {
-        try { const g = await geocode(saved); locationName.value=g.name; fetchWeather(g.lat,g.lon); return; } catch {}
-      }
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(async pos => {
-          const {latitude:lat,longitude:lon} = pos.coords;
-          try {
-            const r2 = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
-            const d2 = await r2.json();
-            locationName.value = d2.address?.city||d2.address?.town||d2.address?.village||'Your Location';
-          } catch { locationName.value='Your Location'; }
+    async function locateAndLoad(){
+      const saved=localStorage.getItem('aurora_location');
+      if(saved){try{const g=await geocode(saved);locationName.value=g.name;fetchWeather(g.lat,g.lon);return;}catch{}}
+      if(navigator.geolocation){
+        navigator.geolocation.getCurrentPosition(async pos=>{
+          const{latitude:lat,longitude:lon}=pos.coords;
+          try{const r2=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);const d2=await r2.json();locationName.value=d2.address?.city||d2.address?.town||d2.address?.village||'Your Location';}
+          catch{locationName.value='Your Location';}
           fetchWeather(lat,lon);
-        }, ()=>{ locationError.value='Allow location access or set a city in settings.'; });
-      } else { locationError.value='Set a city in settings.'; }
+        },()=>{locationError.value='Allow location access or set a city in settings.';});
+      }else{locationError.value='Set a city in settings.';}
     }
 
-    async function fetchQuote() {
-      quote.value = null;
-      const key = anthropicKey.value;
-      if (!key) {
-        const fb = [
-          {text:"The world is quiet here.",author:"Lemony Snicket"},
-          {text:"Not all those who wander are lost.",author:"J.R.R. Tolkien"},
-          {text:"I took a deep breath and listened to the old brag of my heart: I am, I am, I am.",author:"Sylvia Plath"},
-          {text:"The sky is everywhere, it begins at your feet.",author:"Jandy Nelson"},
-          {text:"To live is so startling it leaves little time for anything else.",author:"Emily Dickinson"},
-          {text:"The cure for anything is salt water: sweat, tears, or the sea.",author:"Isak Dinesen"},
-          {text:"In the middle of winter, I at last discovered that there was in me an invincible summer.",author:"Albert Camus"},
-          {text:"Stars are not small or gentle. They are writhing and dying and burning.",author:"Tamsyn Muir"},
-          {text:"The most beautiful thing we can experience is the mysterious.",author:"Albert Einstein"},
-          {text:"Everything you can imagine is real.",author:"Pablo Picasso"},
-          {text:"There is no exquisite beauty without some strangeness in the proportion.",author:"Edgar Allan Poe"},
-          {text:"I am not afraid of storms, for I am learning how to sail my ship.",author:"Louisa May Alcott"},
-          {text:"Wherever you go becomes a part of you somehow.",author:"Anita Desai"},
-          {text:"We shall not cease from exploration.",author:"T.S. Eliot"},
-          {text:"One must always maintain one's connection to the past and yet ceaselessly pull away from it.",author:"Gaston Bachelard"},
-        ];
-        quote.value = fb[Math.floor(Math.random()*fb.length)];
-        return;
-      }
-      try {
-        const r = await fetch('https://api.anthropic.com/v1/messages',{
-          method:'POST',
-          headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-          body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:200,system:'Return ONLY a JSON object with keys "text" and "author". Choose quotes from writers, poets, artists, musicians, philosophers — people who made culture. No billionaires. Vary the mood.',messages:[{role:'user',content:'One memorable quote. JSON only.'}]})
-        });
-        const d = await r.json();
-        quote.value = JSON.parse(d.content[0].text.replace(/```json|```/g,'').trim());
-      } catch { quote.value = {text:"The world is quiet here.",author:"Lemony Snicket"}; }
+    // quotes — curated, no API needed
+    const QUOTES=[
+      {text:"The world is quiet here.",author:"Lemony Snicket"},
+      {text:"Not all those who wander are lost.",author:"J.R.R. Tolkien"},
+      {text:"I took a deep breath and listened to the old brag of my heart: I am, I am, I am.",author:"Sylvia Plath"},
+      {text:"The sky is everywhere, it begins at your feet.",author:"Jandy Nelson"},
+      {text:"To live is so startling it leaves little time for anything else.",author:"Emily Dickinson"},
+      {text:"The cure for anything is salt water: sweat, tears, or the sea.",author:"Isak Dinesen"},
+      {text:"In the middle of winter, I at last discovered that there was in me an invincible summer.",author:"Albert Camus"},
+      {text:"Stars are not small or gentle. They are writhing and dying and burning.",author:"Tamsyn Muir"},
+      {text:"The most beautiful thing we can experience is the mysterious.",author:"Albert Einstein"},
+      {text:"Everything you can imagine is real.",author:"Pablo Picasso"},
+      {text:"There is no exquisite beauty without some strangeness in the proportion.",author:"Edgar Allan Poe"},
+      {text:"I am not afraid of storms, for I am learning how to sail my ship.",author:"Louisa May Alcott"},
+      {text:"Wherever you go becomes a part of you somehow.",author:"Anita Desai"},
+      {text:"We shall not cease from exploration.",author:"T.S. Eliot"},
+      {text:"One must always maintain one's connection to the past and yet ceaselessly pull away from it.",author:"Gaston Bachelard"},
+      {text:"I would rather die of passion than of boredom.",author:"Vincent van Gogh"},
+      {text:"The aim of art is to represent not the outward appearance of things, but their inward significance.",author:"Aristotle"},
+      {text:"You can't use up creativity. The more you use, the more you have.",author:"Maya Angelou"},
+      {text:"The job of the artist is always to deepen the mystery.",author:"Francis Bacon"},
+      {text:"To photograph is to appropriate the thing photographed.",author:"Susan Sontag"},
+    ];
+    let lastQuoteIdx=-1;
+    function fetchQuote(){
+      let idx;
+      do{idx=Math.floor(Math.random()*QUOTES.length);}while(idx===lastQuoteIdx&&QUOTES.length>1);
+      lastQuoteIdx=idx;
+      quote.value=QUOTES[idx];
     }
 
-    async function fetchAlbum(genre) {
-      album.value = null; albumLoading.value = true;
-      const key = lastfmKey.value;
-      if (!key) { album.value = ALBUM_FALLBACKS[genre]||ALBUM_FALLBACKS['ambient']; albumLoading.value=false; return; }
-      try {
-        const page = Math.ceil(Math.random()*3);
-        const r = await fetch(`https://ws.audioscrobbler.com/2.0/?method=tag.gettopalbums&tag=${encodeURIComponent(genre)}&api_key=${key}&format=json&limit=20&page=${page}`);
-        const d = await r.json();
-        const albums = d?.albums?.album?.filter(a=>a.artist?.name&&!a.artist.name.toLowerCase().includes('various'));
-        if (!albums?.length) throw new Error('no results');
-        const pick = albums[Math.floor(Math.random()*albums.length)];
-        const ri = await fetch(`https://ws.audioscrobbler.com/2.0/?method=album.getinfo&artist=${encodeURIComponent(pick.artist.name)}&album=${encodeURIComponent(pick.name)}&api_key=${key}&format=json`);
-        const di = await ri.json();
-        const info = di?.album;
-        const images = info?.image||pick.image||[];
-        const art = images.find(i=>i.size==='extralarge')||images.find(i=>i.size==='large');
-        album.value = {
-          title: info?.name||pick.name,
-          artist: info?.artist||pick.artist?.name,
-          year: info?.wiki?.published ? new Date(info.wiki.published).getFullYear() : null,
-          art: art?.['#text']&&art['#text']!=='' ? art['#text'] : null,
-          why: info?.wiki?.summary ? info.wiki.summary.replace(/<[^>]+>/g,'').split('.')[0].trim()+'.' : null,
-        };
-      } catch { album.value = ALBUM_FALLBACKS[genre]||ALBUM_FALLBACKS['ambient']; }
-      albumLoading.value = false;
-    }
+    // iNaturalist animal
+    async function fetchAnimal(){
+      animalLoading.value=true; animal.value=null;
+      try{
+        // grab a random recent research-grade observation with a photo
+        const page=Math.floor(Math.random()*20)+1;
+        const r=await fetch(`https://api.inaturalist.org/v1/observations?quality_grade=research&photos=true&order=random&per_page=1&page=${page}&iconic_taxa=Mammalia,Aves,Reptilia,Amphibia,Actinopterygii,Insecta,Arachnida,Mollusca`);
+        const d=await r.json();
+        const obs=d.results?.[0];
+        if(!obs)throw new Error('no obs');
 
-    function pickGenre(g) { selectedGenre.value=g; localStorage.setItem('aurora_genre',g); fetchAlbum(g); }
+        const commonName = obs.taxon?.preferred_common_name || obs.taxon?.name || 'Unknown species';
+        const scientificName = obs.taxon?.name || '';
+        const photo = obs.photos?.[0]?.url?.replace('square','medium') || null;
+        const place = obs.place_guess || obs.location || null;
+        const date  = obs.observed_on ? new Date(obs.observed_on).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}) : null;
+        const observer = obs.user?.login || null;
 
-    async function fetchBg(topic) {
-      const key = unsplashKey.value; if (!key) return;
-      try {
-        const r = await fetch(`https://api.unsplash.com/photos/random?query=${encodeURIComponent(topic)}&orientation=landscape&content_filter=high`,{headers:{Authorization:`Client-ID ${key}`}});
-        const d = await r.json();
-        if (d.urls?.regular) {
-          const bg = document.getElementById('bg-layer');
-          bg.style.opacity='0';
-          setTimeout(()=>{ bg.style.backgroundImage=`url(${d.urls.regular})`; bg.style.opacity='1'; },400);
-          bgCredit.value = { name:d.user?.name||'Unknown', link:d.links?.html||'#' };
+        // Wikipedia summary
+        let fact = null;
+        if(scientificName){
+          try{
+            const wikiName=encodeURIComponent(scientificName.replace(/ /g,'_'));
+            const wr=await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${wikiName}`);
+            const wd=await wr.json();
+            if(wd.extract){
+              // grab first sentence, max ~180 chars
+              const firstSent=wd.extract.split(/(?<=[.!?])\s/)[0];
+              fact=firstSent.length>220?firstSent.slice(0,217)+'…':firstSent;
+            }
+          }catch{}
         }
-      } catch {}
-    }
-    function refreshBg() { fetchBg(bgTopic.value); }
-    function setBgTopic(t) { bgTopic.value=t; localStorage.setItem('aurora_bgtopic',t); fetchBg(t); }
 
-    function saveSettings() {
-      localStorage.setItem('aurora_location',  locationInput.value);
-      localStorage.setItem('aurora_unsplash',  unsplashKey.value);
-      localStorage.setItem('aurora_lastfm',    lastfmKey.value);
-      localStorage.setItem('aurora_anthropic', anthropicKey.value);
-      localStorage.setItem('aurora_theme',     currentTheme.value);
+        animal.value={commonName,scientificName,photo,place,date,observer,fact};
+      }catch{animal.value=null;}
+      animalLoading.value=false;
+    }
+
+    // Last.fm album
+    async function fetchAlbum(genre){
+      album.value=null;albumLoading.value=true;
+      const key=lastfmKey.value;
+      if(!key){album.value=ALBUM_FALLBACKS[genre]||ALBUM_FALLBACKS['ambient'];albumLoading.value=false;return;}
+      try{
+        const page=Math.ceil(Math.random()*3);
+        const r=await fetch(`https://ws.audioscrobbler.com/2.0/?method=tag.gettopalbums&tag=${encodeURIComponent(genre)}&api_key=${key}&format=json&limit=20&page=${page}`);
+        const d=await r.json();
+        const albums=d?.albums?.album?.filter(a=>a.artist?.name&&!a.artist.name.toLowerCase().includes('various'));
+        if(!albums?.length)throw new Error('no results');
+        const pick=albums[Math.floor(Math.random()*albums.length)];
+        const ri=await fetch(`https://ws.audioscrobbler.com/2.0/?method=album.getinfo&artist=${encodeURIComponent(pick.artist.name)}&album=${encodeURIComponent(pick.name)}&api_key=${key}&format=json`);
+        const di=await ri.json();
+        const info=di?.album;
+        const images=info?.image||pick.image||[];
+        const art=images.find(i=>i.size==='extralarge')||images.find(i=>i.size==='large');
+        album.value={
+          title:info?.name||pick.name,
+          artist:info?.artist||pick.artist?.name,
+          year:info?.wiki?.published?new Date(info.wiki.published).getFullYear():null,
+          art:art?.['#text']&&art['#text']!==''?art['#text']:null,
+          url:info?.url||pick.url||null,
+          why:info?.wiki?.summary?info.wiki.summary.replace(/<[^>]+>/g,'').split('.')[0].trim()+'.':null,
+        };
+      }catch{album.value=ALBUM_FALLBACKS[genre]||ALBUM_FALLBACKS['ambient'];}
+      albumLoading.value=false;
+    }
+
+    function pickGenre(g){selectedGenre.value=g;localStorage.setItem('aurora_genre',g);fetchAlbum(g);}
+
+    async function fetchBg(topic){
+      const key=unsplashKey.value;if(!key)return;
+      try{
+        const r=await fetch(`https://api.unsplash.com/photos/random?query=${encodeURIComponent(topic)}&orientation=landscape&content_filter=high`,{headers:{Authorization:`Client-ID ${key}`}});
+        const d=await r.json();
+        if(d.urls?.regular){
+          const bg=document.getElementById('bg-layer');
+          bg.style.opacity='0';
+          setTimeout(()=>{bg.style.backgroundImage=`url(${d.urls.regular})`;bg.style.opacity='1';},400);
+          bgCredit.value={name:d.user?.name||'Unknown',link:d.links?.html||'#'};
+        }
+      }catch{}
+    }
+    function refreshBg(){fetchBg(bgTopic.value);}
+    function setBgTopic(t){bgTopic.value=t;localStorage.setItem('aurora_bgtopic',t);fetchBg(t);}
+
+    function saveSettings(){
+      localStorage.setItem('aurora_location',locationInput.value);
+      localStorage.setItem('aurora_unsplash',unsplashKey.value);
+      localStorage.setItem('aurora_lastfm',lastfmKey.value);
+      localStorage.setItem('aurora_musicapp',musicApp.value);
+      localStorage.setItem('aurora_theme',currentTheme.value);
       localStorage.setItem('aurora_fahrenheit',useFahrenheit.value);
       showSettings.value=false;
-      locateAndLoad(); fetchBg(bgTopic.value); fetchQuote(); fetchAlbum(selectedGenre.value);
+      locateAndLoad();fetchBg(bgTopic.value);fetchQuote();fetchAlbum(selectedGenre.value);fetchAnimal();
     }
 
     onMounted(()=>{
       applyTheme(currentTheme.value);
-      clockTimer = setInterval(()=>{ now.value=new Date(); },10000);
-      locateAndLoad(); fetchKP(); fetchQuote(); fetchAlbum(selectedGenre.value); fetchBg(bgTopic.value);
-      setInterval(fetchKP, 5*60*1000);
-      setInterval(()=>{ if(unsplashKey.value) fetchBg(bgTopic.value); }, 15*60*1000);
+      clockTimer=setInterval(()=>{now.value=new Date();},10000);
+      locateAndLoad();fetchKP();fetchQuote();fetchAlbum(selectedGenre.value);fetchBg(bgTopic.value);fetchAnimal();
+      setInterval(fetchKP,5*60*1000);
+      setInterval(()=>{if(unsplashKey.value)fetchBg(bgTopic.value);},15*60*1000);
     });
     onUnmounted(()=>clearInterval(clockTimer));
-    watch(useFahrenheit, v=>localStorage.setItem('aurora_fahrenheit',v));
+    watch(useFahrenheit,v=>localStorage.setItem('aurora_fahrenheit',v));
 
     return {
-      clockStr,dateStr,showSettings,locationInput,unsplashKey,lastfmKey,anthropicKey,
+      clockStr,dateStr,showSettings,locationInput,unsplashKey,lastfmKey,musicApp,
       currentTheme,useFahrenheit,bgTopic,selectedGenre,locationName,locationError,
       weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,
-      quote,album,albumLoading,bgCredit,
+      quote,album,albumLoading,animal,animalLoading,bgCredit,
       themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,
-      cToF,msToMph,refreshBg,fetchQuote,fetchAlbum,setBgTopic,pickGenre,setTheme,saveSettings,
+      cToF,msToMph,musicAppLabel,musicAppLink,
+      refreshBg,fetchQuote,fetchAlbum,fetchAnimal,setBgTopic,pickGenre,setTheme,saveSettings,
     };
   }
 }).mount('#app');
