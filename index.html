@@ -830,7 +830,7 @@ createApp({
     const diceHistory=ref([]);
     const diceCanvas=ref(null);
     const diceCanvasWrap=ref(null);
-    let diceScene=null, diceCamera=null, diceRenderer=null, diceMesh=null, diceAnimFrame=null, diceThree=null;
+    let diceScene=null, diceCamera=null, diceRenderer=null, diceMesh=null, diceAnimFrame=null, diceThree=null, diceRollTrigger=null;
 
     function getDiceColors(){
       const s=getComputedStyle(document.documentElement);
@@ -954,8 +954,8 @@ createApp({
       const w=wrap.offsetWidth||300;
       const h=160;
       diceRenderer=new THREE.WebGLRenderer({canvas:canvasEl,antialias:true,alpha:true});
-      diceRenderer.setSize(w,h,false); // false = don't set canvas CSS size, let CSS handle it
       diceRenderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+      diceRenderer.setSize(w,h); // sets both buffer AND canvas element size
       diceRenderer.setClearColor(0x000000,0);
 
       diceScene=new THREE.Scene();
@@ -1003,11 +1003,11 @@ createApp({
       }
       animate();
 
-      // Expose roll trigger
-      diceCanvasWrap.value._triggerRoll=(targetRot)=>{
+      // Expose roll trigger via module-level var
+      diceRollTrigger=(targetRot)=>{
         if(!diceMesh)return;
         rolling=true;
-        rollDuration=700;
+        rollDuration=800;
         rollStart=Date.now();
         rollTarget={
           startX:diceMesh.rotation.x, startY:diceMesh.rotation.y, startZ:diceMesh.rotation.z,
@@ -1021,7 +1021,7 @@ createApp({
     function teardownDice(){
       if(diceAnimFrame)cancelAnimationFrame(diceAnimFrame);
       if(diceRenderer)diceRenderer.dispose();
-      diceScene=null; diceCamera=null; diceRenderer=null; diceMesh=null; diceAnimFrame=null;
+      diceScene=null; diceCamera=null; diceRenderer=null; diceMesh=null; diceAnimFrame=null; diceRollTrigger=null;
     }
 
     function switchDie(type){
@@ -1038,14 +1038,13 @@ createApp({
       const sides=parseInt(activeDie.value.slice(1));
       const result=Math.floor(Math.random()*sides)+1;
       diceRolling.value=true; diceResult.value=null;
-      const wrap=document.getElementById('dice-wrap');
-      if(wrap?._triggerRoll){
-        wrap._triggerRoll({x:Math.random()*Math.PI*4,y:Math.random()*Math.PI*4,z:Math.random()*Math.PI*2});
+      if(diceRollTrigger){
+        diceRollTrigger({x:Math.random()*Math.PI*6,y:Math.random()*Math.PI*6,z:Math.random()*Math.PI*3});
       }
       setTimeout(()=>{
         diceResult.value=result; diceRolling.value=false;
         diceHistory.value=[{die:activeDie.value,val:result},...diceHistory.value].slice(0,10);
-      },720);
+      },820);
     }
 
     async function fetchAlbum(genre){album.value=null;albumLoading.value=true;const key=lastfmKey.value;if(!key){album.value=ALBUM_FALLBACKS[genre]||ALBUM_FALLBACKS['ambient'];albumLoading.value=false;return;}try{const page=Math.ceil(Math.random()*3);const r=await fetch(`https://ws.audioscrobbler.com/2.0/?method=tag.gettopalbums&tag=${encodeURIComponent(genre)}&api_key=${key}&format=json&limit=20&page=${page}`);const d=await r.json();const albums=d?.albums?.album?.filter(a=>a.artist?.name&&!a.artist.name.toLowerCase().includes('various'));if(!albums?.length)throw new Error('no results');const pick=albums[Math.floor(Math.random()*albums.length)];const ri=await fetch(`https://ws.audioscrobbler.com/2.0/?method=album.getinfo&artist=${encodeURIComponent(pick.artist.name)}&album=${encodeURIComponent(pick.name)}&api_key=${key}&format=json`);const di=await ri.json();const info=di?.album;const images=info?.image||pick.image||[];const art=images.find(i=>i.size==='extralarge')||images.find(i=>i.size==='large');album.value={title:info?.name||pick.name,artist:info?.artist||pick.artist?.name,year:info?.wiki?.published?new Date(info.wiki.published).getFullYear():null,art:art?.['#text']&&art['#text']!==''?art['#text']:null,url:info?.url||pick.url||null,why:info?.wiki?.summary?info.wiki.summary.replace(/<[^>]+>/g,'').split('.')[0].trim()+'.':null};}catch{album.value=ALBUM_FALLBACKS[genre]||ALBUM_FALLBACKS['ambient'];}albumLoading.value=false;}
