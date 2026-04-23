@@ -48,12 +48,7 @@ body{font-family:var(--font-body);font-size:var(--t-md);line-height:1.5;color:va
 .card:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--accent) 30%,transparent);}
 .card.dragging{opacity:.5;transform:scale(.97);box-shadow:0 8px 32px rgba(0,0,0,.4);}
 .card.drag-over{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent);}
-.drag-handle{position:absolute;top:var(--s-sm);left:var(--s-sm);width:20px;height:20px;display:flex;flex-direction:column;justify-content:center;gap:3px;cursor:grab;padding:2px;opacity:0;transition:opacity .2s;}
-.drag-handle:active{cursor:grabbing;}
-.drag-handle span{display:block;height:2px;background:var(--text-muted);border-radius:1px;}
-.card:hover .drag-handle{opacity:.5;}
-/* Prevent drag hijacking on all interactive card children */
-.card input,.card button,.card select,.card textarea,.card a{-webkit-user-drag:none;user-drag:none;}
+
 .card-label{font-family:var(--font-mono);font-size:var(--t-xs);letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:var(--s-sm);padding-left:24px;}
 .card-btn{position:absolute;top:var(--s-sm);right:var(--s-sm);background:var(--card);border:1px solid var(--card-border);border-radius:8px;color:var(--text-muted);width:clamp(26px,2.2vw,34px);height:clamp(26px,2.2vw,34px);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:var(--t-md);line-height:1;transition:all .25s;backdrop-filter:blur(8px);}
 .card-btn:hover{color:var(--accent);border-color:var(--accent);background:var(--glow);transform:rotate(180deg);}
@@ -301,9 +296,7 @@ a{color:inherit;} button{font-family:inherit;}
         <template v-for="wid in col" :key="wid.id">
 
         <!-- KP INDEX -->
-        <div v-if="wid.id==='kp'" :class="['card', `col-${wid.cols}`, {dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}]" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd">
-          <div class="drag-handle"><span></span><span></span><span></span></div>
-          <div class="aurora-rings"><div class="ring"></div><div class="ring"></div><div class="ring"></div></div>
+        <div v-if="wid.id==='kp'" class="card">          <div class="aurora-rings"><div class="ring"></div><div class="ring"></div><div class="ring"></div></div>
           <div class="card-label">KP Index · Tromsø ref.</div>
           <template v-if="kp!==null">
             <div class="kp-big" :style="{color:kpInfo.color,textShadow:`0 0 30px ${kpInfo.color}44`}">{{ kp.toFixed(1) }}</div>
@@ -316,9 +309,7 @@ a{color:inherit;} button{font-family:inherit;}
         </div>
 
         <!-- WEATHER -->
-        <div v-else-if="wid.id==='weather'" :class="['card', `col-${wid.cols}`]" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
-          <div class="drag-handle"><span></span><span></span><span></span></div>
-          <div class="card-label">Local Weather</div>
+        <div v-else-if="wid.id==='weather'" class="card">          <div class="card-label">Local Weather</div>
           <template v-if="weather">
             <div class="weather-icon">{{ weather.icon }}</div>
             <div class="weather-temp">{{ useFahrenheit?cToF(weather.tempC)+'°F':weather.tempC+'°C' }}<button class="unit-toggle" @click="useFahrenheit=!useFahrenheit">{{ useFahrenheit?'→°C':'→°F' }}</button></div>
@@ -334,9 +325,7 @@ a{color:inherit;} button{font-family:inherit;}
         </div>
 
         <!-- SUN -->
-        <div v-else-if="wid.id==='sun'" :class="['card', `col-${wid.cols}`]" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
-          <div class="drag-handle"><span></span><span></span><span></span></div>
-          <div class="card-label">Sun · {{ locationName }}</div>
+        <div v-else-if="wid.id==='sun'" class="card">          <div class="card-label">Sun · {{ locationName }}</div>
           <template v-if="sunData">
             <div class="sun-row">
               <div class="sun-item"><div class="sun-icon">🌅</div><div class="sun-time">{{ sunData.sunrise }}</div><div class="sun-lbl">Sunrise</div></div>
@@ -350,9 +339,7 @@ a{color:inherit;} button{font-family:inherit;}
         </div>
 
         <!-- MOON -->
-        <div v-else-if="wid.id==='moon'" :class="['card', `col-${wid.cols}`]" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
-          <div class="drag-handle"><span></span><span></span><span></span></div>
-          <div class="card-label">Moon Phase</div>
+        <div v-else-if="wid.id==='moon'" class="card">          <div class="card-label">Moon Phase</div>
           <div class="moon-face">{{ moon.emoji }}</div>
           <div class="moon-name">{{ moon.name }}</div>
           <div class="moon-detail">{{ moon.illumination }}% illuminated</div>
@@ -361,9 +348,7 @@ a{color:inherit;} button{font-family:inherit;}
         </div>
 
         <!-- AQI -->
-        <div v-else-if="wid.id==='aqi'" :class="['card', `col-${wid.cols}`]" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
-          <div class="drag-handle"><span></span><span></span><span></span></div>
-          <div class="card-label">Air Quality</div>
+        <div v-else-if="wid.id==='aqi'" class="card">          <div class="card-label">Air Quality</div>
           <template v-if="aqi">
             <div class="aqi-big" :style="{color:aqi.color}">{{ aqi.index }}</div>
             <div class="aqi-label" :style="{color:aqi.color}">{{ aqi.label }}</div>
@@ -378,9 +363,7 @@ a{color:inherit;} button{font-family:inherit;}
         </div>
 
         <!-- TIDES -->
-        <div v-else-if="wid.id==='tides'" :class="['card', `col-${wid.cols}`]" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
-          <div class="drag-handle"><span></span><span></span><span></span></div>
-          <div class="card-label">Tides 🌊</div>
+        <div v-else-if="wid.id==='tides'" class="card">          <div class="card-label">Tides 🌊</div>
           <template v-if="tides && tides.length">
             <div class="tide-row">
               <div v-for="t in tides.slice(0,4)" :key="t.time" class="tide-item">
@@ -395,9 +378,7 @@ a{color:inherit;} button{font-family:inherit;}
         </div>
 
         <!-- ISS -->
-        <div v-else-if="wid.id==='iss'" :class="['card', `col-${wid.cols}`]" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
-          <div class="drag-handle"><span></span><span></span><span></span></div>
-          <div class="card-label">ISS Pass Times 📡</div>
+        <div v-else-if="wid.id==='iss'" class="card">          <div class="card-label">ISS Pass Times 📡</div>
           <template v-if="issPasses && issPasses.length">
             <div style="display:flex;align-items:center;gap:var(--s-sm);margin-bottom:var(--s-sm)"><div class="iss-dot"></div><span style="font-size:var(--t-xs);color:var(--text-muted)">Next passes over {{ locationName }}</span></div>
             <div class="iss-passes">
@@ -412,9 +393,7 @@ a{color:inherit;} button{font-family:inherit;}
         </div>
 
         <!-- PLANETS -->
-        <div v-else-if="wid.id==='planets'" :class="['card', `col-${wid.cols}`]" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
-          <div class="drag-handle"><span></span><span></span><span></span></div>
-          <div class="card-label">Planets Tonight 🔭</div>
+        <div v-else-if="wid.id==='planets'" class="card">          <div class="card-label">Planets Tonight 🔭</div>
           <div class="planets-list">
             <div v-for="p in planets" :key="p.name" class="planet-row">
               <div class="planet-icon">{{ p.emoji }}</div>
@@ -426,18 +405,14 @@ a{color:inherit;} button{font-family:inherit;}
         </div>
 
         <!-- QUOTE -->
-        <div v-else-if="wid.id==='quote'" :class="['card', `col-${wid.cols}`, {dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}]" style="position:relative" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd">
-          <div class="drag-handle"><span></span><span></span><span></span></div>
-          <div class="card-label">Inspiration</div>
+        <div v-else-if="wid.id==='quote'" class="card" style="position:relative">          <div class="card-label">Inspiration</div>
           <button class="card-btn" @click="fetchQuote" title="New quote">↺</button>
           <template v-if="quote"><div class="quote-text">"{{ quote.text }}"</div><div class="quote-author">— {{ quote.author }}</div></template>
           <template v-else><div style="font-family:var(--font-mono);font-size:var(--t-sm);color:var(--text-muted);animation:blink 1.4s ease-in-out infinite">conjuring something worth reading…</div></template>
         </div>
 
         <!-- ANIMAL -->
-        <div v-else-if="wid.id==='animal'" :class="['card', `col-${wid.cols}`, {dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}]" style="position:relative" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd">
-          <div class="drag-handle"><span></span><span></span><span></span></div>
-          <div class="card-label">Animal of the Day · iNaturalist</div>
+        <div v-else-if="wid.id==='animal'" class="card" style="position:relative">          <div class="card-label">Animal of the Day · iNaturalist</div>
           <button class="card-btn" @click="fetchAnimal" title="Next animal">→</button>
           <template v-if="animal">
             <img v-if="animal.photo" :src="animal.photo" :alt="animal.commonName" class="animal-photo" />
@@ -452,9 +427,7 @@ a{color:inherit;} button{font-family:inherit;}
         </div>
 
         <!-- APOD -->
-        <div v-else-if="wid.id==='apod'" :class="['card', `col-${wid.cols}`]" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
-          <div class="drag-handle"><span></span><span></span><span></span></div>
-          <div class="card-label">NASA · Astronomy Picture of the Day</div>
+        <div v-else-if="wid.id==='apod'" class="card">          <div class="card-label">NASA · Astronomy Picture of the Day</div>
           <template v-if="apod">
             <a :href="apod.hdurl||apod.url" target="_blank" rel="noopener"><img :src="apod.url" :alt="apod.title" class="apod-img" /></a>
             <div class="apod-title">{{ apod.title }}</div>
@@ -465,9 +438,7 @@ a{color:inherit;} button{font-family:inherit;}
         </div>
 
         <!-- SOMA FM -->
-        <div v-else-if="wid.id==='soma'" :class="['card', `col-${wid.cols}`]" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
-          <div class="drag-handle"><span></span><span></span><span></span></div>
-          <div class="card-label">SomaFM Radio 📻</div>
+        <div v-else-if="wid.id==='soma'" class="card">          <div class="card-label">SomaFM Radio 📻</div>
           <div class="soma-player">
             <div class="soma-station-pick">
               <button v-for="s in somaStations" :key="s.id" class="soma-btn" :class="{active:somaStation===s.id}" @click="setSomaStation(s.id)">{{ s.name }}</button>
@@ -488,9 +459,7 @@ a{color:inherit;} button{font-family:inherit;}
         </div>
 
         <!-- ALBUM -->
-        <div v-else-if="wid.id==='album'" :class="['card', `col-${wid.cols}`, {dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}]" style="position:relative" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd">
-          <div class="drag-handle"><span></span><span></span><span></span></div>
-          <div class="card-label">Album Rec · Last.fm</div>
+        <div v-else-if="wid.id==='album'" class="card" style="position:relative">          <div class="card-label">Album Rec · Last.fm</div>
           <button class="card-btn" @click="fetchAlbum(selectedGenre)" title="New recommendation">↺</button>
           <template v-if="album">
             <div class="album-row">
@@ -514,17 +483,13 @@ a{color:inherit;} button{font-family:inherit;}
         </div>
 
         <!-- NOTES -->
-        <div v-else-if="wid.id==='notes'" :class="['card', `col-${wid.cols}`]" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
-          <div class="drag-handle"><span></span><span></span><span></span></div>
-          <div class="card-label">Notes 📋</div>
+        <div v-else-if="wid.id==='notes'" class="card">          <div class="card-label">Notes 📋</div>
           <textarea class="notes-area" v-model="notes" placeholder="Just start typing…" @input="saveNotes"></textarea>
           <div class="notes-saved" v-if="notesSaved">Saved ✓</div>
         </div>
 
         <!-- TODO -->
-        <div v-else-if="wid.id==='todo'" :class="['card', `col-${wid.cols}`]" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
-          <div class="drag-handle"><span></span><span></span><span></span></div>
-          <div class="card-label">To-Do ✅</div>
+        <div v-else-if="wid.id==='todo'" class="card">          <div class="card-label">To-Do ✅</div>
           <div class="todo-input-row">
             <input class="todo-input" v-model="todoInput" placeholder="Add a task…" @keyup.enter="addTodo" />
             <button class="todo-add" @click="addTodo">+</button>
@@ -539,9 +504,7 @@ a{color:inherit;} button{font-family:inherit;}
         </div>
 
         <!-- BOOKMARKS -->
-        <div v-else-if="wid.id==='bookmarks'" :class="['card', `col-${wid.cols}`]" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
-          <div class="drag-handle"><span></span><span></span><span></span></div>
-          <div class="card-label">Bookmarks 🔗</div>
+        <div v-else-if="wid.id==='bookmarks'" class="card">          <div class="card-label">Bookmarks 🔗</div>
           <div class="bookmark-grid">
             <a v-for="bm in bookmarks" :key="bm.url" :href="bm.url" target="_blank" rel="noopener" class="bookmark-item">
               <div class="bookmark-favicon"><img :src="`https://www.google.com/s2/favicons?domain=${bm.url}&sz=32`" @error="$event.target.style.display='none'" /><span v-if="!bm.url">🔗</span></div>
@@ -552,9 +515,7 @@ a{color:inherit;} button{font-family:inherit;}
         </div>
 
         <!-- BG -->
-        <div v-else-if="wid.id==='bg'" :class="['card', `col-${wid.cols}`]" :draggable="true" @dragstart="onDragStart($event,wid.id)" @dragover.prevent="onDragOver($event,wid.id)" @drop="onDrop($event,wid.id)" @dragend="onDragEnd" :class="{dragging:dragging===wid.id,'drag-over':dragTarget===wid.id}">
-          <div class="drag-handle"><span></span><span></span><span></span></div>
-          <div class="card-label">Background · Unsplash</div>
+        <div v-else-if="wid.id==='bg'" class="card">          <div class="card-label">Background · Unsplash</div>
           <div class="bg-topics">
             <button v-for="t in bgTopics" :key="t.key" class="topic-btn" :class="{active:bgTopic===t.key}" @click="setBgTopic(t.key)">{{ t.label }}</button>
           </div>
@@ -714,12 +675,6 @@ createApp({
     const numCols=ref(3);
     function updateNumCols(){numCols.value=window.innerWidth<600?1:window.innerWidth<960?2:3;}
     const masonryColumns=computed(()=>{const n=numCols.value;const cols=Array.from({length:n},()=>[]);const heights=new Array(n).fill(0);for(const wid of visibleWidgets.value){const shortest=heights.indexOf(Math.min(...heights));cols[shortest].push(wid);heights[shortest]+=(WIDGET_META[wid.id]?.weight||1);}return cols;});
-    const dragging=ref(null); const dragTarget=ref(null);
-    function onDragStart(e,id){if(!e.target.closest('.drag-handle')){e.preventDefault();return;}dragging.value=id;e.dataTransfer.effectAllowed='move';}
-    function onDragOver(e,id){if(dragging.value&&dragging.value!==id)dragTarget.value=id;}
-    function onDrop(e,id){if(!dragging.value||dragging.value===id)return;const visible=visibleWidgets.value.map(w=>w.id);const fi=visible.indexOf(dragging.value),ti=visible.indexOf(id);if(fi<0||ti<0)return;const newVis=[...visible];newVis.splice(fi,1);newVis.splice(ti,0,dragging.value);// rebuild full order: put visible ones in new order, hidden ones stay
-    const hidden=order.value.filter(id=>!visible.includes(id));order.value=[...newVis,...hidden];saveWidgetState();dragging.value=null;dragTarget.value=null;}
-    function onDragEnd(){dragging.value=null;dragTarget.value=null;}
 
     // drag-in-picker
     const pickerDragging=ref(null); const pickerTarget=ref(null);
@@ -804,7 +759,7 @@ createApp({
     onUnmounted(()=>{clearInterval(clockTimer);window.removeEventListener('resize',updateNumCols);});
     watch(useFahrenheit,v=>localStorage.setItem('aurora_fahrenheit',v));
 
-    return{clockStr,dateStr,showSettings,showPicker,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,dragging,dragTarget,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onDragStart,onDragOver,onDrop,onDragEnd,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings};
+    return{clockStr,dateStr,showSettings,showPicker,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings};
   }
 }).mount('#app');
 </script>
