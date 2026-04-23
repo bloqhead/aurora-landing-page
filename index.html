@@ -562,7 +562,7 @@ a{color:inherit;} button{font-family:inherit;}
         <div class="settings-title">Settings</div>
         <div class="settings-section">
           <div class="settings-section-label">Location (city, country)</div>
-          <input class="settings-input" v-model="locationInput" placeholder="e.g. Asheville, US" @keyup.enter="saveSettings" />
+          <input class="settings-input" v-model="locationInput" placeholder="e.g. Asheville or Cape Cod" @keyup.enter="saveSettings" />
           <div v-if="locationError" style="font-size:var(--t-xs);color:#ff8c6b;margin-top:var(--s-xs);">{{ locationError }}</div>
         </div>
         <div class="settings-section">
@@ -637,7 +637,16 @@ const QUOTES=[{text:"The world is quiet here.",author:"Lemony Snicket"},{text:"N
 const DEFAULT_WIDGET_ORDER=['kp','weather','sun','moon','aqi','tides','iss','planets','quote','animal','apod','soma','album','notes','todo','bookmarks','bg'];
 const WIDGET_META={kp:{label:'KP Index',icon:'🌌',desc:'Aurora activity — updated every 5 min',cols:4,weight:3},weather:{label:'Weather',icon:'🌤️',desc:'Local conditions from Open-Meteo',cols:4,weight:3},sun:{label:'Sunrise & Sunset',icon:'🌅',desc:'Daily sun arc with daylight duration',cols:4,weight:3},moon:{label:'Moon Phase',icon:'🌕',desc:'Calculated phase, illumination & next full moon',cols:3,weight:2},aqi:{label:'Air Quality',icon:'🌬️',desc:'AQI, PM2.5, PM10 and ozone',cols:3,weight:2},tides:{label:'Tides',icon:'🌊',desc:'Tide highs and lows from Open-Meteo Marine',cols:5,weight:3},iss:{label:'ISS Pass Times',icon:'📡',desc:'When the space station flies over you',cols:4,weight:3},planets:{label:'Planets Tonight',icon:'🔭',desc:'Calculated visibility for naked-eye planets',cols:4,weight:4},quote:{label:'Inspiration',icon:'💬',desc:'Curated quotes from writers, artists, thinkers',cols:6,weight:2},animal:{label:'Animal of the Day',icon:'🦎',desc:'Random wildlife observation + Wikipedia fact',cols:5,weight:5},apod:{label:'NASA APOD',icon:'🌌',desc:'Astronomy Picture of the Day',cols:6,weight:5},soma:{label:'SomaFM Radio',icon:'📻',desc:'Curated ambient & electronic streams',cols:5,weight:3},album:{label:'Album Rec',icon:'🎵',desc:'Last.fm genre recommendations',cols:8,weight:4},notes:{label:'Notes',icon:'📋',desc:'Quick scratchpad, auto-saved locally',cols:5,weight:3},todo:{label:'To-Do',icon:'✅',desc:'Simple checklist, persisted locally',cols:4,weight:3},bookmarks:{label:'Bookmarks',icon:'🔗',desc:'Your personal speed-dial links',cols:12,weight:2},bg:{label:'Background',icon:'🖼️',desc:'Unsplash photo topic picker',cols:7,weight:2}};
 
-async function geocode(city){const r=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`);const d=await r.json();if(!d.results?.length)throw new Error('not found');return{lat:d.results[0].latitude,lon:d.results[0].longitude,name:d.results[0].name+', '+d.results[0].country};}
+async function geocode(city){
+  // Strip country suffix if user typed "City, Country" format — API works best with city name only
+  const name=city.split(',')[0].trim();
+  const r=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=5&language=en&format=json`);
+  const d=await r.json();
+  if(!d.results?.length)throw new Error('not found');
+  const best=d.results[0];
+  const label=[best.name,best.admin1,best.country].filter(Boolean).join(', ');
+  return{lat:best.latitude,lon:best.longitude,name:label};
+}
 
 createApp({
   setup(){
