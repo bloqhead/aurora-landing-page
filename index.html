@@ -653,10 +653,12 @@ a{color:inherit;} button{font-family:inherit;}
             <div class="chat-auth-title">{{ chatAuthMode==='login'?'Sign in':'Create account' }}</div>
             <input class="chat-input-field" v-model="chatUsername" placeholder="Username" @keyup.enter="chatSubmitAuth" autocomplete="username" />
             <input class="chat-input-field" v-model="chatPassword" type="password" placeholder="Password" @keyup.enter="chatSubmitAuth" autocomplete="current-password" />
-            <div v-if="chatAuthMode==='register'" id="turnstile-widget"
+            <div v-if="chatAuthMode==='register'"
+              id="turnstile-widget"
               class="cf-turnstile"
               data-sitekey="0x4AAAAAADCddltz7VJSRP5V"
               data-theme="dark"
+              data-size="flexible"
               data-callback="onTurnstileSuccess">
             </div>
             <button class="chat-submit-btn" @click="chatSubmitAuth" :disabled="chatAuthLoading">
@@ -1005,6 +1007,25 @@ createApp({
     const chatTurnstileToken=ref('');
     // Global callback for Turnstile widget
     window.onTurnstileSuccess=(token)=>{ chatTurnstileToken.value=token; };
+
+    // Re-render Turnstile when switching to register mode
+    watch(chatAuthMode, async (mode) => {
+      if(mode==='register'){
+        await nextTick();
+        if(window.turnstile){
+          const el=document.getElementById('turnstile-widget');
+          if(el&&!el.querySelector('iframe')){
+            window.turnstile.render(el,{
+              sitekey:'0x4AAAAAADCddltz7VJSRP5V',
+              theme:'dark',
+              callback:(token)=>{ chatTurnstileToken.value=token; }
+            });
+          }
+        }
+      } else {
+        chatTurnstileToken.value='';
+      }
+    });
     const chatUser=ref(localStorage.getItem('aurora_chat_user')||'');
     const chatToken=ref(localStorage.getItem('aurora_chat_token')||'');
     const chatAuthMode=ref('login');
@@ -1043,8 +1064,7 @@ createApp({
         const d=await r.json();
         if(!r.ok){
           chatError.value=d.error||'Something went wrong';
-          // Reset Turnstile on failure so user can try again
-          if(chatAuthMode.value==='register'&&window.turnstile)window.turnstile.reset();
+          chatTurnstileToken.value='';
           return;
         }
         chatUser.value=d.username; chatToken.value=d.token;
