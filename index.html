@@ -224,6 +224,18 @@ body{font-family:var(--font-body);font-size:var(--t-md);line-height:1.5;color:va
 .iss-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse-dot 2s ease-in-out infinite;flex-shrink:0;}
 @keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.7);}}
 
+/* CHANGELOG */
+.changelog-badge{position:absolute;top:-4px;right:-4px;background:var(--accent);color:#000;font-family:var(--font-mono);font-size:9px;font-weight:700;border-radius:10px;padding:1px 5px;line-height:1.4;pointer-events:none;}
+.changelog-list{display:flex;flex-direction:column;gap:var(--s-sm);max-height:60vh;overflow-y:auto;padding-right:4px;}
+.changelog-entry{padding:var(--s-sm) var(--s-md);border:1px solid var(--card-border);border-radius:10px;background:rgba(255,255,255,.02);transition:border-color .2s;}
+.changelog-entry.changelog-new{border-color:color-mix(in srgb,var(--accent) 40%,transparent);background:color-mix(in srgb,var(--accent) 4%,transparent);}
+.changelog-entry-header{display:flex;align-items:center;gap:var(--s-sm);margin-bottom:var(--s-xs);flex-wrap:wrap;}
+.changelog-tag{font-family:var(--font-mono);font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;color:#000;letter-spacing:.05em;text-transform:uppercase;}
+.changelog-date{font-family:var(--font-mono);font-size:var(--t-xs);color:var(--text-muted);flex:1;}
+.changelog-sha{font-family:var(--font-mono);font-size:var(--t-xs);color:var(--accent);text-decoration:none;opacity:.7;transition:opacity .2s;}
+.changelog-sha:hover{opacity:1;}
+.changelog-message{font-size:var(--t-sm);color:var(--text);line-height:1.4;}
+
 /* DICE */
 .dice-tray{display:flex;flex-direction:column;gap:var(--s-sm);}
 .dice-types{display:flex;flex-wrap:wrap;gap:var(--s-xs);}
@@ -677,6 +689,10 @@ body.theme-synthwave #bg-overlay {
       </div>
       <div class="header-right">
         <button class="icon-btn" @click="refreshBg" title="New background">↺</button>
+        <button class="icon-btn changelog-btn" @click="openChangelog" title="What's new" style="position:relative">
+          🔔
+          <span v-if="changelogUnread > 0" class="changelog-badge">{{ changelogUnread > 9 ? '9+' : changelogUnread }}</span>
+        </button>
         <button class="icon-btn" @click="showPicker = true" title="Widgets">⊞</button>
         <button class="icon-btn" @click="showSettings = true" title="Settings">⚙</button>
       </div>
@@ -1023,6 +1039,35 @@ body.theme-synthwave #bg-overlay {
       <div class="kp-alert-icon">🌌</div>
       <div class="kp-alert-text">KP {{ kp?.toFixed(1) }} — {{ kpInfo?.label }}. {{ kpInfo?.chance }}.</div>
       <button class="kp-alert-close" @click="dismissKpAlert">✕</button>
+    </div>
+  </transition>
+
+  <!-- CHANGELOG -->
+  <transition name="fade">
+    <div class="settings-overlay" v-if="showChangelog" @click.self="showChangelog=false">
+      <div class="settings-panel" style="width:min(580px,92vw)">
+        <button class="settings-close" @click="showChangelog=false">✕</button>
+        <div class="settings-title">What's New</div>
+        <div style="font-family:var(--font-mono);font-size:var(--t-xs);color:var(--text-muted);margin-bottom:var(--s-lg)">
+          aurora-landing-page · latest commits
+        </div>
+        <div v-if="changelogLoading" style="text-align:center;padding:var(--s-xl) 0">
+          <div class="dot-loader"><span></span><span></span><span></span></div>
+        </div>
+        <div v-else-if="changelogError" style="font-family:var(--font-mono);font-size:var(--t-xs);color:var(--text-muted)">
+          {{ changelogError }}
+        </div>
+        <div v-else class="changelog-list">
+          <div v-for="entry in changelogEntries" :key="entry.sha" class="changelog-entry" :class="{'changelog-new': entry.isNew}">
+            <div class="changelog-entry-header">
+              <span class="changelog-tag" :style="{background: entry.tagColor}">{{ entry.tag }}</span>
+              <span class="changelog-date">{{ entry.date }}</span>
+              <a :href="entry.url" target="_blank" rel="noopener" class="changelog-sha">{{ entry.sha.slice(0,7) }}</a>
+            </div>
+            <div class="changelog-message">{{ entry.message }}</div>
+          </div>
+        </div>
+      </div>
     </div>
   </transition>
 
@@ -1459,6 +1504,65 @@ createApp({
     }
     function dismissKpAlert(){kpAlert.value=false;localStorage.setItem(KP_SNOOZE_KEY,Date.now()+3*60*60*1000);}// snooze 3h
 
+    // CHANGELOG
+    const showChangelog=ref(false);
+    const changelogLoading=ref(false);
+    const changelogError=ref('');
+    const changelogEntries=ref([]);
+    const changelogUnread=ref(0);
+    const CHANGELOG_KEY='aurora_changelog_seen';
+    const REPO='bloqhead/aurora-landing-page';
+    const TAG_COLORS={feat:'#50dca0',fix:'#ff8c6b',refactor:'#7b6ff0',chore:'#7a9e92',ci:'#7a9e92',docs:'#a8d4e8',style:'#c77dff',perf:'#ffe066',test:'#5bc8af'};
+
+    function parseCommit(c){
+      const msg=c.commit.message.split('\n')[0];
+      const match=msg.match(/^(\w+)(\(.+?\))?:\s*(.+)/);
+      const tag=match?match[1].toLowerCase():'update';
+      const message=match?match[3]:msg;
+      return{sha:c.sha,url:c.html_url,tag,message,date:new Date(c.commit.author.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),tagColor:TAG_COLORS[tag]||'#7a9e92',boring:['ci','chore'].includes(tag),isNew:false};
+    }
+
+    async function fetchChangelog(){
+      changelogLoading.value=true;changelogError.value='';
+      try{
+        const r=await fetch(`https://api.github.com/repos/${REPO}/commits?per_page=40`);
+        if(!r.ok)throw new Error('GitHub API error');
+        const data=await r.json();
+        const lastSeen=localStorage.getItem(CHANGELOG_KEY)||'';
+        const entries=data.map(parseCommit).filter(e=>!e.boring).slice(0,30);
+        let foundSeen=!lastSeen;
+        for(const e of entries){if(!foundSeen)e.isNew=true;if(e.sha===lastSeen)foundSeen=true;}
+        changelogEntries.value=entries;
+      }catch{changelogError.value='Could not load changelog. Check back later.';}
+      changelogLoading.value=false;
+    }
+
+    async function fetchChangelogBadge(){
+      try{
+        const r=await fetch(`https://api.github.com/repos/${REPO}/commits?per_page=40`);
+        if(!r.ok)return;
+        const data=await r.json();
+        const lastSeen=localStorage.getItem(CHANGELOG_KEY)||'';
+        if(!lastSeen){
+          // First visit — mark current head as seen, no badge
+          if(data.length)localStorage.setItem(CHANGELOG_KEY,data[0].sha);
+          changelogUnread.value=0;return;
+        }
+        const idx=data.findIndex(c=>c.sha===lastSeen);
+        changelogUnread.value=data.slice(0,idx<0?data.length:idx).map(parseCommit).filter(e=>!e.boring).length;
+      }catch{}
+    }
+
+    async function openChangelog(){
+      showChangelog.value=true;
+      await fetchChangelog();
+      if(changelogEntries.value.length){
+        localStorage.setItem(CHANGELOG_KEY,changelogEntries.value[0].sha);
+        changelogUnread.value=0;
+        changelogEntries.value.forEach(e=>e.isNew=false);
+      }
+    }
+
     // DICE MODIFIER
     const diceMod=ref(0);
     const diceTypes=['d4','d6','d8','d10','d12','d20'];
@@ -1735,7 +1839,7 @@ createApp({
 
     function saveSettings(){localStorage.setItem('aurora_location',locationInput.value);localStorage.setItem('aurora_unsplash',unsplashKey.value);localStorage.setItem('aurora_lastfm',lastfmKey.value);localStorage.setItem('aurora_nasa',nasaKey.value);localStorage.setItem('aurora_musicapp',musicApp.value);localStorage.setItem('aurora_theme',currentTheme.value);localStorage.setItem('aurora_fahrenheit',useFahrenheit.value);bookmarks.value=bookmarkEdits.value.filter(b=>b.url);localStorage.setItem('aurora_bookmarks',JSON.stringify(bookmarks.value));showSettings.value=false;locateAndLoad();fetchBg(bgTopic.value);fetchAlbum(selectedGenre.value);fetchAPOD();}
 
-    onMounted(()=>{applyTheme(currentTheme.value);updateNumCols();window.addEventListener('resize',updateNumCols);clockTimer=setInterval(()=>{now.value=new Date();},10000);locateAndLoad();fetchKP();fetchQuote();fetchAlbum(selectedGenre.value);fetchBg(bgTopic.value);fetchAnimal();fetchAPOD();setInterval(fetchKP,5*60*1000);setInterval(()=>{if(unsplashKey.value)fetchBg(bgTopic.value);},15*60*1000);});
+    onMounted(()=>{applyTheme(currentTheme.value);updateNumCols();window.addEventListener('resize',updateNumCols);clockTimer=setInterval(()=>{now.value=new Date();},10000);locateAndLoad();fetchKP();fetchQuote();fetchAlbum(selectedGenre.value);fetchBg(bgTopic.value);fetchAnimal();fetchAPOD();fetchChangelogBadge();setInterval(fetchKP,5*60*1000);setInterval(()=>{if(unsplashKey.value)fetchBg(bgTopic.value);},15*60*1000);});
     onUnmounted(()=>{clearInterval(clockTimer);window.removeEventListener('resize',updateNumCols);teardownDice();});
 
     // Watch for dice canvas to appear in DOM (widget may not be visible on mount)
@@ -1765,7 +1869,7 @@ createApp({
 
     watch(useFahrenheit,v=>localStorage.setItem('aurora_fahrenheit',v));
 
-    return{clockStr,dateStr,showSettings,showPicker,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,formatChatTime,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings};
+    return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,formatChatTime,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings};
   }
 }).mount('#app');
 </script>
