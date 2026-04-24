@@ -648,13 +648,8 @@ a{color:inherit;} button{font-family:inherit;}
             </div>
           </div>
 
-          <!-- No API URL configured -->
-          <div v-if="!chatApiUrl" class="chat-no-url">
-            Set Chat API URL in ⚙ Settings to enable.
-          </div>
-
           <!-- Auth form -->
-          <div v-else-if="!chatUser" class="chat-auth">
+          <div v-if="!chatUser" class="chat-auth">
             <div class="chat-auth-title">{{ chatAuthMode==='login'?'Sign in':'Create account' }}</div>
             <input class="chat-input-field" v-model="chatUsername" placeholder="Username" @keyup.enter="chatSubmitAuth" autocomplete="username" />
             <input class="chat-input-field" v-model="chatPassword" type="password" placeholder="Password" @keyup.enter="chatSubmitAuth" autocomplete="current-password" />
@@ -777,11 +772,6 @@ a{color:inherit;} button{font-family:inherit;}
           <div class="settings-hint">Free at api.nasa.gov — powers Astronomy Picture of the Day. Leave blank to use DEMO_KEY (limited).</div>
         </div>
         <div class="settings-section">
-          <div class="settings-section-label">Chat API URL</div>
-          <input class="settings-input" v-model="chatApiInput" placeholder="https://aurora-chat.YOUR_SUBDOMAIN.workers.dev" />
-          <div class="settings-hint">Deploy the aurora-chat Worker and paste its URL here.</div>
-        </div>
-        <div class="settings-section">
           <div class="settings-section-label">Music App for Album Links</div>
           <select class="settings-select" v-model="musicApp">
             <option value="lastfm">Last.fm only</option>
@@ -875,7 +865,7 @@ createApp({
     // widget registry — order + visibility persisted
     const savedOrder=JSON.parse(localStorage.getItem('aurora_widget_order')||'null');
     const savedVis=JSON.parse(localStorage.getItem('aurora_widget_vis')||'null');
-    const defaultVis={kp:true,weather:true,sun:true,moon:true,aqi:true,tides:false,iss:false,planets:false,quote:true,animal:true,apod:false,soma:false,album:true,notes:false,todo:false,bookmarks:false,dice:true,chat:false,bg:true};
+    const defaultVis={kp:true,weather:true,sun:true,moon:true,aqi:true,tides:false,iss:false,planets:false,quote:true,animal:true,apod:false,soma:false,album:true,notes:false,todo:false,bookmarks:false,dice:true,chat:true,bg:true};
     // Merge any new widgets not in the saved order so they always show up in picker
     const mergedOrder=savedOrder
       ? [...savedOrder, ...DEFAULT_WIDGET_ORDER.filter(id=>!savedOrder.includes(id))]
@@ -1003,8 +993,8 @@ createApp({
     async function fetchAPOD(){try{const key=nasaKey.value||'DEMO_KEY';const r=await fetch(`https://api.nasa.gov/planetary/apod?api_key=${key}`);const d=await r.json();if(d.media_type==='image'||d.media_type==='video')apod.value=d;}catch{apod.value=null;}}
 
     // CHAT
-    const chatApiUrl=ref(localStorage.getItem('aurora_chat_url')||'');
-    const chatApiInput=ref(chatApiUrl.value);
+    const CHAT_API='https://aurora-chat.daryn-codes.workers.dev';
+    const chatApiUrl=ref(CHAT_API);
     const chatUser=ref(localStorage.getItem('aurora_chat_user')||'');
     const chatToken=ref(localStorage.getItem('aurora_chat_token')||'');
     const chatAuthMode=ref('login');
@@ -1398,7 +1388,7 @@ createApp({
     function toggleSoma(){if(somaPlaying.value){somaAudio.pause();somaPlaying.value=false;}else{somaAudio.src=currentSoma.value.stream;somaAudio.volume=parseFloat(somaVolume.value);somaAudio.play().catch(()=>{});somaPlaying.value=true;}}
     function updateSomaVolume(){somaAudio.volume=parseFloat(somaVolume.value);}
 
-    function saveSettings(){localStorage.setItem('aurora_location',locationInput.value);localStorage.setItem('aurora_unsplash',unsplashKey.value);localStorage.setItem('aurora_lastfm',lastfmKey.value);localStorage.setItem('aurora_nasa',nasaKey.value);localStorage.setItem('aurora_musicapp',musicApp.value);localStorage.setItem('aurora_theme',currentTheme.value);localStorage.setItem('aurora_fahrenheit',useFahrenheit.value);localStorage.setItem('aurora_chat_url',chatApiInput.value);chatApiUrl.value=chatApiInput.value;bookmarks.value=bookmarkEdits.value.filter(b=>b.url);localStorage.setItem('aurora_bookmarks',JSON.stringify(bookmarks.value));showSettings.value=false;locateAndLoad();fetchBg(bgTopic.value);fetchAlbum(selectedGenre.value);fetchAPOD();}
+    function saveSettings(){localStorage.setItem('aurora_location',locationInput.value);localStorage.setItem('aurora_unsplash',unsplashKey.value);localStorage.setItem('aurora_lastfm',lastfmKey.value);localStorage.setItem('aurora_nasa',nasaKey.value);localStorage.setItem('aurora_musicapp',musicApp.value);localStorage.setItem('aurora_theme',currentTheme.value);localStorage.setItem('aurora_fahrenheit',useFahrenheit.value);bookmarks.value=bookmarkEdits.value.filter(b=>b.url);localStorage.setItem('aurora_bookmarks',JSON.stringify(bookmarks.value));showSettings.value=false;locateAndLoad();fetchBg(bgTopic.value);fetchAlbum(selectedGenre.value);fetchAPOD();}
 
     onMounted(()=>{applyTheme(currentTheme.value);updateNumCols();window.addEventListener('resize',updateNumCols);clockTimer=setInterval(()=>{now.value=new Date();},10000);locateAndLoad();fetchKP();fetchQuote();fetchAlbum(selectedGenre.value);fetchBg(bgTopic.value);fetchAnimal();fetchAPOD();setInterval(fetchKP,5*60*1000);setInterval(()=>{if(unsplashKey.value)fetchBg(bgTopic.value);},15*60*1000);});
     onUnmounted(()=>{clearInterval(clockTimer);window.removeEventListener('resize',updateNumCols);teardownDice();});
@@ -1430,7 +1420,7 @@ createApp({
 
     watch(useFahrenheit,v=>localStorage.setItem('aurora_fahrenheit',v));
 
-    return{clockStr,dateStr,showSettings,showPicker,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatApiUrl,chatApiInput,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,formatChatTime,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings};
+    return{clockStr,dateStr,showSettings,showPicker,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,formatChatTime,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings};
   }
 }).mount('#app');
 </script>
