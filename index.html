@@ -349,31 +349,49 @@ body.theme-pixel .card:hover {
   transform: none !important;
 }
 
-/* All text uses pixel font */
-body.theme-pixel .card-label {
+/* Override ALL display/serif font usage in pixel themes */
+body.theme-pixel .clock,
+body.theme-pixel .kp-big,
+body.theme-pixel .weather-temp,
+body.theme-pixel .aqi-big,
+body.theme-pixel .quote-text,
+body.theme-pixel .moon-name,
+body.theme-pixel .album-title,
+body.theme-pixel .animal-common,
+body.theme-pixel .apod-title,
+body.theme-pixel .soma-station-name,
+body.theme-pixel .sun-time,
+body.theme-pixel .iss-next,
+body.theme-pixel .tide-val,
+body.theme-pixel .dice-result-big,
+body.theme-pixel .settings-title,
+body.theme-pixel .picker-title,
+body.theme-pixel .chat-auth-title {
   font-family: 'Press Start 2P', monospace !important;
-  font-size: 8px !important;
-  letter-spacing: 0.05em !important;
+  font-style: normal !important;
+}
+body.theme-pixel .quote-text {
+  font-size: 9px !important;
+  line-height: 2.2 !important;
+}
+body.theme-pixel .album-title {
+  font-size: 9px !important;
+  white-space: normal !important;
 }
 body.theme-pixel .clock {
-  font-family: 'Press Start 2P', monospace !important;
-  font-size: clamp(1.4rem, 3.5vw, 2.8rem) !important;
-  letter-spacing: -0.02em !important;
+  font-size: clamp(1.2rem, 3vw, 2.4rem) !important;
 }
 body.theme-pixel .kp-big,
 body.theme-pixel .weather-temp,
-body.theme-pixel .aqi-big {
-  font-family: 'Press Start 2P', monospace !important;
-  font-size: clamp(1.4rem, 2.5vw, 2.2rem) !important;
+body.theme-pixel .aqi-big,
+body.theme-pixel .dice-result-big {
+  font-size: clamp(1.1rem, 2.2vw, 1.9rem) !important;
 }
-body.theme-pixel .quote-text {
-  font-family: 'Press Start 2P', monospace !important;
-  font-size: 9px !important;
-  font-style: normal !important;
-  line-height: 2 !important;
-}
-body.theme-pixel .moon-face {
-  image-rendering: pixelated;
+body.theme-pixel .settings-title,
+body.theme-pixel .picker-title,
+body.theme-pixel .chat-auth-title {
+  font-size: 11px !important;
+  line-height: 1.8 !important;
 }
 
 /* Neon glow on accent elements — applied per theme via CSS vars */
@@ -442,7 +460,78 @@ body.theme-pixel .kp-bar-fill { image-rendering: pixelated; }
 /* Theme swatch labels */
 body.theme-pixel .theme-swatch span { font-family: 'Press Start 2P', monospace !important; font-size: 6px !important; }
 
-/* ── CRT specific ── */
+/* ── 2Advanced specific ── */
+/* Cold steel-blue, angular, geometric — 2001 Flash portal energy */
+body.theme-advanced {
+  font-family: 'Press Start 2P', monospace !important;
+}
+body.theme-advanced .card {
+  border-width: 1px !important;
+  background: linear-gradient(135deg, rgba(8,18,32,0.95) 0%, rgba(6,14,26,0.98) 100%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(79,200,232,0.15),
+    0 0 12px rgba(79,200,232,0.08),
+    1px 1px 0 rgba(79,200,232,0.1) !important;
+}
+/* Corner accent marks — 2Advanced loved geometric corner cuts */
+body.theme-advanced .card::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 16px; height: 16px;
+  background: linear-gradient(225deg, rgba(79,200,232,0.4) 0%, transparent 50%);
+  pointer-events: none;
+}
+body.theme-advanced .card::before {
+  background: linear-gradient(90deg, rgba(79,200,232,0.3), transparent) !important;
+  opacity: 1 !important;
+  height: 1px !important;
+}
+/* No scanlines for 2Advanced — it was crisp and clean */
+body.theme-advanced::after { display: none; }
+body.theme-advanced::before { display: none; }
+/* Subtle horizontal rule texture on bg */
+body.theme-advanced #bg-overlay {
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 40px,
+      rgba(79,200,232,0.02) 40px,
+      rgba(79,200,232,0.02) 41px
+    ) !important;
+}
+/* Cold precise text */
+body.theme-advanced .clock {
+  letter-spacing: 0.08em !important;
+  font-size: clamp(1.2rem, 3vw, 2.4rem) !important;
+}
+body.theme-advanced .card-label {
+  letter-spacing: 0.2em !important;
+  font-size: 7px !important;
+  color: rgba(79,200,232,0.6) !important;
+  border-bottom: 1px solid rgba(79,200,232,0.15) !important;
+  padding-bottom: 6px !important;
+  margin-bottom: 10px !important;
+}
+/* Angular button style */
+body.theme-advanced .icon-btn,
+body.theme-advanced .genre-btn,
+body.theme-advanced .topic-btn,
+body.theme-advanced .dice-type-btn {
+  clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%) !important;
+  border: none !important;
+  background: rgba(79,200,232,0.08) !important;
+  box-shadow: none !important;
+}
+body.theme-advanced .genre-btn.active,
+body.theme-advanced .topic-btn.active,
+body.theme-advanced .dice-type-btn.active {
+  background: rgba(79,200,232,0.25) !important;
+  clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%) !important;
+}
+body.theme-advanced .kp-bar-track { height: 3px !important; background: rgba(79,200,232,0.1) !important; }
+
 body.theme-crt::after {
   background: repeating-linear-gradient(
     0deg,
@@ -1011,8 +1100,9 @@ const THEMES={
   dusk:      {name:'Dusk',      dark:true, bg:'#12060a',bg2:'#0f0a1e',accent:'#ff8c6b',accent2:'#c77dff',text:'#f5ddd8',textMuted:'#8a6060',glow:'rgba(255,120,100,0.18)',shimmer:'#ffb8a0',card:'rgba(20,10,18,0.75)', cardBorder:'rgba(255,120,100,0.13)'},
   arctic:    {name:'Arctic',    dark:false,bg:'#e8f4f8',bg2:'#e2eef5',accent:'#1a7fa8',accent2:'#2a9d7a',text:'#1a2a35',textMuted:'#5a7a8a',glow:'rgba(80,160,200,0.12)', shimmer:'#1a7fa8', card:'rgba(255,255,255,0.7)',cardBorder:'rgba(80,160,200,0.2)'},
   forest:    {name:'Forest',    dark:true, bg:'#050d08',bg2:'#0a1a0c',accent:'#5ddb6e',accent2:'#a8e063',text:'#d8f0dc',textMuted:'#5a7a5e',glow:'rgba(80,200,100,0.18)', shimmer:'#90e8a0',card:'rgba(8,20,10,0.76)',  cardBorder:'rgba(80,200,100,0.14)'},
-  crt:       {name:'CRT',       dark:true, bg:'#030a03',bg2:'#000a00',accent:'#00ff41',accent2:'#00cc33',text:'#00ff41',textMuted:'#007a1f',glow:'rgba(0,255,65,0.25)',    shimmer:'#00ff41',card:'rgba(0,15,0,0.88)',   cardBorder:'rgba(0,255,65,0.25)',   pixel:true,  pixelClass:'theme-pixel theme-crt'},
-  synthwave: {name:'Synthwave', dark:true, bg:'#0a0015',bg2:'#100020',accent:'#ff00ff',accent2:'#00eeff',text:'#ffffff', textMuted:'#aa44cc',glow:'rgba(255,0,255,0.25)',   shimmer:'#ff00ff',card:'rgba(15,0,30,0.85)', cardBorder:'rgba(255,0,255,0.3)',   pixel:true,  pixelClass:'theme-pixel theme-synthwave'},
+  crt:        {name:'CRT',       dark:true, bg:'#030a03',bg2:'#000a00',accent:'#00ff41',accent2:'#00cc33',text:'#00ff41',textMuted:'#007a1f',glow:'rgba(0,255,65,0.25)',    shimmer:'#00ff41',card:'rgba(0,15,0,0.88)',   cardBorder:'rgba(0,255,65,0.25)',   pixel:true, pixelClass:'theme-pixel theme-crt'},
+  synthwave:  {name:'Synthwave', dark:true, bg:'#0a0015',bg2:'#100020',accent:'#ff00ff',accent2:'#00eeff',text:'#ffffff', textMuted:'#aa44cc',glow:'rgba(255,0,255,0.25)',   shimmer:'#ff00ff',card:'rgba(15,0,30,0.85)', cardBorder:'rgba(255,0,255,0.3)',   pixel:true, pixelClass:'theme-pixel theme-synthwave'},
+  advanced:   {name:'2Advanced', dark:true, bg:'#050c18',bg2:'#08101f',accent:'#4fc8e8',accent2:'#a8d4e8',text:'#c8dde8', textMuted:'#4a6478',glow:'rgba(79,200,232,0.15)',  shimmer:'#4fc8e8', card:'rgba(6,14,26,0.9)', cardBorder:'rgba(79,200,232,0.2)',  pixel:true, pixelClass:'theme-pixel theme-advanced'},
 };
 
 const BG_TOPICS=[{key:'northern-lights',label:'Northern Lights'},{key:'aurora-borealis',label:'Aurora'},{key:'arctic-landscape',label:'Arctic'},{key:'night-sky-stars',label:'Night Sky'},{key:'forest-fog-night',label:'Forest'},{key:'ocean-coast-dark',label:'Coast'},{key:'mountain-snow-night',label:'Mountains'},{key:'minimalist-dark',label:'Minimal'}];
