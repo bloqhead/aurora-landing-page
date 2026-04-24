@@ -7,7 +7,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌌</text></svg>" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,200;0,9..144,400;1,9..144,300&family=DM+Mono:wght@300;400&family=Outfit:wght@200;300;400&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,200;0,9..144,400;1,9..144,300&family=DM+Mono:wght@300;400&family=Outfit:wght@200;300;400&family=Press+Start+2P&display=swap" rel="stylesheet" />
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -292,7 +292,185 @@ a{color:inherit;} button{font-family:inherit;}
 [v-cloak]{display:none!important;}
 ::-webkit-scrollbar{width:5px;} ::-webkit-scrollbar-track{background:transparent;} ::-webkit-scrollbar-thumb{background:var(--card-border);border-radius:3px;}
 
-/* KP ALERT */
+/* ── PIXEL THEMES ────────────────────────────────────────────────────────────
+   Applied via .theme-pixel-* on body. Override the smooth modern defaults
+   with sharp edges, pixel fonts, scanlines, and neon glow.                   */
+
+body.theme-pixel {
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 10px !important;
+  image-rendering: pixelated;
+}
+
+/* Scanline overlay */
+body.theme-pixel::after {
+  content: '';
+  position: fixed; inset: 0; z-index: 9999;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.08) 2px,
+    rgba(0,0,0,0.08) 4px
+  );
+}
+
+/* Kill all border-radius */
+body.theme-pixel *,
+body.theme-pixel .card,
+body.theme-pixel .icon-btn,
+body.theme-pixel .card-btn,
+body.theme-pixel .genre-btn,
+body.theme-pixel .topic-btn,
+body.theme-pixel .settings-panel,
+body.theme-pixel .picker-panel,
+body.theme-pixel .settings-input,
+body.theme-pixel .chat-input-field,
+body.theme-pixel .chat-send-input,
+body.theme-pixel .chat-submit-btn,
+body.theme-pixel .chat-send-btn,
+body.theme-pixel .todo-input,
+body.theme-pixel .todo-add,
+body.theme-pixel .dice-roll-btn,
+body.theme-pixel .kp-bar-track,
+body.theme-pixel .kp-bar-fill,
+body.theme-pixel .album-art {
+  border-radius: 0 !important;
+}
+
+/* Pixel card style — chunky inset border */
+body.theme-pixel .card {
+  backdrop-filter: none !important;
+  border-width: 2px !important;
+  box-shadow: inset -2px -2px 0 rgba(0,0,0,0.5), inset 2px 2px 0 rgba(255,255,255,0.08) !important;
+}
+body.theme-pixel .card:hover {
+  transform: none !important;
+}
+
+/* All text uses pixel font */
+body.theme-pixel .card-label {
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 8px !important;
+  letter-spacing: 0.05em !important;
+}
+body.theme-pixel .clock {
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: clamp(1.4rem, 3.5vw, 2.8rem) !important;
+  letter-spacing: -0.02em !important;
+}
+body.theme-pixel .kp-big,
+body.theme-pixel .weather-temp,
+body.theme-pixel .aqi-big {
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: clamp(1.4rem, 2.5vw, 2.2rem) !important;
+}
+body.theme-pixel .quote-text {
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 9px !important;
+  font-style: normal !important;
+  line-height: 2 !important;
+}
+body.theme-pixel .moon-face {
+  image-rendering: pixelated;
+}
+
+/* Neon glow on accent elements — applied per theme via CSS vars */
+body.theme-pixel .kp-big,
+body.theme-pixel .clock,
+body.theme-pixel .dice-result-big {
+  text-shadow: 0 0 8px var(--accent), 0 0 20px var(--accent), 0 0 40px var(--accent) !important;
+}
+body.theme-pixel .card {
+  box-shadow:
+    inset -2px -2px 0 rgba(0,0,0,0.5),
+    inset 2px 2px 0 rgba(255,255,255,0.08),
+    0 0 10px var(--glow) !important;
+}
+
+/* Buttons get chunky pixel style */
+body.theme-pixel .icon-btn,
+body.theme-pixel .card-btn,
+body.theme-pixel .genre-btn,
+body.theme-pixel .topic-btn,
+body.theme-pixel .dice-type-btn {
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 8px !important;
+  border-width: 2px !important;
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.8) !important;
+  transition: none !important;
+}
+body.theme-pixel .icon-btn:hover,
+body.theme-pixel .genre-btn:hover,
+body.theme-pixel .topic-btn:hover {
+  transform: translate(-1px,-1px) !important;
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.8) !important;
+}
+body.theme-pixel .genre-btn.active,
+body.theme-pixel .topic-btn.active,
+body.theme-pixel .dice-type-btn.active {
+  box-shadow: inset 2px 2px 0 rgba(0,0,0,0.4) !important;
+  transform: translate(1px,1px) !important;
+}
+
+/* Input fields */
+body.theme-pixel .settings-input,
+body.theme-pixel .chat-input-field,
+body.theme-pixel .chat-send-input,
+body.theme-pixel .todo-input,
+body.theme-pixel .notes-area {
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 9px !important;
+  border-width: 2px !important;
+  backdrop-filter: none !important;
+  box-shadow: inset 2px 2px 0 rgba(0,0,0,0.5) !important;
+}
+
+/* Settings/picker panels */
+body.theme-pixel .settings-panel,
+body.theme-pixel .picker-panel {
+  backdrop-filter: none !important;
+  border-width: 2px !important;
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.8), 0 0 20px var(--glow) !important;
+}
+
+/* Progress bars — blocky */
+body.theme-pixel .kp-bar-track { height: 8px !important; }
+body.theme-pixel .kp-bar-fill { image-rendering: pixelated; }
+
+/* Theme swatch labels */
+body.theme-pixel .theme-swatch span { font-family: 'Press Start 2P', monospace !important; font-size: 6px !important; }
+
+/* ── CRT specific ── */
+body.theme-crt::after {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 1px,
+    rgba(0,0,0,0.12) 1px,
+    rgba(0,0,0,0.12) 3px
+  );
+}
+/* Slight screen curve vignette */
+body.theme-crt::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 9998; pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.55) 100%);
+}
+
+/* ── Synthwave specific ── */
+body.theme-synthwave .card::before {
+  opacity: 0.4 !important;
+}
+/* Retro grid floor on bg */
+body.theme-synthwave #bg-overlay {
+  background-image:
+    linear-gradient(transparent 50%, rgba(255,0,255,0.03) 50%),
+    linear-gradient(90deg, transparent 50%, rgba(255,0,255,0.03) 50%) !important;
+  background-size: 40px 40px !important;
+}
+
 .kp-alert{position:fixed;top:var(--s-md);left:50%;transform:translateX(-50%);z-index:200;background:linear-gradient(135deg,rgba(255,224,102,.15),rgba(255,170,68,.15));border:1px solid #ffe06688;border-radius:14px;padding:var(--s-sm) var(--s-md);display:flex;align-items:center;gap:var(--s-sm);backdrop-filter:blur(16px);box-shadow:0 4px 24px rgba(0,0,0,.3);max-width:min(480px,90vw);}
 .kp-alert-icon{font-size:var(--t-lg);}
 .kp-alert-text{font-family:var(--font-mono);font-size:var(--t-xs);color:var(--text);flex:1;line-height:1.4;}
@@ -803,7 +981,7 @@ a{color:inherit;} button{font-family:inherit;}
         <div class="settings-section">
           <div class="settings-section-label">Theme</div>
           <div class="theme-swatches">
-            <div v-for="(t,key) in themeMap" :key="key" class="theme-swatch" :class="{active:currentTheme===key}" :style="{background:t.bg}" @click="setTheme(key)" :title="t.name"><span>{{ t.name }}</span></div>
+            <div v-for="(t,key) in themeMap" :key="key" class="theme-swatch" :class="{active:currentTheme===key}" :style="{background:t.bg, outline:t.pixel?'2px solid '+t.accent:'none', outlineOffset:'2px'}" @click="setTheme(key)" :title="t.name"><span>{{ t.name }}</span></div>
           </div>
         </div>
         <button class="settings-btn" @click="saveSettings">Save &amp; Apply</button>
@@ -827,7 +1005,15 @@ function calcMoon(){const now=new Date();const k=29.53058770576;const j=now/8640
 
 function calcPlanets(){const now=new Date();const doy=Math.floor((now-(new Date(now.getFullYear(),0,0)))/86400000);const hour=now.getHours();const isNight=hour>=20||hour<=6;const planets=[{name:'Mercury',emoji:'☿',base:88,period:88},{name:'Venus',emoji:'♀',base:225,period:225},{name:'Mars',emoji:'♂',base:687,period:687},{name:'Jupiter',emoji:'♃',base:4333,period:4333},{name:'Saturn',emoji:'♄',base:10759,period:10759},{name:'Uranus',emoji:'⛢',base:30687,period:30687},{name:'Neptune',emoji:'♆',base:60190,period:60190}];return planets.map(p=>{const pos=(doy%p.period)/p.period;const elongation=Math.abs(pos-0.5)*180;const visible=isNight&&elongation>20;const alt=Math.round(elongation);return{...p,visible,info:visible?`~${alt}° elongation`:'Below horizon'}});}
 
-const THEMES={aurora:{name:'Aurora',dark:true,bg:'#0a0e1a',bg2:'#091a14',accent:'#50dca0',accent2:'#7b6ff0',text:'#e8f4f0',textMuted:'#7a9e92',glow:'rgba(80,220,160,0.18)',shimmer:'#a0f0d0',card:'rgba(10,20,35,0.72)',cardBorder:'rgba(80,220,180,0.13)'},midnight:{name:'Midnight',dark:true,bg:'#07080f',bg2:'#12091a',accent:'#9d7fff',accent2:'#ff7eb6',text:'#ddd8ff',textMuted:'#6a618a',glow:'rgba(140,100,255,0.2)',shimmer:'#c4b8ff',card:'rgba(14,13,30,0.78)',cardBorder:'rgba(120,100,255,0.15)'},dusk:{name:'Dusk',dark:true,bg:'#12060a',bg2:'#0f0a1e',accent:'#ff8c6b',accent2:'#c77dff',text:'#f5ddd8',textMuted:'#8a6060',glow:'rgba(255,120,100,0.18)',shimmer:'#ffb8a0',card:'rgba(20,10,18,0.75)',cardBorder:'rgba(255,120,100,0.13)'},arctic:{name:'Arctic',dark:false,bg:'#e8f4f8',bg2:'#e2eef5',accent:'#1a7fa8',accent2:'#2a9d7a',text:'#1a2a35',textMuted:'#5a7a8a',glow:'rgba(80,160,200,0.12)',shimmer:'#1a7fa8',card:'rgba(255,255,255,0.7)',cardBorder:'rgba(80,160,200,0.2)'},forest:{name:'Forest',dark:true,bg:'#050d08',bg2:'#0a1a0c',accent:'#5ddb6e',accent2:'#a8e063',text:'#d8f0dc',textMuted:'#5a7a5e',glow:'rgba(80,200,100,0.18)',shimmer:'#90e8a0',card:'rgba(8,20,10,0.76)',cardBorder:'rgba(80,200,100,0.14)'}};
+const THEMES={
+  aurora:    {name:'Aurora',    dark:true, bg:'#0a0e1a',bg2:'#091a14',accent:'#50dca0',accent2:'#7b6ff0',text:'#e8f4f0',textMuted:'#7a9e92',glow:'rgba(80,220,160,0.18)', shimmer:'#a0f0d0',card:'rgba(10,20,35,0.72)', cardBorder:'rgba(80,220,180,0.13)'},
+  midnight:  {name:'Midnight',  dark:true, bg:'#07080f',bg2:'#12091a',accent:'#9d7fff',accent2:'#ff7eb6',text:'#ddd8ff',textMuted:'#6a618a',glow:'rgba(140,100,255,0.2)', shimmer:'#c4b8ff',card:'rgba(14,13,30,0.78)', cardBorder:'rgba(120,100,255,0.15)'},
+  dusk:      {name:'Dusk',      dark:true, bg:'#12060a',bg2:'#0f0a1e',accent:'#ff8c6b',accent2:'#c77dff',text:'#f5ddd8',textMuted:'#8a6060',glow:'rgba(255,120,100,0.18)',shimmer:'#ffb8a0',card:'rgba(20,10,18,0.75)', cardBorder:'rgba(255,120,100,0.13)'},
+  arctic:    {name:'Arctic',    dark:false,bg:'#e8f4f8',bg2:'#e2eef5',accent:'#1a7fa8',accent2:'#2a9d7a',text:'#1a2a35',textMuted:'#5a7a8a',glow:'rgba(80,160,200,0.12)', shimmer:'#1a7fa8', card:'rgba(255,255,255,0.7)',cardBorder:'rgba(80,160,200,0.2)'},
+  forest:    {name:'Forest',    dark:true, bg:'#050d08',bg2:'#0a1a0c',accent:'#5ddb6e',accent2:'#a8e063',text:'#d8f0dc',textMuted:'#5a7a5e',glow:'rgba(80,200,100,0.18)', shimmer:'#90e8a0',card:'rgba(8,20,10,0.76)',  cardBorder:'rgba(80,200,100,0.14)'},
+  crt:       {name:'CRT',       dark:true, bg:'#030a03',bg2:'#000a00',accent:'#00ff41',accent2:'#00cc33',text:'#00ff41',textMuted:'#007a1f',glow:'rgba(0,255,65,0.25)',    shimmer:'#00ff41',card:'rgba(0,15,0,0.88)',   cardBorder:'rgba(0,255,65,0.25)',   pixel:true,  pixelClass:'theme-pixel theme-crt'},
+  synthwave: {name:'Synthwave', dark:true, bg:'#0a0015',bg2:'#100020',accent:'#ff00ff',accent2:'#00eeff',text:'#ffffff', textMuted:'#aa44cc',glow:'rgba(255,0,255,0.25)',   shimmer:'#ff00ff',card:'rgba(15,0,30,0.85)', cardBorder:'rgba(255,0,255,0.3)',   pixel:true,  pixelClass:'theme-pixel theme-synthwave'},
+};
 
 const BG_TOPICS=[{key:'northern-lights',label:'Northern Lights'},{key:'aurora-borealis',label:'Aurora'},{key:'arctic-landscape',label:'Arctic'},{key:'night-sky-stars',label:'Night Sky'},{key:'forest-fog-night',label:'Forest'},{key:'ocean-coast-dark',label:'Coast'},{key:'mountain-snow-night',label:'Mountains'},{key:'minimalist-dark',label:'Minimal'}];
 const GENRES=['ambient','jazz','folk','post-rock','classical','shoegaze','blues','soul','experimental','drone','krautrock','neo-soul'];
@@ -939,7 +1125,19 @@ createApp({
     const musicAppLabel=computed(()=>({lastfm:'Last.fm',spotify:'Spotify',apple:'Apple Music',tidal:'Tidal',youtube:'YouTube Music'}[musicApp.value]||'Listen'));
     function musicAppLink(alb){if(!alb)return null;const q=encodeURIComponent(`${alb.artist} ${alb.title}`);switch(musicApp.value){case'spotify':return`https://open.spotify.com/search/${q}`;case'apple':return`https://music.apple.com/search?term=${q}`;case'tidal':return`https://listen.tidal.com/search?q=${q}`;case'youtube':return`https://music.youtube.com/search?q=${q}`;default:return null;}}
 
-    function applyTheme(key){const t=THEMES[key]||THEMES.aurora,s=document.documentElement.style;s.setProperty('--bg',t.bg);s.setProperty('--card',t.card);s.setProperty('--card-border',t.cardBorder);s.setProperty('--accent',t.accent);s.setProperty('--accent2',t.accent2);s.setProperty('--text',t.text);s.setProperty('--text-muted',t.textMuted);s.setProperty('--glow',t.glow);s.setProperty('--shimmer',t.shimmer);document.getElementById('bg-overlay').style.background=t.dark?`linear-gradient(135deg,${t.bg}cc 0%,${t.bg2||t.bg}99 100%)`:`linear-gradient(135deg,${t.bg}dd 0%,${t.bg2||t.bg}bb 100%)`;document.body.style.background=t.bg;}
+    function applyTheme(key){
+      const t=THEMES[key]||THEMES.aurora,s=document.documentElement.style;
+      s.setProperty('--bg',t.bg);s.setProperty('--card',t.card);s.setProperty('--card-border',t.cardBorder);
+      s.setProperty('--accent',t.accent);s.setProperty('--accent2',t.accent2);s.setProperty('--text',t.text);
+      s.setProperty('--text-muted',t.textMuted);s.setProperty('--glow',t.glow);s.setProperty('--shimmer',t.shimmer);
+      document.getElementById('bg-overlay').style.background=t.dark
+        ?`linear-gradient(135deg,${t.bg}cc 0%,${t.bg2||t.bg}99 100%)`
+        :`linear-gradient(135deg,${t.bg}dd 0%,${t.bg2||t.bg}bb 100%)`;
+      document.body.style.background=t.bg;
+      // Remove all pixel theme classes then apply new ones
+      document.body.classList.remove('theme-pixel','theme-crt','theme-synthwave');
+      if(t.pixelClass) t.pixelClass.split(' ').forEach(c=>document.body.classList.add(c));
+    }
     function setTheme(key){currentTheme.value=key;applyTheme(key);}
     const cToF=c=>Math.round(c*9/5+32); const msToMph=ms=>Math.round(ms*2.237);
     const sunProgress=computed(()=>{if(!sunData.value)return 0;const[rh,rm]=sunData.value.sunriseRaw.split(':').map(Number);const[sh,sm]=sunData.value.sunsetRaw.split(':').map(Number);const nowMin=now.value.getHours()*60+now.value.getMinutes();return Math.max(0,Math.min(1,(nowMin-rh*60-rm)/((sh*60+sm)-(rh*60+rm))))});
