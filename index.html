@@ -1153,14 +1153,14 @@ body.theme-synthwave #bg-overlay {
             <div class="solitaire-top">
               <!-- Stock + Waste -->
               <div class="s-pile" style="flex:0 0 52px">
-                <div v-if="solStock.length" class="s-card s-stock" style="position:relative;height:72px" @click="solDraw">🂠</div>
-                <div v-else class="s-empty" style="height:72px;display:flex;align-items:center;justify-content:center;font-size:18px;opacity:.3;cursor:pointer" @click="solDraw">↺</div>
+                <div v-if="solStock.length" class="s-stock" style="width:52px;height:72px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;border:1px solid rgba(80,220,180,.2);background:linear-gradient(135deg,#1a2a4a,#0d1825);" @click="solDraw">🂠</div>
+                <div v-else class="s-empty" style="width:52px;height:72px;display:flex;align-items:center;justify-content:center;font-size:18px;opacity:.3;cursor:pointer;border-radius:6px;" @click="solDraw">↺</div>
               </div>
               <div class="s-pile" style="flex:0 0 52px">
-                <div v-if="solWaste.length" class="s-card face-up" :class="solWaste[solWaste.length-1].suit<2?'red':'black'" style="position:relative;height:72px;font-size:clamp(13px,1.2vw,17px)" draggable="true" @dragstart="solDragStart($event,'waste',0,0)" @dragend="solDragEnd">
+                <div v-if="solWaste.length" class="s-card face-up" :class="solWaste[solWaste.length-1].suit<2?'red':'black'" style="position:relative;width:52px;height:72px;font-size:clamp(13px,1.2vw,17px)" draggable="true" @dragstart="solDragStart($event,'waste',0,0)" @dragend="solDragEnd">
                   {{ solWaste[solWaste.length-1].display }}
                 </div>
-                <div v-else class="s-empty" style="height:72px"></div>
+                <div v-else class="s-empty" style="width:52px;height:72px;border-radius:6px;"></div>
               </div>
               <div style="flex:1"></div>
               <!-- Foundations -->
