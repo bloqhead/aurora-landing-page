@@ -1692,7 +1692,20 @@ createApp({
     function solLoad(){const s=localStorage.getItem('aurora_sol');if(!s)return false;try{const d=JSON.parse(s);solTableau.value=d.tableau;solFoundations.value=d.foundations;solStock.value=d.stock;solWaste.value=d.waste;solMoves.value=d.moves;solWon.value=false;return true;}catch{return false;}}
     function solInit(){if(!solLoad()){const deck=solMakeDeck();solTableau.value=Array.from({length:7},(_,i)=>deck.splice(0,i+1).map((c,j,a)=>({...c,faceUp:j===a.length-1})));solFoundations.value=[[],[],[],[]];solStock.value=deck.map(c=>({...c,faceUp:false}));solWaste.value=[];solMoves.value=0;solWon.value=false;solSave();}}
     // Auto-save after every action
-    function solDraw(){if(!solStock.value.length){solStock.value=solWaste.value.reverse().map(c=>({...c,faceUp:false}));solWaste.value=[];}else{const c={...solStock.value.pop(),faceUp:true};solWaste.value.push(c);}solMoves.value++;solSave();}
+    function solDraw(){
+      if(!solStock.value.length){
+        // Reset stock from waste — avoid in-place reverse which doesn't trigger reactivity
+        solStock.value=[...solWaste.value].reverse().map(c=>({...c,faceUp:false}));
+        solWaste.value=[];
+      } else {
+        const deck=[...solStock.value];
+        const card={...deck.pop(),faceUp:true};
+        solStock.value=deck;
+        solWaste.value=[...solWaste.value,card];
+      }
+      solMoves.value++;
+      solSave();
+    }
     function solDropFoundation(fi){if(!solDragData)return;const{src,ci,ri}=solDragData;let card;if(src==='waste'){card=solWaste.value[solWaste.value.length-1];}else{const col=solTableau.value[ci];if(ri!==col.length-1)return;card=col[ri];}if(!solCanPlaceFoundation(card,fi))return;solFoundations.value[fi].push(card);if(src==='waste')solWaste.value.pop();else solTableau.value[ci].splice(ri,1);solReveal();solMoves.value++;solCheckWin();solSave();}
     function solDropTableau(ti){if(!solDragData)return;const{src,ci,ri}=solDragData;let cards=[];if(src==='waste'){cards=[solWaste.value[solWaste.value.length-1]];}else{cards=solTableau.value[ci].slice(ri);}if(!cards.length||!solCanPlaceTableau(cards[0],ti))return;solTableau.value[ti].push(...cards);if(src==='waste')solWaste.value.pop();else solTableau.value[ci].splice(ri,cards.length);solReveal();solMoves.value++;solSave();}
     function solCanPlaceFoundation(card,fi){const f=solFoundations.value[fi];if(!f.length)return card.rank===0;return f[f.length-1].suit===card.suit&&f[f.length-1].rank===card.rank-1;}
