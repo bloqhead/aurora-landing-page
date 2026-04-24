@@ -1647,25 +1647,25 @@ createApp({
       const ts=Math.max(128,Math.pow(2,Math.floor(Math.log(size/2+size*1.0)/Math.log(2))))*2;
       const c=document.createElement('canvas');c.width=c.height=ts;
       const ctx=c.getContext('2d');
+      // Dark background
       ctx.fillStyle=bgColor;ctx.fillRect(0,0,ts,ts);
-      ctx.font=`bold ${ts/(1+2*1.0)}px 'DM Mono',monospace`;
-      ctx.fillStyle=fgColor;ctx.textAlign='center';ctx.textBaseline='middle';
-      if(Array.isArray(text)){
-        // d4 special: three numbers around center
-        ctx.font=`bold ${ts/5}px 'DM Mono',monospace`;
-        for(let i=0;i<text.length;i++){
-          ctx.fillText(text[i],ts/2,ts/2-ts*0.3);
-          ctx.translate(ts/2,ts/2);ctx.rotate(Math.PI*2/3);ctx.translate(-ts/2,-ts/2);
-        }
-      } else {
-        ctx.fillText(String(text),ts/2,ts/2);
-        // underline 6 and 9
-        if(text==='6'||text==='9'){
-          const w=ctx.measureText(String(text)).width;
-          ctx.fillStyle=fgColor;ctx.fillRect(ts/2-w/2,ts/2+ts*0.28,w,Math.max(3,ts/40));
+      // Subtle face tint
+      ctx.fillStyle=fgColor+'18';ctx.fillRect(0,0,ts,ts);
+      // Border in accent color
+      ctx.strokeStyle=fgColor+'99';ctx.lineWidth=6;
+      ctx.strokeRect(8,8,ts-16,ts-16);
+      // Number
+      if(text!==null&&text!==''&&text!==' '){
+        ctx.font=`bold ${ts*0.44}px 'DM Mono',monospace`;
+        ctx.fillStyle=fgColor;ctx.textAlign='center';ctx.textBaseline='middle';
+        const str=String(text);
+        ctx.fillText(str,ts/2,ts/2+ts*0.03);
+        if(str==='6'||str==='9'){
+          const w=ctx.measureText(str).width;
+          ctx.fillRect(ts/2-w/2,ts/2+ts*0.28,w,Math.max(3,ts/40));
         }
       }
-      const tex=new THREE.Texture(c);tex.needsUpdate=true;return tex;
+      const tex=new THREE.CanvasTexture(c);return tex;
     }
 
     // ── Dice definitions (vertices, faces, chamfer, tab, af, faceTexts) ─────
@@ -1721,8 +1721,8 @@ createApp({
       if(!def)return null;
       const cols=getDiceColors();
       const accentHex=cols.accent.trim();
-      const textHex=cols.text.trim();
-      const bgHex=accentHex+'22';
+      const textHex=cols.accent.trim(); // numbers in accent color
+      const bgHex='#0a0e1a'; // always dark background for contrast
       const size=55;
       const radius=size*def.scaleFactor;
 
@@ -1732,7 +1732,7 @@ createApp({
       const geom=makeGeometry(THREE,chamfered.vectors,chamfered.faces,radius,def.tab,def.af);
 
       // Build per-face materials
-      const mats=[new THREE.MeshPhongMaterial({color:0x111111,specular:0x172022,shininess:20})]; // index 0 = blank/chamfer faces
+      const mats=[new THREE.MeshPhongMaterial({color:0x050d0a,specular:0x172022,shininess:20})]; // index 0 = chamfer faces
       const texts=def.faceTexts;
       for(let i=1;i<texts.length;i++){
         const tex=makeFaceTexture(THREE,texts[i],textHex,bgHex,size);
