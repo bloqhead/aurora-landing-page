@@ -424,11 +424,20 @@ body.theme-pixel .planet-name { font-weight: 500 !important; font-size: clamp(0.
 /* Labels — light, spaced */
 body.theme-pixel .card-label { font-family: 'Pixelify Sans', monospace !important; font-weight: 400 !important; font-size: clamp(0.65rem, 0.8vw, 0.75rem) !important; letter-spacing: 0.18em !important; }
 
-/* Neon glow on accent elements — applied per theme via CSS vars */
-body.theme-pixel .kp-big,
-body.theme-pixel .clock,
-body.theme-pixel .dice-result-big {
+/* Neon glow on accent elements — CRT and Synthwave only, not 2Advanced */
+body.theme-crt .kp-big,
+body.theme-crt .clock,
+body.theme-crt .dice-result-big,
+body.theme-synthwave .kp-big,
+body.theme-synthwave .clock,
+body.theme-synthwave .dice-result-big {
   text-shadow: 0 0 8px var(--accent), 0 0 20px var(--accent), 0 0 40px var(--accent) !important;
+}
+body.theme-advanced .kp-big,
+body.theme-advanced .clock,
+body.theme-advanced .dice-result-big,
+body.theme-advanced * {
+  text-shadow: none !important;
 }
 body.theme-pixel .card {
   box-shadow:
@@ -1305,9 +1314,12 @@ createApp({
         ?`linear-gradient(135deg,${t.bg}cc 0%,${t.bg2||t.bg}99 100%)`
         :`linear-gradient(135deg,${t.bg}dd 0%,${t.bg2||t.bg}bb 100%)`;
       document.body.style.background=t.bg;
-      // Remove all pixel theme classes then apply new ones
-      document.body.classList.remove('theme-pixel','theme-crt','theme-synthwave');
+      // Remove all pixel theme classes
+      document.body.classList.remove('theme-pixel','theme-crt','theme-synthwave','theme-advanced');
       if(t.pixelClass) t.pixelClass.split(' ').forEach(c=>document.body.classList.add(c));
+      // Force a style recalc to unstick any lingering overrides
+      document.body.style.fontFamily='';
+      document.body.style.fontSize='';
     }
     function setTheme(key){currentTheme.value=key;applyTheme(key);}
     const cToF=c=>Math.round(c*9/5+32); const msToMph=ms=>Math.round(ms*2.237);
