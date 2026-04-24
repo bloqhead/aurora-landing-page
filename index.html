@@ -1157,14 +1157,14 @@ body.theme-synthwave #bg-overlay {
                 <div v-else class="s-empty" style="height:72px;display:flex;align-items:center;justify-content:center;font-size:18px;opacity:.3;cursor:pointer" @click="solDraw">↺</div>
               </div>
               <div class="s-pile" style="flex:0 0 52px">
-                <div v-if="solWaste.length" class="s-card face-up" :class="solWaste[solWaste.length-1].suit<2?'red':'black'" style="position:relative;height:72px;font-size:clamp(13px,1.2vw,17px)" draggable="true" @dragstart="solDragStart('waste',0,0)" @dragend="solDragEnd">
+                <div v-if="solWaste.length" class="s-card face-up" :class="solWaste[solWaste.length-1].suit<2?'red':'black'" style="position:relative;height:72px;font-size:clamp(13px,1.2vw,17px)" draggable="true" @dragstart="solDragStart($event,'waste',0,0)" @dragend="solDragEnd">
                   {{ solWaste[solWaste.length-1].display }}
                 </div>
                 <div v-else class="s-empty" style="height:72px"></div>
               </div>
               <div style="flex:1"></div>
               <!-- Foundations -->
-              <div v-for="f in 4" :key="'f'+f" class="s-pile" style="flex:0 0 52px" @dragover.prevent @drop="solDropFoundation(f-1)">
+              <div v-for="f in 4" :key="'f'+f" class="s-pile" style="flex:0 0 52px" @dragover.prevent @drop="solDropFoundation($event,f-1)">
                 <div v-if="solFoundations[f-1].length" class="s-card face-up" :class="solFoundations[f-1][solFoundations[f-1].length-1].suit<2?'red':'black'" style="position:relative;height:72px;font-size:clamp(13px,1.2vw,17px)">
                   {{ solFoundations[f-1][solFoundations[f-1].length-1].display }}
                 </div>
@@ -1172,12 +1172,12 @@ body.theme-synthwave #bg-overlay {
               </div>
             </div>
             <div class="solitaire-tableau">
-              <div v-for="(col,ci) in solTableau" :key="'t'+ci" class="s-pile" style="min-height:200px;position:relative" @dragover.prevent @drop="solDropTableau(ci)">
+              <div v-for="(col,ci) in solTableau" :key="'t'+ci" class="s-pile" style="min-height:200px;position:relative" @dragover.prevent @drop="solDropTableau($event,ci)">
                 <div v-for="(card,ri) in col" :key="'c'+ci+ri"
                   class="s-card" :class="[card.faceUp?'face-up':'face-down', card.faceUp?(card.suit<2?'red':'black'):'']"
                   :style="{top:(ri*22)+'px',height:'72px',zIndex:ri+1,fontSize:'clamp(12px,1.1vw,16px)'}"
                   :draggable="card.faceUp"
-                  @dragstart="card.faceUp&&solDragStart('tableau',ci,ri)"
+                  @dragstart="card.faceUp&&solDragStart($event,'tableau',ci,ri)"
                   @dragend="solDragEnd">
                   <span v-if="card.faceUp">{{ card.display }}</span>
                 </div>
@@ -1687,7 +1687,6 @@ createApp({
     // ── SOLITAIRE ──────────────────────────────────────────────────────────────
     const SUITS=['♥','♦','♣','♠'],RANKS=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
     const solTableau=ref([]);const solFoundations=ref([[],[],[],[]]);const solStock=ref([]);const solWaste=ref([]);const solMoves=ref(0);const solWon=ref(false);
-    let solDragData=null;
     function solMakeDeck(){const d=[];for(let s=0;s<4;s++)for(let r=0;r<13;r++)d.push({suit:s,rank:r,display:RANKS[r]+SUITS[s],faceUp:false});return d.sort(()=>Math.random()-.5);}
     function solSave(){localStorage.setItem('aurora_sol',JSON.stringify({tableau:solTableau.value,foundations:solFoundations.value,stock:solStock.value,waste:solWaste.value,moves:solMoves.value}));}
     function solLoad(){const s=localStorage.getItem('aurora_sol');if(!s)return false;try{const d=JSON.parse(s);solTableau.value=d.tableau;solFoundations.value=d.foundations;solStock.value=d.stock;solWaste.value=d.waste;solMoves.value=d.moves;solWon.value=false;return true;}catch{return false;}}
@@ -1698,8 +1697,11 @@ createApp({
     function solDropTableau(ti){if(!solDragData)return;const{src,ci,ri}=solDragData;let cards=[];if(src==='waste'){cards=[solWaste.value[solWaste.value.length-1]];}else{cards=solTableau.value[ci].slice(ri);}if(!cards.length||!solCanPlaceTableau(cards[0],ti))return;solTableau.value[ti].push(...cards);if(src==='waste')solWaste.value.pop();else solTableau.value[ci].splice(ri,cards.length);solReveal();solMoves.value++;solSave();}
     function solCanPlaceFoundation(card,fi){const f=solFoundations.value[fi];if(!f.length)return card.rank===0;return f[f.length-1].suit===card.suit&&f[f.length-1].rank===card.rank-1;}
     function solCanPlaceTableau(card,col){const c=solTableau.value[col];if(!c.length)return card.rank===12;const top=c[c.length-1];return top.faceUp&&(top.suit<2)!==(card.suit<2)&&top.rank===card.rank+1;}
-    function solDragStart(src,ci,ri){solDragData={src,ci,ri};}
-    function solDragEnd(){solDragData=null;}
+    function solDragStart(e,src,ci,ri){e.dataTransfer.setData('text/plain',JSON.stringify({src,ci,ri}));e.dataTransfer.effectAllowed='move';}
+    function solDragEnd(){}
+    function solGetDragData(e){try{return JSON.parse(e.dataTransfer.getData('text/plain'));}catch{return null;}}
+    function solDropFoundation(e,fi){const drag=solGetDragData(e);if(!drag)return;const{src,ci,ri}=drag;let card;if(src==='waste'){card=solWaste.value[solWaste.value.length-1];}else{const col=solTableau.value[ci];card=col[ri];}if(!card||!solCanPlaceFoundation(card,fi))return;solFoundations.value[fi].push(card);if(src==='waste')solWaste.value.pop();else solTableau.value[ci].splice(ri,solTableau.value[ci].length-ri);solReveal();solMoves.value++;solCheckWin();solSave();}
+    function solDropTableau(e,ti){const drag=solGetDragData(e);if(!drag)return;const{src,ci,ri}=drag;let cards=[];if(src==='waste'){cards=[solWaste.value[solWaste.value.length-1]];}else{cards=solTableau.value[ci].slice(ri);}if(!cards.length||!solCanPlaceTableau(cards[0],ti))return;solTableau.value[ti].push(...cards);if(src==='waste')solWaste.value.pop();else solTableau.value[ci].splice(ri,cards.length);solReveal();solMoves.value++;solSave();}
     function solReveal(){solTableau.value.forEach(col=>{if(col.length&&!col[col.length-1].faceUp)col[col.length-1].faceUp=true;});}
     function solCheckWin(){solWon.value=solFoundations.value.every(f=>f.length===13);}
     function solNewGame(){localStorage.removeItem('aurora_sol');solInit();}
