@@ -1195,14 +1195,14 @@ body.theme-synthwave #bg-overlay {
                     overflow: 'hidden',
                     flexShrink: 0,
                     position:'relative',
-                    zIndex: ri+1
-                  }">
+                    cursor: 'pointer'
+                  }"
+                  @click.stop="solClickCard(ci,ri)">
                   <div
                     :class="['s-card', card.faceUp?'face-up':'face-down',
                       card.faceUp?(card.suit<2?'red':'black'):'',
                       solSelected&&solSelected.src==='tableau'&&solSelected.ci===ci&&solSelected.ri<=ri?'sol-selected':'']"
-                    style="position:relative;height:72px;cursor:pointer;"
-                    @click.stop="solClickCard(ci,ri)">
+                    style="position:relative;height:72px;pointer-events:none;">
                     <span v-if="card.faceUp">{{ card.display }}</span>
                   </div>
                 </div>
