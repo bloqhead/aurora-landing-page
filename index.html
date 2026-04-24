@@ -7,7 +7,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌌</text></svg>" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,200;0,9..144,400;1,9..144,300&family=DM+Mono:wght@300;400&family=Outfit:wght@200;300;400&family=Press+Start+2P&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,200;0,9..144,400;1,9..144,300&family=DM+Mono:wght@300;400&family=Outfit:wght@200;300;400&family=Pixelify+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -297,8 +297,8 @@ a{color:inherit;} button{font-family:inherit;}
    with sharp edges, pixel fonts, scanlines, and neon glow.                   */
 
 body.theme-pixel {
-  font-family: 'Press Start 2P', monospace !important;
-  font-size: 10px !important;
+  font-family: 'Pixelify Sans', monospace !important;
+  font-size: 13px !important;
   image-rendering: pixelated;
 }
 
@@ -366,33 +366,34 @@ body.theme-pixel .tide-val,
 body.theme-pixel .dice-result-big,
 body.theme-pixel .settings-title,
 body.theme-pixel .picker-title,
-body.theme-pixel .chat-auth-title {
-  font-family: 'Press Start 2P', monospace !important;
+body.theme-pixel .chat-auth-title,
+body.theme-pixel .planet-name,
+body.theme-pixel .planet-icon {
+  font-family: 'Pixelify Sans', monospace !important;
   font-style: normal !important;
 }
-body.theme-pixel .quote-text {
-  font-size: 9px !important;
-  line-height: 2.2 !important;
-}
-body.theme-pixel .album-title {
-  font-size: 9px !important;
-  white-space: normal !important;
-}
-body.theme-pixel .clock {
-  font-size: clamp(1.2rem, 3vw, 2.4rem) !important;
-}
+/* Big display numbers — heavy weight */
+body.theme-pixel .clock { font-weight: 700 !important; font-size: clamp(2rem, 4.5vw, 4rem) !important; letter-spacing: 0.04em !important; }
 body.theme-pixel .kp-big,
 body.theme-pixel .weather-temp,
 body.theme-pixel .aqi-big,
-body.theme-pixel .dice-result-big {
-  font-size: clamp(1.1rem, 2.2vw, 1.9rem) !important;
-}
+body.theme-pixel .dice-result-big { font-weight: 700 !important; font-size: clamp(1.8rem, 3vw, 3rem) !important; }
+/* Headings — semibold */
 body.theme-pixel .settings-title,
 body.theme-pixel .picker-title,
-body.theme-pixel .chat-auth-title {
-  font-size: 11px !important;
-  line-height: 1.8 !important;
-}
+body.theme-pixel .chat-auth-title { font-weight: 600 !important; font-size: clamp(1rem, 1.5vw, 1.4rem) !important; line-height: 1.4 !important; }
+/* Medium content — regular/medium */
+body.theme-pixel .moon-name,
+body.theme-pixel .animal-common,
+body.theme-pixel .apod-title,
+body.theme-pixel .soma-station-name,
+body.theme-pixel .sun-time,
+body.theme-pixel .album-title { font-weight: 500 !important; font-size: clamp(0.9rem, 1.2vw, 1.1rem) !important; white-space: normal !important; }
+/* Body text — regular */
+body.theme-pixel .quote-text { font-weight: 400 !important; font-size: clamp(0.8rem, 1vw, 1rem) !important; font-style: normal !important; line-height: 1.8 !important; }
+body.theme-pixel .planet-name { font-weight: 500 !important; font-size: clamp(0.85rem, 1vw, 1rem) !important; }
+/* Labels — light, spaced */
+body.theme-pixel .card-label { font-family: 'Pixelify Sans', monospace !important; font-weight: 400 !important; font-size: clamp(0.65rem, 0.8vw, 0.75rem) !important; letter-spacing: 0.18em !important; }
 
 /* Neon glow on accent elements — applied per theme via CSS vars */
 body.theme-pixel .kp-big,
@@ -413,7 +414,7 @@ body.theme-pixel .card-btn,
 body.theme-pixel .genre-btn,
 body.theme-pixel .topic-btn,
 body.theme-pixel .dice-type-btn {
-  font-family: 'Press Start 2P', monospace !important;
+  font-family: 'Pixelify Sans', monospace !important;
   font-size: 8px !important;
   border-width: 2px !important;
   box-shadow: 2px 2px 0 rgba(0,0,0,0.8) !important;
@@ -438,7 +439,7 @@ body.theme-pixel .chat-input-field,
 body.theme-pixel .chat-send-input,
 body.theme-pixel .todo-input,
 body.theme-pixel .notes-area {
-  font-family: 'Press Start 2P', monospace !important;
+  font-family: 'Pixelify Sans', monospace !important;
   font-size: 9px !important;
   border-width: 2px !important;
   backdrop-filter: none !important;
@@ -458,12 +459,12 @@ body.theme-pixel .kp-bar-track { height: 8px !important; }
 body.theme-pixel .kp-bar-fill { image-rendering: pixelated; }
 
 /* Theme swatch labels */
-body.theme-pixel .theme-swatch span { font-family: 'Press Start 2P', monospace !important; font-size: 6px !important; }
+body.theme-pixel .theme-swatch span { font-family: 'Pixelify Sans', monospace !important; font-size: 6px !important; }
 
 /* ── 2Advanced specific ── */
 /* Cold steel-blue, angular, geometric — 2001 Flash portal energy */
 body.theme-advanced {
-  font-family: 'Press Start 2P', monospace !important;
+  font-family: 'Pixelify Sans', monospace !important;
 }
 body.theme-advanced .card {
   border-width: 1px !important;
@@ -508,7 +509,8 @@ body.theme-advanced .clock {
 }
 body.theme-advanced .card-label {
   letter-spacing: 0.2em !important;
-  font-size: 7px !important;
+  font-size: 10px !important;
+  font-weight: 400 !important;
   color: rgba(79,200,232,0.6) !important;
   border-bottom: 1px solid rgba(79,200,232,0.15) !important;
   padding-bottom: 6px !important;
