@@ -1029,9 +1029,10 @@ createApp({
     async function chatSubmitAuth(){
       if(!chatApiUrl.value)return;
       chatError.value=''; chatAuthLoading.value=true;
+      const baseUrl=chatApiUrl.value.replace(/\/$/,'');
       try{
         const endpoint=chatAuthMode.value==='login'?'/auth/login':'/auth/register';
-        const r=await fetch(chatApiUrl.value+endpoint,{
+        const r=await fetch(baseUrl+endpoint,{
           method:'POST',headers:{'Content-Type':'application/json'},
           body:JSON.stringify({username:chatUsername.value,password:chatPassword.value})
         });
@@ -1048,7 +1049,8 @@ createApp({
 
     function chatConnectWs(){
       if(!chatToken.value||!chatApiUrl.value)return;
-      const wsUrl=chatApiUrl.value.replace(/^http/,'ws')+'/ws?token='+chatToken.value;
+      const baseUrl=chatApiUrl.value.replace(/\/$/,'');
+      const wsUrl=baseUrl.replace(/^http/,'ws')+'/ws?token='+chatToken.value;
       chatWs=new WebSocket(wsUrl);
       chatWs.onmessage=e=>{
         const data=JSON.parse(e.data);
