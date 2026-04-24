@@ -1052,7 +1052,7 @@ createApp({
         localStorage.setItem('aurora_chat_token',d.token);
         chatPassword.value='';
         chatConnectWs();
-      }catch(e){chatError.value='Could not reach chat server.';}
+      }catch(e){chatError.value='Error: '+e.message;}
       finally{chatAuthLoading.value=false;}
     }
 
