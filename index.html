@@ -1987,9 +1987,13 @@ createApp({
     }
 
     async function fetchChangelogBadge(){
+      // Only check once per hour to avoid GitHub API rate limits
+      const lastCheck=localStorage.getItem('aurora_changelog_checked');
+      if(lastCheck&&Date.now()-parseInt(lastCheck)<60*60*1000)return;
       try{
         const r=await fetch(`https://api.github.com/repos/${REPO}/commits?per_page=40`);
         if(!r.ok)return;
+        localStorage.setItem('aurora_changelog_checked',Date.now());
         const data=await r.json();
         const lastSeen=localStorage.getItem(CHANGELOG_KEY)||'';
         if(!lastSeen){if(data.length)localStorage.setItem(CHANGELOG_KEY,data[0].sha);changelogUnread.value=0;return;}
