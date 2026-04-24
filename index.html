@@ -336,7 +336,7 @@ a{color:inherit;} button{font-family:inherit;}
 .solitaire-top{display:flex;gap:6px;margin-bottom:8px;}
 .solitaire-tableau{display:flex;gap:4px;}
 .s-pile{min-height:80px;flex:1;position:relative;}
-.s-card{width:100%;border-radius:6px;border:1px solid rgba(255,255,255,.15);display:flex;align-items:flex-start;justify-content:flex-start;padding:3px 4px;font-size:clamp(11px,1vw,15px);font-family:var(--font-mono);font-weight:700;cursor:pointer;transition:transform .1s;position:absolute;user-select:none;line-height:1.2;}
+.s-card{width:100%;border-radius:6px;border:1px solid rgba(255,255,255,.15);display:flex;align-items:flex-start;justify-content:flex-start;padding:3px 4px;font-size:clamp(11px,1vw,15px);font-family:var(--font-mono);font-weight:700;cursor:pointer;user-select:none;line-height:1.2;box-sizing:border-box;}
 .s-card.face-up{background:rgba(20,32,50,0.95);color:var(--text);box-shadow:0 2px 6px rgba(0,0,0,.4);}
 .s-card.face-down{background:linear-gradient(135deg,#1a2a4a,#0d1825);border:1px solid rgba(80,220,180,.2);cursor:default;}
 .s-card.face-down::after{content:'🂠';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:18px;opacity:.4;}
@@ -1181,37 +1181,30 @@ body.theme-synthwave #bg-overlay {
               </div>
             </div>
             <!-- Tableau -->
-            <div class="solitaire-tableau" style="margin-top:8px">
+            <div class="solitaire-tableau" style="margin-top:8px;align-items:flex-start;">
               <div v-for="(col,ci) in solTableau" :key="'t'+ci"
-                class="s-pile"
-                :style="{minHeight: Math.max(80, (col.length-1)*22+72)+'px', position:'relative'}"
-                @click.stop="solClickCol(ci, col.length)">
-                <div v-if="!col.length" style="position:absolute;top:0;left:0;right:0;height:72px;border-radius:6px;border:1px dashed rgba(255,255,255,.1);"></div>
+                style="flex:1;display:flex;flex-direction:column;">
+                <!-- Empty column drop target -->
+                <div v-if="!col.length"
+                  style="height:72px;border-radius:6px;border:1px dashed rgba(255,255,255,.1);cursor:pointer;"
+                  @click.stop="solClickCol(ci,0)"></div>
+                <!-- Cards stacked — each shows only its exposed portion except the last -->
                 <div v-for="(card,ri) in col" :key="'c'+ci+ri"
-                  class="s-card"
-                  :class="[card.faceUp?'face-up':'face-down',
-                    card.faceUp?(card.suit<2?'red':'black'):'',
-                    solSelected&&solSelected.src==='tableau'&&solSelected.ci===ci&&solSelected.ri<=ri?'sol-selected':'']"
                   :style="{
-                    top:(ri*22)+'px',
-                    height:'72px',
-                    zIndex: ri+1,
-                    fontSize:'clamp(12px,1.1vw,16px)',
-                    pointerEvents:'none'
-                  }">
-                  <span v-if="card.faceUp">{{ card.display }}</span>
-                </div>
-                <!-- Invisible hit targets on top of everything — one per card, sized to exposed strip -->
-                <div v-for="(card,ri) in col" :key="'h'+ci+ri"
-                  :style="{
-                    position:'absolute',
-                    top:(ri*22)+'px',
-                    left:0, right:0,
                     height: ri===col.length-1 ? '72px' : '22px',
-                    zIndex: 1000+ri,
-                    cursor: card.faceUp ? 'pointer' : (ri===col.length-1 ? 'pointer' : 'default')
-                  }"
-                  @click.stop="solClickCard(ci,ri)">
+                    overflow: 'hidden',
+                    flexShrink: 0,
+                    position:'relative',
+                    zIndex: ri+1
+                  }">
+                  <div
+                    :class="['s-card', card.faceUp?'face-up':'face-down',
+                      card.faceUp?(card.suit<2?'red':'black'):'',
+                      solSelected&&solSelected.src==='tableau'&&solSelected.ci===ci&&solSelected.ri<=ri?'sol-selected':'']"
+                    style="position:relative;height:72px;cursor:pointer;"
+                    @click.stop="solClickCard(ci,ri)">
+                    <span v-if="card.faceUp">{{ card.display }}</span>
+                  </div>
                 </div>
               </div>
             </div>
