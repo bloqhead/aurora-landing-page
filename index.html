@@ -332,7 +332,7 @@ a{color:inherit;} button{font-family:inherit;}
 .game-over-msg{text-align:center;font-family:var(--font-display);font-size:var(--t-lg);font-weight:300;color:var(--accent);padding:var(--s-md) 0;}
 
 /* SOLITAIRE */
-.solitaire-wrap{user-select:none;overflow-y:auto;}
+.solitaire-wrap{user-select:none;overflow-y:auto;-webkit-user-select:none;touch-action:manipulation;}
 .solitaire-top{display:flex;gap:6px;margin-bottom:8px;}
 .solitaire-tableau{display:flex;gap:4px;}
 .s-pile{min-height:80px;flex:1;position:relative;}
@@ -1154,7 +1154,7 @@ body.theme-synthwave #bg-overlay {
           <div class="solitaire-wrap" v-else>
             <div class="solitaire-top">
               <!-- Stock -->
-              <div style="flex:0 0 52px;cursor:pointer" @click.stop="solDraw">
+              <div style="flex:0 0 52px;cursor:pointer;touch-action:manipulation" @click.stop="solDraw">
                 <div v-if="solStock.length" style="width:52px;height:72px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:22px;border:1px solid rgba(80,220,180,.2);background:linear-gradient(135deg,#1a2a4a,#0d1825);">🂠</div>
                 <div v-else style="width:52px;height:72px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;opacity:.4;border:1px dashed rgba(255,255,255,.1);">↺</div>
               </div>
@@ -1162,7 +1162,7 @@ body.theme-synthwave #bg-overlay {
               <div style="flex:0 0 52px">
                 <div v-if="solWaste.length"
                   :class="['s-card','face-up',solWaste[solWaste.length-1].suit<2?'red':'black', solSelected&&solSelected.src==='waste'?'sol-selected':'']"
-                  style="position:relative;width:52px;height:72px;font-size:clamp(13px,1.2vw,17px);cursor:pointer"
+                  style="position:relative;width:52px;height:72px;font-size:clamp(13px,1.2vw,17px);cursor:pointer;touch-action:manipulation;-webkit-user-select:none;"
                   @click.stop="solClickWaste">
                   {{ solWaste[solWaste.length-1].display }}
                 </div>
@@ -1170,7 +1170,7 @@ body.theme-synthwave #bg-overlay {
               </div>
               <div style="flex:1"></div>
               <!-- Foundations -->
-              <div v-for="f in 4" :key="'f'+f" style="flex:0 0 52px;cursor:pointer" @click.stop="solClickFoundation(f-1)">
+              <div v-for="f in 4" :key="'f'+f" style="flex:0 0 52px;cursor:pointer;touch-action:manipulation" @click.stop="solClickFoundation(f-1)">
                 <div v-if="solFoundations[f-1].length"
                   class="s-card face-up"
                   :class="solFoundations[f-1][solFoundations[f-1].length-1].suit<2?'red':'black'"
@@ -1195,7 +1195,9 @@ body.theme-synthwave #bg-overlay {
                     overflow: 'hidden',
                     flexShrink: 0,
                     position:'relative',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    touchAction: 'manipulation',
+                    webkitUserSelect: 'none'
                   }"
                   @click.stop="solClickCard(ci,ri)">
                   <div
