@@ -360,8 +360,8 @@ a{color:inherit;} button{font-family:inherit;}
 
 /* WORDLE */
 .wordle-grid{display:flex;flex-direction:column;gap:4px;margin-bottom:var(--s-sm);}
-.wordle-row{display:flex;gap:4px;}
-.wordle-cell{width:36px;height:36px;border:2px solid var(--card-border);border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:var(--t-sm);font-weight:700;text-transform:uppercase;transition:background .3s;}
+.wordle-row{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;}
+.wordle-cell{aspect-ratio:1;border:2px solid var(--card-border);border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:clamp(var(--t-sm),3vw,var(--t-lg));font-weight:700;text-transform:uppercase;transition:background .3s;width:100%;}
 .wordle-cell.correct{background:#538d4e;border-color:#538d4e;color:#fff;}
 .wordle-cell.present{background:#b59f3b;border-color:#b59f3b;color:#fff;}
 .wordle-cell.absent{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.1);color:var(--text-muted);}
@@ -1232,9 +1232,12 @@ body.theme-synthwave #bg-overlay {
         </div>
 
         <!-- WORDLE -->
-        <div v-else-if="wid.id==='wordle'" class="card" tabindex="0" @click="setActiveWidget('wordle')" @blur="clearActiveWidget" :style="{outline:activeWidget==='wordle'?'2px solid var(--accent)':'none'}">
-          <div class="card-label">Wordle ✏️ <span style="font-size:var(--t-xs);color:var(--text-muted)">· Daily</span></div>
-          <div class="wordle-grid">
+        <div v-else-if="wid.id==='wordle'" class="card" tabindex="0" @click="setActiveWidget('wordle');$refs.wordleInput?.focus()" @blur="clearActiveWidget" :style="{outline:activeWidget==='wordle'?'2px solid var(--accent)':'none'}">
+          <div class="card-label">Wordle ✏️ <span style="font-size:var(--t-xs);color:var(--text-muted)">· Daily · tap grid to type</span></div>
+          <!-- Hidden input captures OS keyboard on mobile -->
+          <input ref="wordleInput" style="position:absolute;opacity:0;width:1px;height:1px;pointer-events:none;"
+            @keydown="wordleHandleMobileKey" @input="wordleHandleMobileInput" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+          <div class="wordle-grid" @click.stop="$refs.wordleInput?.focus()">
             <div v-for="r in 6" :key="r" class="wordle-row">
               <div v-for="c in 5" :key="c" class="wordle-cell" :class="wordleGetClass(r-1,c-1)">
                 {{ wordleGetLetter(r-1,c-1) }}
@@ -1826,7 +1829,15 @@ createApp({
     // Check if it's a new day — reset
     (()=>{const savedDay=localStorage.getItem('aurora_wordle_day');const today=String(Math.floor(Date.now()/86400000));if(savedDay!==today){localStorage.setItem('aurora_wordle_day',today);localStorage.removeItem('aurora_wordle_guesses');localStorage.removeItem('aurora_wordle_results');wordleGuesses.value=[];wordleResults.value=[];}})();
     // Keyboard input for wordle when focused
-    function wordleHandleKey(e){
+    function wordleHandleMobileKey(e){
+      if(e.key==='Backspace')wordleKey('⌫');
+      else if(e.key==='Enter')wordleKey('ENTER');
+    }
+    function wordleHandleMobileInput(e){
+      // Fires on mobile when OS keyboard inputs a character
+      const val=e.target.value;
+      if(val){wordleKey(val.slice(-1).toUpperCase());e.target.value='';}
+    }
       if(activeWidget.value!=='wordle')return;
       // Don't fire if user is typing in an input
       if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;
@@ -2386,7 +2397,7 @@ createApp({
 
     watch(useFahrenheit,v=>localStorage.setItem('aurora_fahrenheit',v));
 
-    return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,formatChatTime,activeWidget,setActiveWidget,clearActiveWidget,solTableau,solFoundations,solStock,solWaste,solMoves,solWon,solInit,solNewGame,solSelected,solDraw,solClickWaste,solClickFoundation,solClickCol,snakeScore,snakeBest,snakeRunning,snakeDead,snakeStart,w2048Board,w2048Score,w2048Best,w2048Won,w2048Lost,w2048Init,w2048NewGame,w2048Move,w2048CellStyle,w2048TouchStart,w2048TouchEnd,wordleGuesses,wordleResults,wordleCurrent,wordleMsg,wordleKeyRows,wordleGetLetter,wordleGetClass,wordleKeyClass,wordleKey,worldClockCities,worldClockPick,worldClockOptions,worldClockTime,worldClockDate,worldClockAdd,worldClockRemove,currencyAmount,currencyFrom,currencyTo,currencyResult,currencyRate,currencyLoading,currencyConvert,currencyCodes,film,filmGenre,filmGenres,filmNext,passValue,passLength,passOpts,passCopied,passGenerate,passCopy,paletteBase,paletteType,paletteTypes,paletteColors,paletteCopied,paletteGenerate,paletteCopy,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings};
+    return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,formatChatTime,activeWidget,setActiveWidget,clearActiveWidget,solTableau,solFoundations,solStock,solWaste,solMoves,solWon,solInit,solNewGame,solSelected,solDraw,solClickWaste,solClickFoundation,solClickCol,snakeScore,snakeBest,snakeRunning,snakeDead,snakeStart,w2048Board,w2048Score,w2048Best,w2048Won,w2048Lost,w2048Init,w2048NewGame,w2048Move,w2048CellStyle,w2048TouchStart,w2048TouchEnd,wordleGuesses,wordleResults,wordleCurrent,wordleMsg,wordleKeyRows,wordleGetLetter,wordleGetClass,wordleKeyClass,wordleKey,wordleHandleMobileKey,wordleHandleMobileInput,worldClockCities,worldClockPick,worldClockOptions,worldClockTime,worldClockDate,worldClockAdd,worldClockRemove,currencyAmount,currencyFrom,currencyTo,currencyResult,currencyRate,currencyLoading,currencyConvert,currencyCodes,film,filmGenre,filmGenres,filmNext,passValue,passLength,passOpts,passCopied,passGenerate,passCopy,paletteBase,paletteType,paletteTypes,paletteColors,paletteCopied,paletteGenerate,paletteCopy,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings};
   }
 }).mount('#app');
 </script>
