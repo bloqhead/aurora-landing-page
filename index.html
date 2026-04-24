@@ -344,7 +344,7 @@ a{color:inherit;} button{font-family:inherit;}
 .s-card.black{color:#e8f4f0;}
 .s-card.dragging{opacity:.4;}
 .s-card.drag-over{border-color:var(--accent);box-shadow:0 0 8px var(--glow);}
-.s-empty{border:1px dashed rgba(255,255,255,.08);border-radius:6px;width:100%;height:72px;background:rgba(255,255,255,.02);}
+.s-card.sol-selected{border-color:var(--accent)!important;box-shadow:0 0 8px var(--glow)!important;}
 .s-stock{display:flex;align-items:center;justify-content:center;font-size:22px;background:linear-gradient(135deg,#1a2a4a,#0d1825);border:1px solid rgba(80,220,180,.2);cursor:pointer;height:72px !important;border-radius:6px;}
 
 
@@ -1145,40 +1145,53 @@ body.theme-synthwave #bg-overlay {
         <div v-else-if="wid.id==='solitaire'" class="card">
           <div class="card-label">Solitaire 🃏</div>
           <div class="game-score-row">
-            <div class="game-score">Moves: <span>{{ solMoves }}</span></div>
+            <div class="game-score">Moves: <span>{{ solMoves }}</span>
+              <span v-if="solSelected" style="color:var(--accent2);margin-left:8px">{{ solSelected.card.display }} selected</span>
+            </div>
             <button class="game-btn" @click="solNewGame">New Game</button>
           </div>
           <div v-if="solWon" class="game-over-msg">🎉 You won!</div>
           <div class="solitaire-wrap" v-else>
             <div class="solitaire-top">
-              <!-- Stock + Waste -->
-              <div class="s-pile" style="flex:0 0 52px">
-                <div v-if="solStock.length" class="s-stock" style="width:52px;height:72px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;border:1px solid rgba(80,220,180,.2);background:linear-gradient(135deg,#1a2a4a,#0d1825);" @click="solDraw">🂠</div>
-                <div v-else class="s-empty" style="width:52px;height:72px;display:flex;align-items:center;justify-content:center;font-size:18px;opacity:.3;cursor:pointer;border-radius:6px;" @click="solDraw">↺</div>
+              <!-- Stock -->
+              <div style="flex:0 0 52px;cursor:pointer" @click.stop="solDraw">
+                <div v-if="solStock.length" style="width:52px;height:72px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:22px;border:1px solid rgba(80,220,180,.2);background:linear-gradient(135deg,#1a2a4a,#0d1825);">🂠</div>
+                <div v-else style="width:52px;height:72px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;opacity:.4;border:1px dashed rgba(255,255,255,.1);">↺</div>
               </div>
-              <div class="s-pile" style="flex:0 0 52px">
-                <div v-if="solWaste.length" class="s-card face-up" :class="solWaste[solWaste.length-1].suit<2?'red':'black'" style="position:relative;width:52px;height:72px;font-size:clamp(13px,1.2vw,17px)" draggable="true" @dragstart="solDragStart($event,'waste',0,0)" @dragend="solDragEnd">
+              <!-- Waste -->
+              <div style="flex:0 0 52px">
+                <div v-if="solWaste.length"
+                  :class="['s-card','face-up',solWaste[solWaste.length-1].suit<2?'red':'black', solSelected&&solSelected.src==='waste'?'sol-selected':'']"
+                  style="position:relative;width:52px;height:72px;font-size:clamp(13px,1.2vw,17px);cursor:pointer"
+                  @click.stop="solClickWaste">
                   {{ solWaste[solWaste.length-1].display }}
                 </div>
-                <div v-else class="s-empty" style="width:52px;height:72px;border-radius:6px;"></div>
+                <div v-else style="width:52px;height:72px;border-radius:6px;border:1px dashed rgba(255,255,255,.1);"></div>
               </div>
               <div style="flex:1"></div>
               <!-- Foundations -->
-              <div v-for="f in 4" :key="'f'+f" class="s-pile" style="flex:0 0 52px" @dragover.prevent @drop="solDropFoundation($event,f-1)">
-                <div v-if="solFoundations[f-1].length" class="s-card face-up" :class="solFoundations[f-1][solFoundations[f-1].length-1].suit<2?'red':'black'" style="position:relative;height:72px;font-size:clamp(13px,1.2vw,17px)">
+              <div v-for="f in 4" :key="'f'+f" style="flex:0 0 52px;cursor:pointer" @click.stop="solClickFoundation(f-1)">
+                <div v-if="solFoundations[f-1].length"
+                  class="s-card face-up"
+                  :class="solFoundations[f-1][solFoundations[f-1].length-1].suit<2?'red':'black'"
+                  style="position:relative;width:52px;height:72px;font-size:clamp(13px,1.2vw,17px)">
                   {{ solFoundations[f-1][solFoundations[f-1].length-1].display }}
                 </div>
-                <div v-else class="s-empty" style="height:72px;display:flex;align-items:center;justify-content:center;font-size:20px;opacity:.25">{{ ['♥','♦','♣','♠'][f-1] }}</div>
+                <div v-else style="width:52px;height:72px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:20px;opacity:.25;border:1px dashed rgba(255,255,255,.1);">{{ ['♥','♦','♣','♠'][f-1] }}</div>
               </div>
             </div>
-            <div class="solitaire-tableau">
-              <div v-for="(col,ci) in solTableau" :key="'t'+ci" class="s-pile" style="min-height:200px;position:relative" @dragover.prevent @drop="solDropTableau($event,ci)">
+            <!-- Tableau -->
+            <div class="solitaire-tableau" style="margin-top:8px">
+              <div v-for="(col,ci) in solTableau" :key="'t'+ci"
+                class="s-pile" style="min-height:200px;position:relative;cursor:pointer"
+                @click.stop="solClickCol(ci)">
+                <div v-if="!col.length" style="position:absolute;top:0;left:0;right:0;height:72px;border-radius:6px;border:1px dashed rgba(255,255,255,.1);"></div>
                 <div v-for="(card,ri) in col" :key="'c'+ci+ri"
-                  class="s-card" :class="[card.faceUp?'face-up':'face-down', card.faceUp?(card.suit<2?'red':'black'):'']"
-                  :style="{top:(ri*22)+'px',height:'72px',zIndex:ri+1,fontSize:'clamp(12px,1.1vw,16px)'}"
-                  :draggable="card.faceUp"
-                  @dragstart="card.faceUp&&solDragStart($event,'tableau',ci,ri)"
-                  @dragend="solDragEnd">
+                  class="s-card"
+                  :class="[card.faceUp?'face-up':'face-down',
+                    card.faceUp?(card.suit<2?'red':'black'):'',
+                    solSelected&&solSelected.src==='tableau'&&solSelected.ci===ci&&solSelected.ri===ri?'sol-selected':'']"
+                  :style="{top:(ri*22)+'px',height:'72px',zIndex:ri+1,fontSize:'clamp(12px,1.1vw,16px)'}">
                   <span v-if="card.faceUp">{{ card.display }}</span>
                 </div>
               </div>
@@ -1684,17 +1697,21 @@ createApp({
 
     async function fetchAPOD(){try{const key=nasaKey.value||'DEMO_KEY';const r=await fetch(`https://api.nasa.gov/planetary/apod?api_key=${key}`);const d=await r.json();if(d.media_type==='image'||d.media_type==='video')apod.value=d;}catch{apod.value=null;}}
 
-    // ── SOLITAIRE ──────────────────────────────────────────────────────────────
+    // ── SOLITAIRE (click-to-select) ───────────────────────────────────────────
     const SUITS=['♥','♦','♣','♠'],RANKS=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
     const solTableau=ref([]);const solFoundations=ref([[],[],[],[]]);const solStock=ref([]);const solWaste=ref([]);const solMoves=ref(0);const solWon=ref(false);
+    const solSelected=ref(null);
     function solMakeDeck(){const d=[];for(let s=0;s<4;s++)for(let r=0;r<13;r++)d.push({suit:s,rank:r,display:RANKS[r]+SUITS[s],faceUp:false});return d.sort(()=>Math.random()-.5);}
-    function solSave(){localStorage.setItem('aurora_sol',JSON.stringify({tableau:solTableau.value,foundations:solFoundations.value,stock:solStock.value,waste:solWaste.value,moves:solMoves.value}));}
+    function solSave(){try{localStorage.setItem('aurora_sol',JSON.stringify({tableau:solTableau.value,foundations:solFoundations.value,stock:solStock.value,waste:solWaste.value,moves:solMoves.value}));}catch{}}
     function solLoad(){const s=localStorage.getItem('aurora_sol');if(!s)return false;try{const d=JSON.parse(s);solTableau.value=d.tableau;solFoundations.value=d.foundations;solStock.value=d.stock;solWaste.value=d.waste;solMoves.value=d.moves;solWon.value=false;return true;}catch{return false;}}
-    function solInit(){if(!solLoad()){const deck=solMakeDeck();solTableau.value=Array.from({length:7},(_,i)=>deck.splice(0,i+1).map((c,j,a)=>({...c,faceUp:j===a.length-1})));solFoundations.value=[[],[],[],[]];solStock.value=deck.map(c=>({...c,faceUp:false}));solWaste.value=[];solMoves.value=0;solWon.value=false;solSave();}}
-    // Auto-save after every action
+    function solInit(){solSelected.value=null;if(!solLoad()){const deck=solMakeDeck();solTableau.value=Array.from({length:7},(_,i)=>deck.splice(0,i+1).map((c,j,a)=>({...c,faceUp:j===a.length-1})));solFoundations.value=[[],[],[],[]];solStock.value=deck.map(c=>({...c,faceUp:false}));solWaste.value=[];solMoves.value=0;solWon.value=false;solSave();}}
+    function solNewGame(){localStorage.removeItem('aurora_sol');solInit();}
+    function solReveal(){solTableau.value=solTableau.value.map(col=>{if(col.length&&!col[col.length-1].faceUp){const c=[...col];c[c.length-1]={...c[c.length-1],faceUp:true};return c;}return col;});}
+    function solCheckWin(){solWon.value=solFoundations.value.every(f=>f.length===13);}
+    function solCanPlaceFoundation(card,fi){const f=solFoundations.value[fi];if(!f.length)return card.rank===0;return f[f.length-1].suit===card.suit&&f[f.length-1].rank===card.rank-1;}
+    function solCanPlaceTableau(card,col){const c=solTableau.value[col];if(!c.length)return card.rank===12;const top=c[c.length-1];return top.faceUp&&(top.suit<2)!==(card.suit<2)&&top.rank===card.rank+1;}
     function solDraw(){
       if(!solStock.value.length){
-        // Reset stock from waste — avoid in-place reverse which doesn't trigger reactivity
         solStock.value=[...solWaste.value].reverse().map(c=>({...c,faceUp:false}));
         solWaste.value=[];
       } else {
@@ -1703,21 +1720,56 @@ createApp({
         solStock.value=deck;
         solWaste.value=[...solWaste.value,card];
       }
-      solMoves.value++;
-      solSave();
+      solSelected.value=null;solMoves.value++;solSave();
     }
-    function solDropFoundation(e,fi){const drag=solGetDragData(e);if(!drag)return;const{src,ci,ri}=drag;let card;if(src==='waste'){card=solWaste.value[solWaste.value.length-1];}else{const col=solTableau.value[ci];card=col[ri];}if(!card||!solCanPlaceFoundation(card,fi))return;solFoundations.value[fi].push(card);if(src==='waste')solWaste.value.pop();else{const col=[...solTableau.value[ci]];col.splice(ri,col.length-ri);solTableau.value[ci]=col;}solReveal();solMoves.value++;solCheckWin();solSave();}
-    function solDropTableau(e,ti){const drag=solGetDragData(e);if(!drag)return;const{src,ci,ri}=drag;let cards=[];if(src==='waste'){cards=[solWaste.value[solWaste.value.length-1]];}else{cards=solTableau.value[ci].slice(ri);}if(!cards.length||!solCanPlaceTableau(cards[0],ti))return;const newCol=[...solTableau.value[ti],...cards];solTableau.value[ti]=newCol;if(src==='waste')solWaste.value=[...solWaste.value.slice(0,-1)];else{const col=[...solTableau.value[ci]];col.splice(ri,cards.length);solTableau.value[ci]=col;}solReveal();solMoves.value++;solSave();}
-    function solCanPlaceFoundation(card,fi){const f=solFoundations.value[fi];if(!f.length)return card.rank===0;return f[f.length-1].suit===card.suit&&f[f.length-1].rank===card.rank-1;}
-    function solCanPlaceTableau(card,col){const c=solTableau.value[col];if(!c.length)return card.rank===12;const top=c[c.length-1];return top.faceUp&&(top.suit<2)!==(card.suit<2)&&top.rank===card.rank+1;}
-    function solDragStart(e,src,ci,ri){e.dataTransfer.setData('text/plain',JSON.stringify({src,ci,ri}));e.dataTransfer.effectAllowed='move';}
-    function solDragEnd(){}
-    function solGetDragData(e){try{return JSON.parse(e.dataTransfer.getData('text/plain'));}catch{return null;}}
-    function solDropFoundation(e,fi){const drag=solGetDragData(e);if(!drag)return;const{src,ci,ri}=drag;let card;if(src==='waste'){card=solWaste.value[solWaste.value.length-1];}else{const col=solTableau.value[ci];card=col[ri];}if(!card||!solCanPlaceFoundation(card,fi))return;solFoundations.value[fi].push(card);if(src==='waste')solWaste.value.pop();else solTableau.value[ci].splice(ri,solTableau.value[ci].length-ri);solReveal();solMoves.value++;solCheckWin();solSave();}
-    function solDropTableau(e,ti){const drag=solGetDragData(e);if(!drag)return;const{src,ci,ri}=drag;let cards=[];if(src==='waste'){cards=[solWaste.value[solWaste.value.length-1]];}else{cards=solTableau.value[ci].slice(ri);}if(!cards.length||!solCanPlaceTableau(cards[0],ti))return;solTableau.value[ti].push(...cards);if(src==='waste')solWaste.value.pop();else solTableau.value[ci].splice(ri,cards.length);solReveal();solMoves.value++;solSave();}
-    function solReveal(){solTableau.value.forEach(col=>{if(col.length&&!col[col.length-1].faceUp)col[col.length-1].faceUp=true;});}
-    function solCheckWin(){solWon.value=solFoundations.value.every(f=>f.length===13);}
-    function solNewGame(){localStorage.removeItem('aurora_sol');solInit();}
+    function solClickWaste(){
+      const card=solWaste.value[solWaste.value.length-1];
+      if(!card)return;
+      if(solSelected.value?.src==='waste'){solSelected.value=null;return;}
+      solSelected.value={src:'waste',ci:0,ri:0,card,cards:[card]};
+    }
+    function solClickFoundation(fi){
+      if(!solSelected.value)return;
+      const{src,ci,card,cards}=solSelected.value;
+      if(cards.length!==1)return;
+      if(!solCanPlaceFoundation(card,fi))return;
+      solFoundations.value[fi]=[...solFoundations.value[fi],card];
+      if(src==='waste')solWaste.value=solWaste.value.slice(0,-1);
+      else{const col=[...solTableau.value[ci]];col.splice(col.length-1,1);solTableau.value[ci]=col;}
+      solSelected.value=null;solReveal();solMoves.value++;solCheckWin();solSave();
+    }
+    function solClickCol(ci){
+      const col=solTableau.value[ci];
+      if(!solSelected.value){
+        if(!col.length)return;
+        const top=col[col.length-1];
+        if(!top.faceUp){solReveal();return;}
+        let start=col.length-1;
+        while(start>0&&col[start-1].faceUp)start--;
+        const cards=col.slice(start);
+        solSelected.value={src:'tableau',ci,ri:start,card:cards[0],cards};
+        return;
+      }
+      const{src,ci:fromCi,ri,cards}=solSelected.value;
+      if(src==='tableau'&&fromCi===ci){solSelected.value=null;return;}
+      if(!solCanPlaceTableau(cards[0],ci)){solSelected.value=null;return;}
+      solTableau.value[ci]=[...solTableau.value[ci],...cards];
+      if(src==='waste')solWaste.value=solWaste.value.slice(0,-1);
+      else{const c=[...solTableau.value[fromCi]];c.splice(ri,cards.length);solTableau.value[fromCi]=c;}
+      solSelected.value=null;solReveal();solMoves.value++;solSave();
+    }
+    function solAutoFoundation(src,ci){
+      const card=src==='waste'?solWaste.value[solWaste.value.length-1]:solTableau.value[ci]?.[solTableau.value[ci].length-1];
+      if(!card||!card.faceUp)return;
+      for(let fi=0;fi<4;fi++){
+        if(solCanPlaceFoundation(card,fi)){
+          solFoundations.value[fi]=[...solFoundations.value[fi],card];
+          if(src==='waste')solWaste.value=solWaste.value.slice(0,-1);
+          else{const c=[...solTableau.value[ci]];c.pop();solTableau.value[ci]=c;}
+          solSelected.value=null;solReveal();solMoves.value++;solCheckWin();solSave();return;
+        }
+      }
+    }
     function w2048NewGame(){localStorage.removeItem('aurora_2048_board');w2048Init();}
 
     // ── SNAKE ──────────────────────────────────────────────────────────────────
@@ -2333,7 +2385,7 @@ createApp({
 
     watch(useFahrenheit,v=>localStorage.setItem('aurora_fahrenheit',v));
 
-    return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,formatChatTime,activeWidget,setActiveWidget,clearActiveWidget,solTableau,solFoundations,solStock,solWaste,solMoves,solWon,solInit,solNewGame,solDragStart,solDragEnd,solDropFoundation,solDropTableau,snakeScore,snakeBest,snakeRunning,snakeDead,snakeStart,w2048Board,w2048Score,w2048Best,w2048Won,w2048Lost,w2048Init,w2048NewGame,w2048Move,w2048CellStyle,w2048TouchStart,w2048TouchEnd,wordleGuesses,wordleResults,wordleCurrent,wordleMsg,wordleKeyRows,wordleGetLetter,wordleGetClass,wordleKeyClass,wordleKey,worldClockCities,worldClockPick,worldClockOptions,worldClockTime,worldClockDate,worldClockAdd,worldClockRemove,currencyAmount,currencyFrom,currencyTo,currencyResult,currencyRate,currencyLoading,currencyConvert,currencyCodes,film,filmGenre,filmGenres,filmNext,passValue,passLength,passOpts,passCopied,passGenerate,passCopy,paletteBase,paletteType,paletteTypes,paletteColors,paletteCopied,paletteGenerate,paletteCopy,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings};
+    return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,formatChatTime,activeWidget,setActiveWidget,clearActiveWidget,solTableau,solFoundations,solStock,solWaste,solMoves,solWon,solInit,solNewGame,solSelected,solDraw,solClickWaste,solClickFoundation,solClickCol,snakeScore,snakeBest,snakeRunning,snakeDead,snakeStart,w2048Board,w2048Score,w2048Best,w2048Won,w2048Lost,w2048Init,w2048NewGame,w2048Move,w2048CellStyle,w2048TouchStart,w2048TouchEnd,wordleGuesses,wordleResults,wordleCurrent,wordleMsg,wordleKeyRows,wordleGetLetter,wordleGetClass,wordleKeyClass,wordleKey,worldClockCities,worldClockPick,worldClockOptions,worldClockTime,worldClockDate,worldClockAdd,worldClockRemove,currencyAmount,currencyFrom,currencyTo,currencyResult,currencyRate,currencyLoading,currencyConvert,currencyCodes,film,filmGenre,filmGenres,filmNext,passValue,passLength,passOpts,passCopied,passGenerate,passCopy,paletteBase,paletteType,paletteTypes,paletteColors,paletteCopied,paletteGenerate,paletteCopy,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings};
   }
 }).mount('#app');
 </script>
