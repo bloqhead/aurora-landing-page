@@ -1194,14 +1194,24 @@ body.theme-synthwave #bg-overlay {
                     solSelected&&solSelected.src==='tableau'&&solSelected.ci===ci&&solSelected.ri<=ri?'sol-selected':'']"
                   :style="{
                     top:(ri*22)+'px',
-                    height: ri===col.length-1 ? '72px' : '22px',
-                    zIndex: col.length - ri,
+                    height:'72px',
+                    zIndex: ri+1,
                     fontSize:'clamp(12px,1.1vw,16px)',
-                    cursor:card.faceUp?'pointer':'default',
-                    overflow:'visible'
+                    pointerEvents:'none'
+                  }">
+                  <span v-if="card.faceUp">{{ card.display }}</span>
+                </div>
+                <!-- Invisible hit targets on top of everything — one per card, sized to exposed strip -->
+                <div v-for="(card,ri) in col" :key="'h'+ci+ri"
+                  :style="{
+                    position:'absolute',
+                    top:(ri*22)+'px',
+                    left:0, right:0,
+                    height: ri===col.length-1 ? '72px' : '22px',
+                    zIndex: 1000+ri,
+                    cursor: card.faceUp ? 'pointer' : (ri===col.length-1 ? 'pointer' : 'default')
                   }"
-                  @click.stop="solClickCard(ci, ri)">
-                  <span v-if="card.faceUp" style="pointer-events:none">{{ card.display }}</span>
+                  @click.stop="solClickCard(ci,ri)">
                 </div>
               </div>
             </div>
