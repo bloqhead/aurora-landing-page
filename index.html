@@ -523,6 +523,12 @@ body.theme-advanced .icon-btn {
   box-shadow: 0 0 8px rgba(79,200,232,0.1), inset 0 1px 0 rgba(79,200,232,0.15) !important;
   color: rgba(79,200,232,0.8) !important;
 }
+/* Larger icon buttons across all pixel themes */
+body.theme-pixel .icon-btn {
+  width: clamp(38px, 3.2vw, 48px) !important;
+  height: clamp(38px, 3.2vw, 48px) !important;
+  font-size: 1.3rem !important;
+}
 body.theme-advanced .icon-btn:hover {
   background: rgba(79,200,232,0.18) !important;
   border-color: rgba(79,200,232,0.7) !important;
