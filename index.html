@@ -516,8 +516,19 @@ body.theme-advanced .card-label {
   padding-bottom: 6px !important;
   margin-bottom: 10px !important;
 }
-/* Angular button style */
-body.theme-advanced .icon-btn,
+body.theme-advanced .icon-btn {
+  clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%) !important;
+  border: 1px solid rgba(79,200,232,0.35) !important;
+  background: rgba(79,200,232,0.08) !important;
+  box-shadow: 0 0 8px rgba(79,200,232,0.1), inset 0 1px 0 rgba(79,200,232,0.15) !important;
+  color: rgba(79,200,232,0.8) !important;
+}
+body.theme-advanced .icon-btn:hover {
+  background: rgba(79,200,232,0.18) !important;
+  border-color: rgba(79,200,232,0.7) !important;
+  color: #4fc8e8 !important;
+  box-shadow: 0 0 14px rgba(79,200,232,0.25) !important;
+}
 body.theme-advanced .genre-btn,
 body.theme-advanced .topic-btn,
 body.theme-advanced .dice-type-btn {
