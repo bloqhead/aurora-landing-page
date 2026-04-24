@@ -653,10 +653,16 @@ a{color:inherit;} button{font-family:inherit;}
             <div class="chat-auth-title">{{ chatAuthMode==='login'?'Sign in':'Create account' }}</div>
             <input class="chat-input-field" v-model="chatUsername" placeholder="Username" @keyup.enter="chatSubmitAuth" autocomplete="username" />
             <input class="chat-input-field" v-model="chatPassword" type="password" placeholder="Password" @keyup.enter="chatSubmitAuth" autocomplete="current-password" />
+            <div v-if="chatAuthMode==='register'" id="turnstile-widget"
+              class="cf-turnstile"
+              data-sitekey="0x4AAAAAADCddltz7VJSRP5V"
+              data-theme="dark"
+              data-callback="onTurnstileSuccess">
+            </div>
             <button class="chat-submit-btn" @click="chatSubmitAuth" :disabled="chatAuthLoading">
               {{ chatAuthLoading ? '…' : chatAuthMode==='login' ? 'Sign in' : 'Sign up' }}
             </button>
-            <button class="chat-switch" @click="chatAuthMode=chatAuthMode==='login'?'register':'login'">
+            <button class="chat-switch" @click="chatAuthMode=chatAuthMode==='login'?'register':'login';chatTurnstileToken='';chatError=''">
               {{ chatAuthMode==='login'?'No account? Sign up':'Have an account? Sign in' }}
             </button>
             <div class="chat-error" v-if="chatError">{{ chatError }}</div>
@@ -804,6 +810,7 @@ a{color:inherit;} button{font-family:inherit;}
   </transition>
 </div>
 
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <script src="https://unpkg.com/three@0.124.0/build/three.min.js"></script>
 <script type="module">
 import { createApp, ref, computed, onMounted, onUnmounted, watch, nextTick } from 'https://cdn.jsdelivr.net/npm/vue@3.5.13/dist/vue.esm-browser.prod.min.js';
@@ -995,6 +1002,9 @@ createApp({
     // CHAT
     const CHAT_API='https://aurora-chat.daryn-codes.workers.dev';
     const chatApiUrl=ref(CHAT_API);
+    const chatTurnstileToken=ref('');
+    // Global callback for Turnstile widget
+    window.onTurnstileSuccess=(token)=>{ chatTurnstileToken.value=token; };
     const chatUser=ref(localStorage.getItem('aurora_chat_user')||'');
     const chatToken=ref(localStorage.getItem('aurora_chat_token')||'');
     const chatAuthMode=ref('login');
@@ -1024,10 +1034,19 @@ createApp({
         const endpoint=chatAuthMode.value==='login'?'/auth/login':'/auth/register';
         const r=await fetch(baseUrl+endpoint,{
           method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({username:chatUsername.value,password:chatPassword.value})
+          body:JSON.stringify({
+            username:chatUsername.value,
+            password:chatPassword.value,
+            ...(chatAuthMode.value==='register'?{turnstileToken:chatTurnstileToken.value}:{})
+          })
         });
         const d=await r.json();
-        if(!r.ok){chatError.value=d.error||'Something went wrong';return;}
+        if(!r.ok){
+          chatError.value=d.error||'Something went wrong';
+          // Reset Turnstile on failure so user can try again
+          if(chatAuthMode.value==='register'&&window.turnstile)window.turnstile.reset();
+          return;
+        }
         chatUser.value=d.username; chatToken.value=d.token;
         localStorage.setItem('aurora_chat_user',d.username);
         localStorage.setItem('aurora_chat_token',d.token);
@@ -1420,7 +1439,7 @@ createApp({
 
     watch(useFahrenheit,v=>localStorage.setItem('aurora_fahrenheit',v));
 
-    return{clockStr,dateStr,showSettings,showPicker,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,formatChatTime,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings};
+    return{clockStr,dateStr,showSettings,showPicker,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,formatChatTime,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings};
   }
 }).mount('#app');
 </script>
