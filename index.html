@@ -1006,7 +1006,8 @@ createApp({
     const chatApiUrl=ref(CHAT_API);
     const chatTurnstileToken=ref('');
     // Global callback for Turnstile widget
-    window.onTurnstileSuccess=(token)=>{ chatTurnstileToken.value=token; };
+    window._turnstileToken='';
+    window.onTurnstileSuccess=(token)=>{ window._turnstileToken=token; chatTurnstileToken.value=token; };
     const chatUser=ref(localStorage.getItem('aurora_chat_user')||'');
     const chatToken=ref(localStorage.getItem('aurora_chat_token')||'');
     const chatAuthMode=ref('login');
@@ -1039,7 +1040,7 @@ createApp({
           body:JSON.stringify({
             username:chatUsername.value,
             password:chatPassword.value,
-            ...(chatAuthMode.value==='register'?{turnstileToken:chatTurnstileToken.value}:{})
+            ...(chatAuthMode.value==='register'?{turnstileToken:chatTurnstileToken.value||window._turnstileToken}:{})
           })
         });
         const d=await r.json();
