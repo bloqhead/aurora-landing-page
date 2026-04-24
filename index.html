@@ -1696,9 +1696,14 @@ createApp({
     function solDraw(){if(!solStock.value.length){solStock.value=solWaste.value.reverse().map(c=>({...c,faceUp:false}));solWaste.value=[];}else{const c={...solStock.value.pop(),faceUp:true};solWaste.value.push(c);}solMoves.value++;solSave();}
     function solDropFoundation(fi){if(!solDragData)return;const{src,ci,ri}=solDragData;let card;if(src==='waste'){card=solWaste.value[solWaste.value.length-1];}else{const col=solTableau.value[ci];if(ri!==col.length-1)return;card=col[ri];}if(!solCanPlaceFoundation(card,fi))return;solFoundations.value[fi].push(card);if(src==='waste')solWaste.value.pop();else solTableau.value[ci].splice(ri,1);solReveal();solMoves.value++;solCheckWin();solSave();}
     function solDropTableau(ti){if(!solDragData)return;const{src,ci,ri}=solDragData;let cards=[];if(src==='waste'){cards=[solWaste.value[solWaste.value.length-1]];}else{cards=solTableau.value[ci].slice(ri);}if(!cards.length||!solCanPlaceTableau(cards[0],ti))return;solTableau.value[ti].push(...cards);if(src==='waste')solWaste.value.pop();else solTableau.value[ci].splice(ri,cards.length);solReveal();solMoves.value++;solSave();}
+    function solCanPlaceFoundation(card,fi){const f=solFoundations.value[fi];if(!f.length)return card.rank===0;return f[f.length-1].suit===card.suit&&f[f.length-1].rank===card.rank-1;}
+    function solCanPlaceTableau(card,col){const c=solTableau.value[col];if(!c.length)return card.rank===12;const top=c[c.length-1];return top.faceUp&&(top.suit<2)!==(card.suit<2)&&top.rank===card.rank+1;}
+    function solDragStart(src,ci,ri){solDragData={src,ci,ri};}
+    function solDragEnd(){solDragData=null;}
+    function solReveal(){solTableau.value.forEach(col=>{if(col.length&&!col[col.length-1].faceUp)col[col.length-1].faceUp=true;});}
+    function solCheckWin(){solWon.value=solFoundations.value.every(f=>f.length===13);}
     function solNewGame(){localStorage.removeItem('aurora_sol');solInit();}
     function w2048NewGame(){localStorage.removeItem('aurora_2048_board');w2048Init();}
-    function solCheckWin(){solWon.value=solFoundations.value.every(f=>f.length===13);}
 
     // ── SNAKE ──────────────────────────────────────────────────────────────────
     const snakeScore=ref(0);const snakeBest=ref(parseInt(localStorage.getItem('aurora_snake_best')||'0'));const snakeRunning=ref(false);const snakeDead=ref(false);
@@ -1784,7 +1789,7 @@ createApp({
     const currencyCodes=['USD','EUR','GBP','JPY','CAD','AUD','CHF','CNY','INR','MXN','BRL','KRW','SGD','HKD','NOK','SEK','DKK','NZD','ZAR','AED'];
     const currencyAmount=ref(1);const currencyFrom=ref('USD');const currencyTo=ref('EUR');const currencyResult=ref(null);const currencyRate=ref(null);const currencyLoading=ref(false);
     let currencyTimer=null;
-    async function currencyConvert(){clearTimeout(currencyTimer);currencyTimer=setTimeout(async()=>{if(!currencyAmount.value||currencyFrom.value===currencyTo.value){currencyResult.value=currencyAmount.value;currencyRate.value=null;return;}currencyLoading.value=true;try{const r=await fetch(`https://api.frankfurter.app/latest?amount=${currencyAmount.value}&from=${currencyFrom.value}&to=${currencyTo.value}`);const d=await r.json();const res=d.rates[currencyTo.value];currencyResult.value=res.toFixed(2)+' '+currencyTo.value;const rr=await fetch(`https://api.frankfurter.app/latest?amount=1&from=${currencyFrom.value}&to=${currencyTo.value}`);const rd=await rr.json();currencyRate.value=rd.rates[currencyTo.value].toFixed(4);}catch{currencyResult.value='—';}currencyLoading.value=false;},400);}
+    async function currencyConvert(){clearTimeout(currencyTimer);currencyTimer=setTimeout(async()=>{if(!currencyAmount.value||currencyFrom.value===currencyTo.value){currencyResult.value=currencyAmount.value;currencyRate.value=null;return;}currencyLoading.value=true;try{const r=await fetch(`https://www.frankfurter.app/latest?amount=${currencyAmount.value}&from=${currencyFrom.value}&to=${currencyTo.value}`);const d=await r.json();const res=d.rates[currencyTo.value];currencyResult.value=res.toFixed(2)+' '+currencyTo.value;const rr=await fetch(`https://www.frankfurter.app/latest?amount=1&from=${currencyFrom.value}&to=${currencyTo.value}`);const rd=await rr.json();currencyRate.value=rd.rates[currencyTo.value].toFixed(4);}catch{currencyResult.value='—';}currencyLoading.value=false;},400);}
     currencyConvert();
 
     // ── FILM REC ───────────────────────────────────────────────────────────────
@@ -1969,6 +1974,7 @@ createApp({
       changelogLoading.value=true;changelogError.value='';
       try{
         const r=await fetch(`https://api.github.com/repos/${REPO}/commits?per_page=40`);
+        if(r.status===403||r.status===404){changelogError.value='Changelog unavailable — repository is private.';changelogLoading.value=false;return;}
         if(!r.ok)throw new Error('GitHub API error');
         const data=await r.json();
         const lastSeen=localStorage.getItem(CHANGELOG_KEY)||'';
@@ -1986,11 +1992,7 @@ createApp({
         if(!r.ok)return;
         const data=await r.json();
         const lastSeen=localStorage.getItem(CHANGELOG_KEY)||'';
-        if(!lastSeen){
-          // First visit — mark current head as seen, no badge
-          if(data.length)localStorage.setItem(CHANGELOG_KEY,data[0].sha);
-          changelogUnread.value=0;return;
-        }
+        if(!lastSeen){if(data.length)localStorage.setItem(CHANGELOG_KEY,data[0].sha);changelogUnread.value=0;return;}
         const idx=data.findIndex(c=>c.sha===lastSeen);
         changelogUnread.value=data.slice(0,idx<0?data.length:idx).map(parseCommit).filter(e=>!e.boring).length;
       }catch{}
