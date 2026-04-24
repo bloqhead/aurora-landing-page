@@ -1697,7 +1697,7 @@ createApp({
     function solDropFoundation(fi){if(!solDragData)return;const{src,ci,ri}=solDragData;let card;if(src==='waste'){card=solWaste.value[solWaste.value.length-1];}else{const col=solTableau.value[ci];if(ri!==col.length-1)return;card=col[ri];}if(!solCanPlaceFoundation(card,fi))return;solFoundations.value[fi].push(card);if(src==='waste')solWaste.value.pop();else solTableau.value[ci].splice(ri,1);solReveal();solMoves.value++;solCheckWin();solSave();}
     function solDropTableau(ti){if(!solDragData)return;const{src,ci,ri}=solDragData;let cards=[];if(src==='waste'){cards=[solWaste.value[solWaste.value.length-1]];}else{cards=solTableau.value[ci].slice(ri);}if(!cards.length||!solCanPlaceTableau(cards[0],ti))return;solTableau.value[ti].push(...cards);if(src==='waste')solWaste.value.pop();else solTableau.value[ci].splice(ri,cards.length);solReveal();solMoves.value++;solSave();}
     function solNewGame(){localStorage.removeItem('aurora_sol');solInit();}
-    function w2048NewGame(){localStorage.removeItem('aurora_2048_board');w2048Init();}}
+    function w2048NewGame(){localStorage.removeItem('aurora_2048_board');w2048Init();}
     function solCheckWin(){solWon.value=solFoundations.value.every(f=>f.length===13);}
 
     // ── SNAKE ──────────────────────────────────────────────────────────────────
