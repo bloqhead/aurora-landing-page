@@ -1192,9 +1192,16 @@ body.theme-synthwave #bg-overlay {
                   :class="[card.faceUp?'face-up':'face-down',
                     card.faceUp?(card.suit<2?'red':'black'):'',
                     solSelected&&solSelected.src==='tableau'&&solSelected.ci===ci&&solSelected.ri<=ri?'sol-selected':'']"
-                  :style="{top:(ri*22)+'px',height:'72px',zIndex:ri+1,fontSize:'clamp(12px,1.1vw,16px)',cursor:card.faceUp?'pointer':'default'}"
+                  :style="{
+                    top:(ri*22)+'px',
+                    height: ri===col.length-1 ? '72px' : '22px',
+                    zIndex: col.length - ri,
+                    fontSize:'clamp(12px,1.1vw,16px)',
+                    cursor:card.faceUp?'pointer':'default',
+                    overflow:'visible'
+                  }"
                   @click.stop="solClickCard(ci, ri)">
-                  <span v-if="card.faceUp">{{ card.display }}</span>
+                  <span v-if="card.faceUp" style="pointer-events:none">{{ card.display }}</span>
                 </div>
               </div>
             </div>
