@@ -1184,15 +1184,16 @@ body.theme-synthwave #bg-overlay {
             <div class="solitaire-tableau" style="margin-top:8px">
               <div v-for="(col,ci) in solTableau" :key="'t'+ci"
                 class="s-pile"
-                :style="{minHeight: Math.max(80, (col.length-1)*22+72)+'px', position:'relative', cursor:'pointer'}"
-                @click.stop="solClickCol(ci)">
+                :style="{minHeight: Math.max(80, (col.length-1)*22+72)+'px', position:'relative'}"
+                @click.stop="solClickCol(ci, col.length)">
                 <div v-if="!col.length" style="position:absolute;top:0;left:0;right:0;height:72px;border-radius:6px;border:1px dashed rgba(255,255,255,.1);"></div>
                 <div v-for="(card,ri) in col" :key="'c'+ci+ri"
                   class="s-card"
                   :class="[card.faceUp?'face-up':'face-down',
                     card.faceUp?(card.suit<2?'red':'black'):'',
-                    solSelected&&solSelected.src==='tableau'&&solSelected.ci===ci&&solSelected.ri===ri?'sol-selected':'']"
-                  :style="{top:(ri*22)+'px',height:'72px',zIndex:ri+1,fontSize:'clamp(12px,1.1vw,16px)'}">
+                    solSelected&&solSelected.src==='tableau'&&solSelected.ci===ci&&solSelected.ri<=ri?'sol-selected':'']"
+                  :style="{top:(ri*22)+'px',height:'72px',zIndex:ri+1,fontSize:'clamp(12px,1.1vw,16px)',cursor:card.faceUp?'pointer':'default'}"
+                  @click.stop="solClickCard(ci, ri)">
                   <span v-if="card.faceUp">{{ card.display }}</span>
                 </div>
               </div>
@@ -1742,22 +1743,41 @@ createApp({
       else{const col=[...solTableau.value[ci]];col.splice(col.length-1,1);solTableau.value[ci]=col;}
       solSelected.value=null;solReveal();solMoves.value++;solCheckWin();solSave();
     }
-    function solClickCol(ci){
+    function solClickCard(ci, ri){
       const col=solTableau.value[ci];
+      const card=col[ri];
+      if(!card) return;
+
+      // Flip face-down card
+      if(!card.faceUp){solReveal();solSelected.value=null;return;}
+
+      // If nothing selected — select from this card downward (the face-up run from ri)
       if(!solSelected.value){
-        if(!col.length)return;
-        const top=col[col.length-1];
-        if(!top.faceUp){solReveal();return;}
-        let start=col.length-1;
-        while(start>0&&col[start-1].faceUp)start--;
-        const cards=col.slice(start);
-        solSelected.value={src:'tableau',ci,ri:start,card:cards[0],cards};
+        const cards=col.slice(ri);
+        solSelected.value={src:'tableau',ci,ri,card:cards[0],cards};
         return;
       }
-      const{src,ci:fromCi,ri,cards}=solSelected.value;
-      if(src==='tableau'&&fromCi===ci){solSelected.value=null;return;}
+
+      // Something already selected — try to place on this column
+      const{src,ci:fromCi,ri:fromRi,cards}=solSelected.value;
+      // Clicking the same selected card deselects
+      if(src==='tableau'&&fromCi===ci&&fromRi===ri){solSelected.value=null;return;}
+      // Can only place on the last card in a column
+      if(ri!==col.length-1){solSelected.value=null;return;}
       if(!solCanPlaceTableau(cards[0],ci)){solSelected.value=null;return;}
-      solTableau.value[ci]=[...solTableau.value[ci],...cards];
+      solTableau.value[ci]=[...col,...cards];
+      if(src==='waste')solWaste.value=solWaste.value.slice(0,-1);
+      else{const c=[...solTableau.value[fromCi]];c.splice(fromRi,cards.length);solTableau.value[fromCi]=c;}
+      solSelected.value=null;solReveal();solMoves.value++;solSave();
+    }
+
+    function solClickCol(ci, colLen){
+      // Called when clicking empty column area (no cards)
+      if(colLen>0)return; // card clicks handled by solClickCard
+      if(!solSelected.value)return;
+      const{src,ci:fromCi,ri,cards}=solSelected.value;
+      if(!solCanPlaceTableau(cards[0],ci)){solSelected.value=null;return;}
+      solTableau.value[ci]=[...cards];
       if(src==='waste')solWaste.value=solWaste.value.slice(0,-1);
       else{const c=[...solTableau.value[fromCi]];c.splice(ri,cards.length);solTableau.value[fromCi]=c;}
       solSelected.value=null;solReveal();solMoves.value++;solSave();
