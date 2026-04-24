@@ -1118,7 +1118,7 @@ body.theme-synthwave #bg-overlay {
                 {{ chatOnline.length ? chatOnline.join(', ') : 'No one online' }}
               </div>
             </div>
-            <div class="chat-messages" ref="chatMessagesEl">
+            <div class="chat-messages" id="chat-messages" ref="chatMessagesEl">
               <div v-for="(msg,i) in chatMessages" :key="i" class="chat-msg" :class="{system:msg.type==='system'}">
                 <template v-if="msg.type==='system'">
                   <div class="chat-msg-text">{{ msg.text }}</div>
@@ -1877,13 +1877,13 @@ createApp({
         const data=JSON.parse(e.data);
         if(data.type==='history'){
           chatMessages.value=data.messages.map(m=>({...m,type:'message'}));
-          nextTick(()=>scrollChatToBottom());
+          scrollChatToBottom();
         } else if(data.type==='message'){
           chatMessages.value.push({...data,type:'message'});
-          nextTick(()=>scrollChatToBottom());
+          scrollChatToBottom();
         } else if(data.type==='system'){
           chatMessages.value.push({text:data.text,ts:data.ts,type:'system'});
-          nextTick(()=>scrollChatToBottom());
+          scrollChatToBottom();
         } else if(data.type==='presence'){
           chatOnline.value=data.online;
         } else if(data.type==='typing'){
@@ -1926,8 +1926,10 @@ createApp({
     }
 
     function scrollChatToBottom(){
-      const el=chatMessagesEl.value?.$el||chatMessagesEl.value;
-      if(el)el.scrollTop=el.scrollHeight;
+      nextTick(()=>{
+        const el=document.getElementById('chat-messages');
+        if(el)el.scrollTop=el.scrollHeight;
+      });
     }
 
     // Auto-connect if token exists
