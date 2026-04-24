@@ -332,7 +332,7 @@ a{color:inherit;} button{font-family:inherit;}
 .game-over-msg{text-align:center;font-family:var(--font-display);font-size:var(--t-lg);font-weight:300;color:var(--accent);padding:var(--s-md) 0;}
 
 /* SOLITAIRE */
-.solitaire-wrap{user-select:none;}
+.solitaire-wrap{user-select:none;overflow-y:auto;}
 .solitaire-top{display:flex;gap:6px;margin-bottom:8px;}
 .solitaire-tableau{display:flex;gap:4px;}
 .s-pile{min-height:80px;flex:1;position:relative;}
@@ -1183,7 +1183,8 @@ body.theme-synthwave #bg-overlay {
             <!-- Tableau -->
             <div class="solitaire-tableau" style="margin-top:8px">
               <div v-for="(col,ci) in solTableau" :key="'t'+ci"
-                class="s-pile" style="min-height:200px;position:relative;cursor:pointer"
+                class="s-pile"
+                :style="{minHeight: Math.max(80, (col.length-1)*22+72)+'px', position:'relative', cursor:'pointer'}"
                 @click.stop="solClickCol(ci)">
                 <div v-if="!col.length" style="position:absolute;top:0;left:0;right:0;height:72px;border-radius:6px;border:1px dashed rgba(255,255,255,.1);"></div>
                 <div v-for="(card,ri) in col" :key="'c'+ci+ri"
