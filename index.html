@@ -1838,11 +1838,6 @@ createApp({
       const val=e.target.value;
       if(val){wordleKey(val.slice(-1).toUpperCase());e.target.value='';}
     }
-      if(activeWidget.value!=='wordle')return;
-      // Don't fire if user is typing in an input
-      if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;
-      wordleKey(e.key==='Backspace'?'⌫':e.key==='Enter'?'ENTER':e.key);
-    }
 
     // Single global key handler — routes to the active widget
     function globalKeyHandler(e){
