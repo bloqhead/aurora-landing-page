@@ -5,13 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Aurora</title>
 <meta name="description" content="A personal dashboard with live weather, aurora KP index, NASA APOD, music recommendations, wildlife observations, and more." />
-<meta name="theme-color" content="#0a0e1a" />
-<meta name="mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="Aurora" />
-<link rel="manifest" href="manifest.json" />
-<link rel="apple-touch-icon" href="icons/icon-192.png" />
 
 <!-- OpenGraph -->
 <meta property="og:title" content="Aurora Dashboard" />
@@ -803,6 +796,7 @@ body.theme-synthwave #bg-overlay {
 /* PICKER TOUCH */
 .picker-item{touch-action:none;}
 </style>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(r=>r.forEach(s=>s.unregister()));caches.keys().then(k=>k.forEach(c=>caches.delete(c)));}</script>
 </head>
 <body>
 <div id="bg-layer"></div>
@@ -1154,7 +1148,6 @@ body.theme-synthwave #bg-overlay {
           <div class="game-score-row">
             <div class="game-score">Moves: <span>{{ solMoves }}</span>
               <span v-if="solSelected" style="color:var(--accent2);margin-left:8px">{{ solSelected.card.display }} selected</span>
-              <span v-if="solDebug" style="color:yellow;margin-left:8px;font-size:10px">{{ solDebug }}</span>
             </div>
             <button class="game-btn" @click="solNewGame">New Game</button>
           </div>
@@ -1188,9 +1181,10 @@ body.theme-synthwave #bg-overlay {
                 <div v-else style="width:52px;height:72px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:20px;opacity:.25;border:1px dashed rgba(255,255,255,.1);">{{ ['♥','♦','♣','♠'][f-1] }}</div>
               </div>
             </div>
-            <!-- Tableau — canvas, pointerup unifies touch+mouse with no double-firing -->
+            <!-- Tableau — canvas for reliable iOS touch -->
             <canvas id="sol-canvas" style="width:100%;display:block;cursor:pointer;touch-action:manipulation;"
-              @pointerup="solCanvasPointer"></canvas>
+              @touchend.prevent="solCanvasTouch"
+              @click="solCanvasClick"></canvas>
           </div>
         </div>
 
@@ -1226,14 +1220,12 @@ body.theme-synthwave #bg-overlay {
         </div>
 
         <!-- WORDLE -->
-        <div v-else-if="wid.id==='wordle'" class="card" tabindex="0"
-          @click="setActiveWidget('wordle');$nextTick(()=>$refs.wordleInput?.focus())"
-          :style="{outline:activeWidget==='wordle'?'2px solid var(--accent)':'none'}">
-          <div class="card-label">Wordle ✏️ <span style="font-size:var(--t-xs);color:var(--text-muted)">· Daily · tap to type</span></div>
-          <input ref="wordleInput" style="position:absolute;opacity:0;width:1px;height:1px;top:0;left:0;"
-            @keydown="wordleHandleMobileKey" @input="wordleHandleMobileInput"
-            autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" />
-          <div class="wordle-grid" @click.stop="setActiveWidget('wordle');$nextTick(()=>$refs.wordleInput?.focus())">
+        <div v-else-if="wid.id==='wordle'" class="card" tabindex="0" @click="setActiveWidget('wordle');$refs.wordleInput?.focus()" @blur="clearActiveWidget" :style="{outline:activeWidget==='wordle'?'2px solid var(--accent)':'none'}">
+          <div class="card-label">Wordle ✏️ <span style="font-size:var(--t-xs);color:var(--text-muted)">· Daily · tap grid to type</span></div>
+          <!-- Hidden input captures OS keyboard on mobile -->
+          <input ref="wordleInput" style="position:absolute;opacity:0;width:1px;height:1px;pointer-events:none;"
+            @keydown="wordleHandleMobileKey" @input="wordleHandleMobileInput" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+          <div class="wordle-grid" @click.stop="$refs.wordleInput?.focus()">
             <div v-for="r in 6" :key="r" class="wordle-row">
               <div v-for="c in 5" :key="c" class="wordle-cell" :class="wordleGetClass(r-1,c-1)">
                 {{ wordleGetLetter(r-1,c-1) }}
@@ -1795,9 +1787,9 @@ createApp({
       const cv=document.getElementById('sol-canvas');
       if(!cv)return null;
       const rect=cv.getBoundingClientRect();
-      // pointerup, click, and touchend all provide clientX/clientY
-      const clientX=e.clientX||(e.changedTouches&&e.changedTouches[0].clientX)||0;
-      const clientY=e.clientY||(e.changedTouches&&e.changedTouches[0].clientY)||0;
+      let clientX,clientY;
+      if(e.changedTouches){clientX=e.changedTouches[0].clientX;clientY=e.changedTouches[0].clientY;}
+      else{clientX=e.clientX;clientY=e.clientY;}
       const x=clientX-rect.left;
       const y=clientY-rect.top;
       const ncols=solTableau.value.length||7;
@@ -1809,12 +1801,8 @@ createApp({
       return{ci,ri};
     }
 
-    let solLastTouch=0;
-    function solCanvasPointer(e){
-      // pointerup fires once for both touch and mouse — no double-firing
+    function solCanvasTouch(e){
       const hit=solHitTest(e);
-      solDebug.value=hit?`ci=${hit.ci} ri=${hit.ri} (${e.pointerType})`:'null';
-      setTimeout(()=>solDebug.value='',3000);
       if(!hit)return;
       if(hit.ri<0)solClickCol(hit.ci,0);
       else solClickCard(hit.ci,hit.ri);
@@ -1829,12 +1817,6 @@ createApp({
     // Redraw tableau whenever state changes
     watch([solTableau,solFoundations,solWaste,solStock,solSelected],()=>{
       nextTick(()=>{try{solDrawTableau();}catch(e){console.warn('solDraw err',e);}});
-    });
-    // Also redraw when solitaire widget becomes visible
-    watch(visibleWidgets,()=>{
-      if(visibleWidgets.value.find(w=>w.id==='solitaire')){
-        nextTick(()=>{try{solDrawTableau();}catch(e){};});
-      }
     });
     function solReveal(){solTableau.value=solTableau.value.map(col=>{if(col.length&&!col[col.length-1].faceUp){const c=[...col];c[c.length-1]={...c[c.length-1],faceUp:true};return c;}return col;});}
     function solCheckWin(){solWon.value=solFoundations.value.every(f=>f.length===13);}
@@ -1977,12 +1959,11 @@ createApp({
     (()=>{const savedDay=localStorage.getItem('aurora_wordle_day');const today=String(Math.floor(Date.now()/86400000));if(savedDay!==today){localStorage.setItem('aurora_wordle_day',today);localStorage.removeItem('aurora_wordle_guesses');localStorage.removeItem('aurora_wordle_results');wordleGuesses.value=[];wordleResults.value=[];}})();
     // Keyboard input for wordle when focused
     function wordleHandleMobileKey(e){
-      if(e.key==='Backspace'){e.preventDefault();wordleKey('⌫');}
-      else if(e.key==='Enter'){e.preventDefault();wordleKey('ENTER');}
-      else if(/^[a-zA-Z]$/.test(e.key)){e.preventDefault();wordleKey(e.key.toUpperCase());}
+      if(e.key==='Backspace')wordleKey('⌫');
+      else if(e.key==='Enter')wordleKey('ENTER');
     }
     function wordleHandleMobileInput(e){
-      // Fallback for mobile OS keyboard composing
+      // Fires on mobile when OS keyboard inputs a character
       const val=e.target.value;
       if(val){wordleKey(val.slice(-1).toUpperCase());e.target.value='';}
     }
@@ -2540,15 +2521,9 @@ createApp({
 
     watch(useFahrenheit,v=>localStorage.setItem('aurora_fahrenheit',v));
 
-    return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,formatChatTime,activeWidget,setActiveWidget,clearActiveWidget,solTableau,solFoundations,solStock,solWaste,solMoves,solWon,solInit,solNewGame,solSelected,solDebug,solDraw,solClickWaste,solClickFoundation,solClickCol,solClickCard,solAutoFoundation,solCanvasPointer,solDrawTableau,snakeScore,snakeBest,snakeRunning,snakeDead,snakeStart,w2048Board,w2048Score,w2048Best,w2048Won,w2048Lost,w2048Init,w2048NewGame,w2048Move,w2048CellStyle,w2048TouchStart,w2048TouchEnd,wordleGuesses,wordleResults,wordleCurrent,wordleMsg,wordleKeyRows,wordleGetLetter,wordleGetClass,wordleKeyClass,wordleKey,wordleHandleMobileKey,wordleHandleMobileInput,worldClockCities,worldClockPick,worldClockOptions,worldClockTime,worldClockDate,worldClockAdd,worldClockRemove,currencyAmount,currencyFrom,currencyTo,currencyResult,currencyRate,currencyLoading,currencyConvert,currencyCodes,film,filmGenre,filmGenres,filmNext,passValue,passLength,passOpts,passCopied,passGenerate,passCopy,paletteBase,paletteType,paletteTypes,paletteColors,paletteCopied,paletteGenerate,paletteCopy,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings};
+    return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,formatChatTime,activeWidget,setActiveWidget,clearActiveWidget,solTableau,solFoundations,solStock,solWaste,solMoves,solWon,solInit,solNewGame,solSelected,solDraw,solClickWaste,solClickFoundation,solClickCol,solClickCard,solAutoFoundation,solCanvasTouch,solCanvasClick,solDrawTableau,snakeScore,snakeBest,snakeRunning,snakeDead,snakeStart,w2048Board,w2048Score,w2048Best,w2048Won,w2048Lost,w2048Init,w2048NewGame,w2048Move,w2048CellStyle,w2048TouchStart,w2048TouchEnd,wordleGuesses,wordleResults,wordleCurrent,wordleMsg,wordleKeyRows,wordleGetLetter,wordleGetClass,wordleKeyClass,wordleKey,wordleHandleMobileKey,wordleHandleMobileInput,worldClockCities,worldClockPick,worldClockOptions,worldClockTime,worldClockDate,worldClockAdd,worldClockRemove,currencyAmount,currencyFrom,currencyTo,currencyResult,currencyRate,currencyLoading,currencyConvert,currencyCodes,film,filmGenre,filmGenres,filmNext,passValue,passLength,passOpts,passCopied,passGenerate,passCopy,paletteBase,paletteType,paletteTypes,paletteColors,paletteCopied,paletteGenerate,paletteCopy,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings};
   }
 }).mount('#app');
 </script>
-<script>
-// Unregister any service workers and clear caches to fix stale content issues
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(r=>r.unregister()));
-  caches.keys().then(keys=>keys.forEach(k=>caches.delete(k)));
-}
-</script>
+</body>
 </html>
