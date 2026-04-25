@@ -1792,15 +1792,25 @@ createApp({
       });
     }
 
-    // Watch state changes and redraw
-    watch([solTableau,solFoundations,solWaste,solStock,solSelected],()=>{
-      nextTick(()=>{try{solDrawPixi();}catch(e){console.warn('pixi draw err',e);}});
-    });
     // Init when widget becomes visible
     watch(visibleWidgets,()=>{
       if(visibleWidgets.value.find(w=>w.id==='solitaire')){
-        nextTick(()=>solInitPixi());
+        nextTick(()=>{
+          solInit();
+          let attempts=0;
+          const poll=setInterval(()=>{
+            attempts++;
+            const el=document.getElementById('sol-pixi');
+            if(el){clearInterval(poll);solInitPixi();}
+            else if(attempts>40)clearInterval(poll);
+          },100);
+        });
       }
+    },{immediate:true});
+
+    // Redraw on state changes
+    watch([solTableau,solFoundations,solWaste,solStock,solSelected],()=>{
+      nextTick(()=>{try{solDrawPixi();}catch(e){}});
     });
 
     function solReveal(){solTableau.value=solTableau.value.map(col=>{if(col.length&&!col[col.length-1].faceUp){const c=[...col];c[c.length-1]={...c[c.length-1],faceUp:true};return c;}return col;});}
@@ -2476,7 +2486,7 @@ createApp({
 
     function saveSettings(){localStorage.setItem('aurora_location',locationInput.value);localStorage.setItem('aurora_unsplash',unsplashKey.value);localStorage.setItem('aurora_lastfm',lastfmKey.value);localStorage.setItem('aurora_nasa',nasaKey.value);localStorage.setItem('aurora_musicapp',musicApp.value);localStorage.setItem('aurora_theme',currentTheme.value);localStorage.setItem('aurora_fahrenheit',useFahrenheit.value);bookmarks.value=bookmarkEdits.value.filter(b=>b.url);localStorage.setItem('aurora_bookmarks',JSON.stringify(bookmarks.value));showSettings.value=false;locateAndLoad();fetchBg(bgTopic.value);fetchAlbum(selectedGenre.value);fetchAPOD();}
 
-    onMounted(()=>{applyTheme(currentTheme.value);updateNumCols();window.addEventListener('resize',updateNumCols);clockTimer=setInterval(()=>{now.value=new Date();},10000);locateAndLoad();fetchKP();fetchQuote();fetchAlbum(selectedGenre.value);fetchBg(bgTopic.value);fetchAnimal();fetchAPOD();fetchChangelogBadge();solInit();solInitPixi();w2048Init();setInterval(fetchKP,5*60*1000);setInterval(()=>{if(unsplashKey.value)fetchBg(bgTopic.value);},15*60*1000);});
+    onMounted(()=>{applyTheme(currentTheme.value);updateNumCols();window.addEventListener('resize',updateNumCols);clockTimer=setInterval(()=>{now.value=new Date();},10000);locateAndLoad();fetchKP();fetchQuote();fetchAlbum(selectedGenre.value);fetchBg(bgTopic.value);fetchAnimal();fetchAPOD();fetchChangelogBadge();w2048Init();setInterval(fetchKP,5*60*1000);setInterval(()=>{if(unsplashKey.value)fetchBg(bgTopic.value);},15*60*1000);});
     onUnmounted(()=>{clearInterval(clockTimer);window.removeEventListener('resize',updateNumCols);teardownDice();});
 
     // Watch for dice canvas to appear in DOM (widget may not be visible on mount)
