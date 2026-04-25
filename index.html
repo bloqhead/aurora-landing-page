@@ -350,8 +350,9 @@ a{color:inherit;} button{font-family:inherit;}
 
 /* SNAKE */
 .snake-canvas{display:block;width:100%;border-radius:8px;border:1px solid var(--card-border);}
-.snake-controls{display:flex;gap:var(--s-xs);margin-top:var(--s-xs);align-items:center;}
-.snake-hint{font-family:var(--font-mono);font-size:var(--t-xs);color:var(--text-muted);}
+.snake-dpad{display:grid;grid-template-columns:repeat(3,44px);grid-template-rows:repeat(3,44px);gap:4px;margin:10px auto 0;width:fit-content;}
+.snake-btn{width:44px;height:44px;border-radius:8px;border:1px solid var(--card-border);background:rgba(255,255,255,.05);color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;-webkit-user-select:none;user-select:none;}
+.snake-btn:active{background:rgba(255,255,255,.15);}
 
 /* 2048 */
 .w2048-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;background:rgba(0,0,0,.3);padding:8px;border-radius:8px;margin-bottom:var(--s-xs);}
@@ -1129,7 +1130,7 @@ body.theme-synthwave #bg-overlay {
                     <span class="chat-msg-user" :class="{me:msg.username===chatUser}">{{ msg.username }}</span>
                     <span class="chat-msg-time">{{ formatChatTime(msg.ts) }}</span>
                   </div>
-                  <div class="chat-msg-text">{{ msg.text }}</div>
+                  <div class="chat-msg-text" v-html="chatRenderText(msg.text)"></div>
                 </template>
               </div>
             </div>
@@ -1160,30 +1161,25 @@ body.theme-synthwave #bg-overlay {
           <div class="card-label">Snake 🐍</div>
           <div class="game-score-row">
             <div class="game-score">Score: <span>{{ snakeScore }}</span> &nbsp; Best: <span>{{ snakeBest }}</span></div>
-            <button class="game-btn" @click="snakeStart">{{ snakeRunning ? 'Restart' : 'Start' }}</button>
-          </div>
-          <canvas id="snake-canvas" class="snake-canvas" width="200" height="200"></canvas>
-          <div class="snake-controls">
-            <span class="snake-hint">Arrow keys or WASD</span>
-            <span v-if="snakeDead" style="margin-left:auto;font-family:var(--font-mono);font-size:var(--t-xs);color:#ff6b6b">Game over!</span>
-          </div>
-        </div>
-
-        <!-- 2048 -->
-        <div v-else-if="wid.id==='w2048'" class="card" tabindex="0" @click="setActiveWidget('w2048')" @blur="clearActiveWidget" :style="{outline:activeWidget==='w2048'?'2px solid var(--accent)':'none'}">
-          <div class="card-label">2048 🧩</div>
-          <div class="game-score-row">
-            <div class="game-score">Score: <span>{{ w2048Score }}</span> &nbsp; Best: <span>{{ w2048Best }}</span></div>
-            <button class="game-btn" @click="w2048NewGame">New</button>
-          </div>
-          <div class="w2048-grid" @touchstart="w2048TouchStart" @touchend="w2048TouchEnd">
-            <div v-for="(val,i) in w2048Board" :key="i" class="w2048-cell" :style="w2048CellStyle(val)">
-              {{ val || '' }}
+            <div style="display:flex;gap:6px;">
+              <button class="game-btn" v-if="snakeRunning" @click.stop="snakePause">{{ snakePaused ? '▶' : '⏸' }}</button>
+              <button class="game-btn" @click.stop="snakeStart">{{ snakeRunning ? 'Restart' : 'Start' }}</button>
             </div>
           </div>
-          <div class="w2048-hint">Arrow keys or swipe</div>
-          <div v-if="w2048Won" class="game-over-msg">🎉 2048!</div>
-          <div v-if="w2048Lost" class="game-over-msg" style="color:#ff6b6b">Game over!</div>
+          <canvas id="snake-canvas" class="snake-canvas" width="200" height="200"></canvas>
+          <div v-if="snakeDead" style="font-family:var(--font-mono);font-size:var(--t-xs);color:#ff6b6b;text-align:center;margin-top:4px;">Game over!</div>
+          <!-- D-pad for touch -->
+          <div class="snake-dpad">
+            <div></div>
+            <button class="snake-btn" @touchstart.prevent="snakeDir={x:0,y:-1}" @click.stop="snakeDir={x:0,y:-1}">▲</button>
+            <div></div>
+            <button class="snake-btn" @touchstart.prevent="snakeDir={x:-1,y:0}" @click.stop="snakeDir={x:-1,y:0}">◀</button>
+            <button class="snake-btn" @touchstart.prevent="snakePause" @click.stop="snakePause" style="font-size:10px;opacity:.6">{{ snakePaused?'▶':'⏸' }}</button>
+            <button class="snake-btn" @touchstart.prevent="snakeDir={x:1,y:0}" @click.stop="snakeDir={x:1,y:0}">▶</button>
+            <div></div>
+            <button class="snake-btn" @touchstart.prevent="snakeDir={x:0,y:1}" @click.stop="snakeDir={x:0,y:1}">▼</button>
+            <div></div>
+          </div>
         </div>
 
         <!-- WORDLE -->
@@ -1230,23 +1226,6 @@ body.theme-synthwave #bg-overlay {
           </div>
         </div>
 
-        <!-- CURRENCY -->
-        <div v-else-if="wid.id==='currency'" class="card">
-          <div class="card-label">Currency 💱</div>
-          <div class="currency-row">
-            <input class="currency-input" type="number" v-model="currencyAmount" @input="currencyConvert" min="0" />
-            <select class="currency-select" v-model="currencyFrom" @change="currencyConvert">
-              <option v-for="c in currencyCodes" :key="c" :value="c">{{ c }}</option>
-            </select>
-            <span class="currency-sep">→</span>
-            <select class="currency-select" v-model="currencyTo" @change="currencyConvert">
-              <option v-for="c in currencyCodes" :key="c" :value="c">{{ c }}</option>
-            </select>
-          </div>
-          <div class="currency-result" v-if="currencyResult!==null">{{ currencyResult }}</div>
-          <div class="currency-rate" v-if="currencyRate">1 {{ currencyFrom }} = {{ currencyRate }} {{ currencyTo }}</div>
-          <div v-if="currencyLoading" class="currency-rate">loading…</div>
-        </div>
 
         <!-- FILM REC -->
         <div v-else-if="wid.id==='filmrec'" class="card" style="position:relative">
@@ -1444,7 +1423,6 @@ body.theme-synthwave #bg-overlay {
 </div>
 
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-<script src="https://unpkg.com/three@0.124.0/build/three.min.js"></script>
 <script type="module">
 import { createApp, ref, computed, onMounted, onUnmounted, watch, nextTick } from 'https://cdn.jsdelivr.net/npm/vue@3.5.13/dist/vue.esm-browser.prod.min.js';
 
@@ -1475,8 +1453,8 @@ const SOMA_STATIONS=[{id:'dronezone',name:'Drone Zone',desc:'Atmospheric ambient
 const ALBUM_FALLBACKS={'ambient':{title:'Discreet Music',artist:'Brian Eno',year:'1975',url:null,why:'The blueprint for ambient music.'},'jazz':{title:'Kind of Blue',artist:'Miles Davis',year:'1959',url:null,why:'Still the best-selling jazz album ever made.'},'folk':{title:'For Emma, Forever Ago',artist:'Bon Iver',year:'2007',url:null,why:'Recorded alone in a Wisconsin cabin.'},'post-rock':{title:'Lift Your Skinny Fists…',artist:'Godspeed You! Black Emperor',year:'2000',url:null,why:'Sprawling, cinematic, unforgettable.'},'classical':{title:'Goldberg Variations',artist:'Glenn Gould',year:'1981',url:null,why:"Gould's quiet, introspective goodbye."},'shoegaze':{title:'Loveless',artist:'My Bloody Valentine',year:'1991',url:null,why:'Changed guitar music forever.'},'blues':{title:'Electric Mud',artist:'Muddy Waters',year:'1968',url:null,why:'Muddy goes psychedelic, brilliantly.'},'soul':{title:"There's a Riot Goin' On",artist:'Sly & the Family Stone',year:'1971',url:null,why:'The sound of utopia collapsing.'},'experimental':{title:'Trout Mask Replica',artist:'Captain Beefheart',year:'1969',url:null,why:'Difficult and rewarding in equal measure.'},'drone':{title:'The Tired Sounds of Stars of the Lid',artist:'Stars of the Lid',year:'2001',url:null,why:'Time feels elastic here.'},'krautrock':{title:'Autobahn',artist:'Kraftwerk',year:'1974',url:null,why:'Invented electronic pop.'},'neo-soul':{title:'Voodoo',artist:"D'Angelo",year:'2000',url:null,why:'Worth every year of the wait.'}};
 const QUOTES=[{text:"The world is quiet here.",author:"Lemony Snicket"},{text:"Not all those who wander are lost.",author:"J.R.R. Tolkien"},{text:"I took a deep breath and listened to the old brag of my heart: I am, I am, I am.",author:"Sylvia Plath"},{text:"The sky is everywhere, it begins at your feet.",author:"Jandy Nelson"},{text:"To live is so startling it leaves little time for anything else.",author:"Emily Dickinson"},{text:"The cure for anything is salt water: sweat, tears, or the sea.",author:"Isak Dinesen"},{text:"In the middle of winter, I at last discovered that there was in me an invincible summer.",author:"Albert Camus"},{text:"Stars are not small or gentle. They are writhing and dying and burning.",author:"Tamsyn Muir"},{text:"The most beautiful thing we can experience is the mysterious.",author:"Albert Einstein"},{text:"Everything you can imagine is real.",author:"Pablo Picasso"},{text:"There is no exquisite beauty without some strangeness in the proportion.",author:"Edgar Allan Poe"},{text:"I am not afraid of storms, for I am learning how to sail my ship.",author:"Louisa May Alcott"},{text:"Wherever you go becomes a part of you somehow.",author:"Anita Desai"},{text:"We shall not cease from exploration.",author:"T.S. Eliot"},{text:"One must always maintain one's connection to the past and yet ceaselessly pull away from it.",author:"Gaston Bachelard"},{text:"I would rather die of passion than of boredom.",author:"Vincent van Gogh"},{text:"The job of the artist is always to deepen the mystery.",author:"Francis Bacon"},{text:"You can't use up creativity. The more you use, the more you have.",author:"Maya Angelou"},{text:"To photograph is to appropriate the thing photographed.",author:"Susan Sontag"},{text:"The aim of art is to represent not the outward appearance of things, but their inward significance.",author:"Aristotle"}];
 
-const DEFAULT_WIDGET_ORDER=['kp','weather','sun','moon','aqi','tides','iss','planets','quote','animal','apod','soma','album','notes','todo','bookmarks','dice','chat','solitaire','snake','w2048','wordle','worldclock','currency','filmrec','passgen','palette','bg'];
-const WIDGET_META={kp:{label:'KP Index',icon:'🌌',desc:'Aurora activity — updated every 5 min',cols:4,weight:3},weather:{label:'Weather',icon:'🌤️',desc:'Local conditions from Open-Meteo',cols:4,weight:3},sun:{label:'Sunrise & Sunset',icon:'🌅',desc:'Daily sun arc with daylight duration',cols:4,weight:3},moon:{label:'Moon Phase',icon:'🌕',desc:'Calculated phase, illumination & next full moon',cols:3,weight:2},aqi:{label:'Air Quality',icon:'🌬️',desc:'AQI, PM2.5, PM10 and ozone',cols:3,weight:2},tides:{label:'Tides',icon:'🌊',desc:'Tide highs and lows from Open-Meteo Marine',cols:5,weight:3},iss:{label:'ISS Pass Times',icon:'📡',desc:'When the space station flies over you',cols:4,weight:3},planets:{label:'Planets Tonight',icon:'🔭',desc:'Calculated visibility for naked-eye planets',cols:4,weight:4},quote:{label:'Inspiration',icon:'💬',desc:'Curated quotes from writers, artists, thinkers',cols:6,weight:2},animal:{label:'Animal of the Day',icon:'🦎',desc:'Random wildlife observation + Wikipedia fact',cols:5,weight:5},apod:{label:'NASA APOD',icon:'🌌',desc:'Astronomy Picture of the Day',cols:6,weight:5},soma:{label:'SomaFM Radio',icon:'📻',desc:'Curated ambient & electronic streams',cols:5,weight:3},album:{label:'Album Rec',icon:'🎵',desc:'Last.fm genre recommendations',cols:8,weight:4},notes:{label:'Notes',icon:'📋',desc:'Quick scratchpad, auto-saved locally',cols:5,weight:3},todo:{label:'To-Do',icon:'✅',desc:'Simple checklist, persisted locally',cols:4,weight:3},bookmarks:{label:'Bookmarks',icon:'🔗',desc:'Your personal speed-dial links',cols:12,weight:2},dice:{label:'Dice Roller',icon:'🎲',desc:'D&D dice — d4 through d20',cols:4,weight:3},chat:{label:'Chat',icon:'💬',desc:'Live chat with presence & typing indicators',cols:6,weight:5},solitaire:{label:'Solitaire',icon:'🃏',desc:'Klondike solitaire — drag & drop',cols:8,weight:8},snake:{label:'Snake',icon:'🐍',desc:'Classic snake game',cols:4,weight:4},w2048:{label:'2048',icon:'🧩',desc:'Slide tiles to reach 2048',cols:4,weight:5},wordle:{label:'Wordle',icon:'✏️',desc:'Daily 5-letter word game',cols:4,weight:6},worldclock:{label:'World Clock',icon:'🌍',desc:'Multiple city times',cols:4,weight:3},currency:{label:'Currency',icon:'💱',desc:'Live exchange rates',cols:4,weight:3},filmrec:{label:'Film Rec',icon:'🎬',desc:'Random film recommendation by genre',cols:4,weight:3},passgen:{label:'Password',icon:'🔑',desc:'Secure password generator',cols:4,weight:3},palette:{label:'Color Palette',icon:'🎨',desc:'Generate harmonious color palettes',cols:5,weight:3},bg:{label:'Background',icon:'🖼️',desc:'Unsplash photo topic picker',cols:7,weight:2}};
+const DEFAULT_WIDGET_ORDER=['kp','weather','sun','moon','aqi','tides','iss','planets','quote','animal','apod','soma','album','notes','todo','bookmarks','dice','chat','solitaire','snake','wordle','worldclock','filmrec','passgen','palette','bg'];
+const WIDGET_META={kp:{label:'KP Index',icon:'🌌',desc:'Aurora activity — updated every 5 min',cols:4,weight:3},weather:{label:'Weather',icon:'🌤️',desc:'Local conditions from Open-Meteo',cols:4,weight:3},sun:{label:'Sunrise & Sunset',icon:'🌅',desc:'Daily sun arc with daylight duration',cols:4,weight:3},moon:{label:'Moon Phase',icon:'🌕',desc:'Calculated phase, illumination & next full moon',cols:3,weight:2},aqi:{label:'Air Quality',icon:'🌬️',desc:'AQI, PM2.5, PM10 and ozone',cols:3,weight:2},tides:{label:'Tides',icon:'🌊',desc:'Tide highs and lows from Open-Meteo Marine',cols:5,weight:3},iss:{label:'ISS Pass Times',icon:'📡',desc:'When the space station flies over you',cols:4,weight:3},planets:{label:'Planets Tonight',icon:'🔭',desc:'Calculated visibility for naked-eye planets',cols:4,weight:4},quote:{label:'Inspiration',icon:'💬',desc:'Curated quotes from writers, artists, thinkers',cols:6,weight:2},animal:{label:'Animal of the Day',icon:'🦎',desc:'Random wildlife observation + Wikipedia fact',cols:5,weight:5},apod:{label:'NASA APOD',icon:'🌌',desc:'Astronomy Picture of the Day',cols:6,weight:5},soma:{label:'SomaFM Radio',icon:'📻',desc:'Curated ambient & electronic streams',cols:5,weight:3},album:{label:'Album Rec',icon:'🎵',desc:'Last.fm genre recommendations',cols:8,weight:4},notes:{label:'Notes',icon:'📋',desc:'Quick scratchpad, auto-saved locally',cols:5,weight:3},todo:{label:'To-Do',icon:'✅',desc:'Simple checklist, persisted locally',cols:4,weight:3},bookmarks:{label:'Bookmarks',icon:'🔗',desc:'Your personal speed-dial links',cols:12,weight:2},dice:{label:'Dice Roller',icon:'🎲',desc:'D&D dice — d4 through d20',cols:4,weight:3},chat:{label:'Chat',icon:'💬',desc:'Live chat with presence & typing indicators',cols:6,weight:5},solitaire:{label:'Solitaire',icon:'🃏',desc:'Klondike solitaire — drag & drop',cols:8,weight:8},snake:{label:'Snake',icon:'🐍',desc:'Classic snake game',cols:4,weight:4},wordle:{label:'Wordle',icon:'✏️',desc:'Daily 5-letter word game',cols:4,weight:6},worldclock:{label:'World Clock',icon:'🌍',desc:'Multiple city times',cols:4,weight:3},filmrec:{label:'Film Rec',icon:'🎬',desc:'Random film recommendation by genre',cols:4,weight:3},passgen:{label:'Password',icon:'🔑',desc:'Secure password generator',cols:4,weight:3},palette:{label:'Color Palette',icon:'🎨',desc:'Generate harmonious color palettes',cols:5,weight:3},bg:{label:'Background',icon:'🖼️',desc:'Unsplash photo topic picker',cols:7,weight:2}};
 
 async function geocode(city){
   // Strip country suffix if user typed "City, Country" format — API works best with city name only
@@ -1514,7 +1492,7 @@ createApp({
     // widget registry — order + visibility persisted
     const savedOrder=JSON.parse(localStorage.getItem('aurora_widget_order')||'null');
     const savedVis=JSON.parse(localStorage.getItem('aurora_widget_vis')||'null');
-    const defaultVis={kp:true,weather:true,sun:true,moon:true,aqi:true,tides:false,iss:false,planets:false,quote:true,animal:true,apod:false,soma:false,album:true,notes:false,todo:false,bookmarks:false,dice:true,chat:true,solitaire:false,snake:false,w2048:false,wordle:false,worldclock:false,currency:false,filmrec:false,passgen:false,palette:false,bg:true};
+    const defaultVis={kp:true,weather:true,sun:true,moon:true,aqi:true,tides:false,iss:false,planets:false,quote:true,animal:true,apod:false,soma:false,album:true,notes:false,todo:false,bookmarks:false,dice:true,chat:true,solitaire:false,snake:false,wordle:false,worldclock:false,filmrec:false,passgen:false,palette:false,bg:true};
     // Merge any new widgets not in the saved order so they always show up in picker
     const mergedOrder=savedOrder
       ? [...savedOrder, ...DEFAULT_WIDGET_ORDER.filter(id=>!savedOrder.includes(id))]
@@ -1965,10 +1943,11 @@ createApp({
     function w2048NewGame(){localStorage.removeItem('aurora_2048_board');w2048Init();}
 
     // ── SNAKE ──────────────────────────────────────────────────────────────────
-    const snakeScore=ref(0);const snakeBest=ref(parseInt(localStorage.getItem('aurora_snake_best')||'0'));const snakeRunning=ref(false);const snakeDead=ref(false);
+    const snakeScore=ref(0);const snakeBest=ref(parseInt(localStorage.getItem('aurora_snake_best')||'0'));const snakeRunning=ref(false);const snakeDead=ref(false);const snakePaused=ref(false);
     let snakeInterval=null,snakeDir={x:1,y:0},snakeBody=[],snakeFood={x:5,y:5};
     const SGRID=20,SCELL=10;
-    function snakeStart(){clearInterval(snakeInterval);snakeBody=[{x:5,y:5},{x:4,y:5},{x:3,y:5}];snakeDir={x:1,y:0};snakeScore.value=0;snakeDead.value=false;snakeRunning.value=true;snakePlaceFood();snakeDraw();snakeInterval=setInterval(snakeStep,140);}
+    function snakeStart(){clearInterval(snakeInterval);snakeBody=[{x:5,y:5},{x:4,y:5},{x:3,y:5}];snakeDir={x:1,y:0};snakeScore.value=0;snakeDead.value=false;snakeRunning.value=true;snakePaused.value=false;snakePlaceFood();snakeDraw();snakeInterval=setInterval(snakeStep,140);}
+    function snakePause(){if(!snakeRunning.value)return;if(snakePaused.value){snakePaused.value=false;snakeInterval=setInterval(snakeStep,140);}else{snakePaused.value=true;clearInterval(snakeInterval);}}
     function snakePlaceFood(){do{snakeFood={x:Math.floor(Math.random()*SGRID),y:Math.floor(Math.random()*SGRID)};}while(snakeBody.some(s=>s.x===snakeFood.x&&s.y===snakeFood.y));}
     function snakeStep(){const head={x:(snakeBody[0].x+snakeDir.x+SGRID)%SGRID,y:(snakeBody[0].y+snakeDir.y+SGRID)%SGRID};if(snakeBody.some(s=>s.x===head.x&&s.y===head.y)){clearInterval(snakeInterval);snakeRunning.value=false;snakeDead.value=true;if(snakeScore.value>snakeBest.value){snakeBest.value=snakeScore.value;localStorage.setItem('aurora_snake_best',snakeScore.value);}return;}snakeBody.unshift(head);if(head.x===snakeFood.x&&head.y===snakeFood.y){snakeScore.value++;snakePlaceFood();}else snakeBody.pop();snakeDraw();}
     function snakeDraw(){const cv=document.getElementById('snake-canvas');if(!cv)return;const ctx=cv.getContext('2d');const cs=getComputedStyle(document.documentElement);const accent=cs.getPropertyValue('--accent').trim()||'#50dca0';const bg=cs.getPropertyValue('--bg').trim()||'#0a0e1a';ctx.fillStyle=bg;ctx.fillRect(0,0,200,200);snakeBody.forEach((s,i)=>{ctx.fillStyle=i===0?accent:accent+'99';ctx.fillRect(s.x*SCELL,s.y*SCELL,SCELL-1,SCELL-1);});ctx.fillStyle='#ff6b6b';ctx.fillRect(snakeFood.x*SCELL,snakeFood.y*SCELL,SCELL-1,SCELL-1);}
@@ -2104,6 +2083,25 @@ createApp({
 
     function formatChatTime(ts){
       return new Date(ts).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    }
+
+    const ALLOWED_IMG_HOSTS=['i.imgur.com','imgur.com','i.redd.it','pbs.twimg.com','media.giphy.com','cdn.discordapp.com','images.unsplash.com','upload.wikimedia.org'];
+    function chatRenderText(text){
+      if(!text)return'';
+      // Escape HTML first to prevent XSS
+      const escaped=text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      // Replace URLs with links or images
+      return escaped.replace(/https?:\/\/[^\s<>"]+/g,url=>{
+        // Check if it's an image URL from an allowed host
+        const isImg=/\.(jpg|jpeg|png|gif|webp|svg)(\?[^\s]*)?$/i.test(url);
+        try{
+          const host=new URL(url).hostname.replace('www.','');
+          if(isImg&&ALLOWED_IMG_HOSTS.includes(host)){
+            return `<a href="${url}" target="_blank" rel="noopener noreferrer"><img src="${url}" alt="image" style="max-width:100%;max-height:200px;border-radius:6px;margin-top:4px;display:block;" loading="lazy"></a>`;
+          }
+        }catch{}
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color:var(--accent);text-decoration:underline;word-break:break-all;">${url}</a>`;
+      });
     }
 
     async function chatSubmitAuth(){
@@ -2556,6 +2554,12 @@ createApp({
     // Watch for dice canvas to appear in DOM (widget may not be visible on mount)
     watch(visibleWidgets, ()=>{
       if(visibleWidgets.value.find(w=>w.id==='dice') && !diceRenderer){
+        // Lazy-load Three.js if not already present
+        if(!window.THREE){
+          const s=document.createElement('script');
+          s.src='https://unpkg.com/three@0.124.0/build/three.min.js';
+          document.head.appendChild(s);
+        }
         let attempts=0;
         const poll=setInterval(()=>{
           attempts++;
@@ -2580,7 +2584,7 @@ createApp({
 
     watch(useFahrenheit,v=>localStorage.setItem('aurora_fahrenheit',v));
 
-    return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,formatChatTime,activeWidget,setActiveWidget,clearActiveWidget,solTableau,solFoundations,solStock,solWaste,solMoves,solWon,solInit,solNewGame,solSelected,solDraw,solClickWaste,solClickFoundation,solClickCol,solClickCard,solAutoFoundation,solDrawPixi,solInitPixi,snakeScore,snakeBest,snakeRunning,snakeDead,snakeStart,w2048Board,w2048Score,w2048Best,w2048Won,w2048Lost,w2048Init,w2048NewGame,w2048Move,w2048CellStyle,w2048TouchStart,w2048TouchEnd,wordleGuesses,wordleResults,wordleCurrent,wordleMsg,wordleKeyRows,wordleGetLetter,wordleGetClass,wordleKeyClass,wordleKey,wordleHandleMobileKey,wordleHandleMobileInput,worldClockCities,worldClockPick,worldClockOptions,worldClockTime,worldClockDate,worldClockAdd,worldClockRemove,currencyAmount,currencyFrom,currencyTo,currencyResult,currencyRate,currencyLoading,currencyConvert,currencyCodes,film,filmGenre,filmGenres,filmNext,passValue,passLength,passOpts,passCopied,passGenerate,passCopy,paletteBase,paletteType,paletteTypes,paletteColors,paletteCopied,paletteGenerate,paletteCopy,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings};
+    return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,chatRenderText,formatChatTime,activeWidget,setActiveWidget,clearActiveWidget,solTableau,solFoundations,solStock,solWaste,solMoves,solWon,solInit,solNewGame,solSelected,solDraw,solClickWaste,solClickFoundation,solClickCol,solClickCard,solAutoFoundation,solDrawPixi,solInitPixi,snakeScore,snakeBest,snakeRunning,snakeDead,snakePaused,snakeStart,snakePause,wordleGuesses,wordleResults,wordleCurrent,wordleMsg,wordleKeyRows,wordleGetLetter,wordleGetClass,wordleKeyClass,wordleKey,wordleHandleMobileKey,wordleHandleMobileInput,worldClockCities,worldClockPick,worldClockOptions,worldClockTime,worldClockDate,worldClockAdd,worldClockRemove,film,filmGenre,filmGenres,filmNext,passValue,passLength,passOpts,passCopied,passGenerate,passCopy,paletteBase,paletteType,paletteTypes,paletteColors,paletteCopied,paletteGenerate,paletteCopy,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings};
   }
 }).mount('#app');
 </script>
