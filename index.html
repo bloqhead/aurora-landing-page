@@ -1912,8 +1912,6 @@ createApp({
       solSelected.value=null;solReveal();solMoves.value++;solCheckWin();solSave();
     }
     function solClickCard(ci, ri){
-      solDebug.value=`tap ci=${ci} ri=${ri}`;
-      setTimeout(()=>solDebug.value='',2000);
       const col=solTableau.value[ci];
       const card=col[ri];
       if(!card) return;
