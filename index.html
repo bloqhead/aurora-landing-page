@@ -332,7 +332,7 @@ a{color:inherit;} button{font-family:inherit;}
 .game-over-msg{text-align:center;font-family:var(--font-display);font-size:var(--t-lg);font-weight:300;color:var(--accent);padding:var(--s-md) 0;}
 
 /* SOLITAIRE */
-.solitaire-wrap{user-select:none;overflow-y:auto;-webkit-user-select:none;}
+.solitaire-wrap{user-select:none;-webkit-user-select:none;overflow-x:hidden;overflow-y:auto;}
 .solitaire-top{display:flex;gap:6px;margin-bottom:8px;}
 .solitaire-tableau{display:flex;gap:4px;}
 .s-pile{min-height:80px;flex:1;position:relative;}
@@ -1142,7 +1142,7 @@ body.theme-synthwave #bg-overlay {
         </div>
 
         <!-- SOLITAIRE -->
-        <div v-else-if="wid.id==='solitaire'" class="card">
+        <div v-else-if="wid.id==='solitaire'" class="card" style="overflow:visible">
           <div class="card-label">Solitaire 🃏</div>
           <div class="game-score-row">
             <div class="game-score">Moves: <span>{{ solMoves }}</span>
