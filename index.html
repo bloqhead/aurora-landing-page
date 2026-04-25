@@ -1848,9 +1848,6 @@ createApp({
             g.drawRoundedRect(6,6,cw-12,ch-12,3);
           }
           g.x=cx;g.y=cy;
-          // Hit area is only the visible strip
-          const hitH=ri===col.length-1?ch:so;
-          g.hitArea=new PIXI.Rectangle(0,0,cw,hitH);
           g.eventMode='static';g.cursor='pointer';
           g.on('pointertap',(()=>{const c=ci,r=ri;return()=>solClickCard(c,r);})());
           stage.addChild(g);
