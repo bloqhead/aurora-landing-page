@@ -44,7 +44,6 @@ jobs:
             --collapse-whitespace \
             --remove-comments \
             --minify-css true \
-            --minify-js true \
             --remove-redundant-attributes \
             --remove-script-type-attributes \
             --use-short-doctype \
