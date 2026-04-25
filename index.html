@@ -1734,14 +1734,17 @@ createApp({
       const scaleY=solPixiApp.screen.height/rect.height;
       const x=(e.clientX-rect.left)*scaleX;
       const y=(e.clientY-rect.top)*scaleY;
+      console.log(`[sol] tap x=${Math.round(x)} y=${Math.round(y)} regions=${solPixiRegions.length} scale=${scaleX.toFixed(2)},${scaleY.toFixed(2)}`);
 
       // Hit test each interactive region
       for(const r of solPixiRegions){
         if(x>=r.x&&x<=r.x+r.w&&y>=r.y&&y<=r.y+r.h){
+          console.log(`[sol] HIT x=${r.x} y=${r.y} w=${r.w} h=${r.h}`);
           r.action();
           return;
         }
       }
+      console.log('[sol] no hit - first 3 regions:',solPixiRegions.slice(-3).map(r=>`(${r.x},${r.y},${r.w},${r.h})`));
     }
 
     let solPixiRegions=[];
