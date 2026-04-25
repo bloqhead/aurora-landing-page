@@ -1182,30 +1182,25 @@ body.theme-synthwave #bg-overlay {
               </div>
             </div>
             <!-- Tableau -->
-            <div class="solitaire-tableau" style="margin-top:8px;align-items:flex-start;"
-              @touchstart="solDebug='tableau touchstart fired'"
-              @touchend="solDebug='tableau touchend fired'">
+            <div class="solitaire-tableau" style="margin-top:8px;align-items:flex-start;">
               <div v-for="(col,ci) in solTableau" :key="'t'+ci"
-                style="flex:1;display:flex;flex-direction:column;">
+                style="flex:1;display:flex;flex-direction:column;cursor:pointer;min-height:72px;"
+                @touchend.prevent="solTouchCol($event,ci)"
+                @click="solTouchColClick($event,ci)">
                 <div v-if="!col.length"
-                  style="height:72px;border-radius:6px;border:1px dashed rgba(255,255,255,.1);cursor:pointer;"
-                  @touchend.prevent.stop="solClickCol(ci,0)"
-                  @click.stop="solClickCol(ci,0)"></div>
+                  style="height:72px;border-radius:6px;border:1px dashed rgba(255,255,255,.1);"></div>
                 <div v-for="(card,ri) in col" :key="'c'+ci+ri"
                   :style="{
                     height: ri===col.length-1 ? '72px' : '22px',
                     flexShrink: 0,
-                    position:'relative',
-                    cursor: 'pointer',
-                    clipPath: ri===col.length-1 ? 'none' : 'inset(0 0 '+(72-22)+'px 0)'
-                  }"
-                  @touchend.prevent.stop="solClickCard(ci,ri)"
-                  @click.stop="solClickCard(ci,ri)">
+                    overflow: 'hidden',
+                    position:'relative'
+                  }">
                   <div
                     :class="['s-card', card.faceUp?'face-up':'face-down',
                       card.faceUp?(card.suit<2?'red':'black'):'',
                       solSelected&&solSelected.src==='tableau'&&solSelected.ci===ci&&solSelected.ri<=ri?'sol-selected':'']"
-                    style="position:relative;height:72px;pointer-events:none;">
+                    style="height:72px;pointer-events:none;">
                     <span v-if="card.faceUp">{{ card.display }}</span>
                   </div>
                 </div>
@@ -1725,6 +1720,9 @@ createApp({
     function solLoad(){const s=localStorage.getItem('aurora_sol');if(!s)return false;try{const d=JSON.parse(s);solTableau.value=d.tableau;solFoundations.value=d.foundations;solStock.value=d.stock;solWaste.value=d.waste;solMoves.value=d.moves;solWon.value=false;return true;}catch{return false;}}
     function solInit(){solSelected.value=null;if(!solLoad()){const deck=solMakeDeck();solTableau.value=Array.from({length:7},(_,i)=>deck.splice(0,i+1).map((c,j,a)=>({...c,faceUp:j===a.length-1})));solFoundations.value=[[],[],[],[]];solStock.value=deck.map(c=>({...c,faceUp:false}));solWaste.value=[];solMoves.value=0;solWon.value=false;solSave();}}
     function solNewGame(){localStorage.removeItem('aurora_sol');solInit();}
+    function solGetCardAtY(ci,y){const col=solTableau.value[ci];if(!col.length)return -1;let top=0;for(let ri=0;ri<col.length;ri++){const h=ri===col.length-1?72:22;if(y>=top&&y<top+h)return ri;top+=h;}return col.length-1;}
+    function solTouchCol(e,ci){const rect=e.currentTarget.getBoundingClientRect();const y=e.changedTouches[0].clientY-rect.top;const ri=solGetCardAtY(ci,y);solDebug.value=`t col${ci} ri=${ri} y=${Math.round(y)}`;setTimeout(()=>solDebug.value='',2000);if(ri>=0)solClickCard(ci,ri);}
+    function solTouchColClick(e,ci){const rect=e.currentTarget.getBoundingClientRect();const y=e.clientY-rect.top;const ri=solGetCardAtY(ci,y);if(ri>=0)solClickCard(ci,ri);}
     function solReveal(){solTableau.value=solTableau.value.map(col=>{if(col.length&&!col[col.length-1].faceUp){const c=[...col];c[c.length-1]={...c[c.length-1],faceUp:true};return c;}return col;});}
     function solCheckWin(){solWon.value=solFoundations.value.every(f=>f.length===13);}
     function solCanPlaceFoundation(card,fi){const f=solFoundations.value[fi];if(!f.length)return card.rank===0;return f[f.length-1].suit===card.suit&&f[f.length-1].rank===card.rank-1;}
