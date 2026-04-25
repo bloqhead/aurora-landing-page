@@ -10,15 +10,6 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="Aurora" />
-<script>
-// Clear any stale service worker caches immediately
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.getRegistrations().then(regs=>{
-    regs.forEach(r=>r.unregister());
-  });
-  caches.keys().then(keys=>keys.forEach(k=>caches.delete(k)));
-}
-</script>
 <link rel="manifest" href="manifest.json" />
 <link rel="apple-touch-icon" href="icons/icon-192.png" />
 
@@ -2557,10 +2548,9 @@ createApp({
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('/aurora-landing-page/sw.js').then(reg=>{
-      // Check for updates every 60 seconds
       setInterval(()=>reg.update(), 60000);
-      // New SW waiting — show update toast
       const showUpdateToast=()=>{
+        if(document.getElementById('sw-toast'))return;
         const t=document.createElement('div');
         t.id='sw-toast';
         t.innerHTML='⚡ Aurora updated — <button onclick="window.__swUpdate()">reload</button>';
@@ -2569,21 +2559,15 @@ if('serviceWorker' in navigator){
         document.body.appendChild(t);
       };
       window.__swUpdate=()=>{
-        if(reg.waiting){reg.waiting.postMessage('skipWaiting');}
+        if(reg.waiting)reg.waiting.postMessage('skipWaiting');
         window.location.reload();
       };
-      if(reg.waiting){showUpdateToast();}
+      if(reg.waiting)showUpdateToast();
       reg.addEventListener('updatefound',()=>{
         const sw=reg.installing;
         sw.addEventListener('statechange',()=>{
-          if(sw.state==='installed'&&navigator.serviceWorker.controller){
-            showUpdateToast();
-          }
+          if(sw.state==='installed'&&navigator.serviceWorker.controller)showUpdateToast();
         });
-      });
-      // If SW controller changes (new SW activated), reload
-      navigator.serviceWorker.addEventListener('controllerchange',()=>{
-        window.location.reload();
       });
     }).catch(e=>console.warn('SW failed',e));
   });
