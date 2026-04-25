@@ -1182,9 +1182,13 @@ body.theme-synthwave #bg-overlay {
               </div>
             </div>
             <!-- Tableau -->
-            <div class="solitaire-tableau" style="margin-top:8px;align-items:flex-start;">
+            <div class="solitaire-tableau" style="margin-top:8px;align-items:flex-start;"
+              @touchstart="solDebug='tableau touchstart fired'"
+              @touchend="solDebug='tableau touchend fired'">
               <div v-for="(col,ci) in solTableau" :key="'t'+ci"
-                style="flex:1;display:flex;flex-direction:column;">
+                style="flex:1;display:flex;flex-direction:column;"
+                @touchstart.stop="solDebug='col '+ci+' touchstart'"
+                @touchend.stop="solDebug='col '+ci+' touchend'">
                 <!-- Empty column drop target -->
                 <div v-if="!col.length"
                   style="height:72px;border-radius:6px;border:1px dashed rgba(255,255,255,.1);cursor:pointer;"
