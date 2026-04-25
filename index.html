@@ -1671,6 +1671,12 @@ createApp({
     let solPixiApp=null;
     const CARD_W=60, CARD_H=84, GAP=6, STACK_OFFSET=22;
 
+    // Manual hit test — checks if a point is inside a display object's bounds
+    function solHitTest(obj, x, y){
+      const b=obj.getBounds();
+      return x>=b.x&&x<=b.x+b.width&&y>=b.y&&y<=b.y+b.height;
+    }
+
     async function solInitPixi(){
       const container=document.getElementById('sol-pixi');
       if(!container)return;
@@ -1683,7 +1689,11 @@ createApp({
         });
       }
       const PIXI=window.PIXI;
-      if(solPixiApp){solPixiApp.destroy(true,{children:true});solPixiApp=null;}
+      if(solPixiApp){
+        solPixiApp.view.removeEventListener('pointerup',solPixiHandlePointer);
+        solPixiApp.destroy(true,{children:true});
+        solPixiApp=null;
+      }
       const W=container.offsetWidth||300;
       solPixiApp=new PIXI.Application({
         width:W,height:400,backgroundAlpha:0,
@@ -1692,122 +1702,113 @@ createApp({
       solPixiApp.view.style.width='100%';
       solPixiApp.view.style.display='block';
       container.appendChild(solPixiApp.view);
+
+      // Single interaction handler on the canvas itself
+      solPixiApp.view.addEventListener('pointerup', solPixiHandlePointer);
       solDrawPixi();
     }
 
-    function solMakeCard(PIXI,label,faceUp,isRed,isSelected,accent){
-      const g=new PIXI.Graphics();
-      if(faceUp){
-        g.beginFill(0x14203a);
-        g.lineStyle(isSelected?2.5:1,isSelected?accent:0x334466,1);
-        g.drawRoundedRect(0,0,CARD_W,CARD_H,6);
-        g.endFill();
-        const txt=new PIXI.Text(label,{
-          fontFamily:'monospace',fontWeight:'bold',
-          fontSize:14,fill:isRed?0xff6b6b:0xe8f4f0
-        });
-        txt.x=5;txt.y=5;
-        g.addChild(txt);
-      } else {
-        g.beginFill(0x0d1825);
-        g.lineStyle(1,0x2a4060,1);
-        g.drawRoundedRect(0,0,CARD_W,CARD_H,6);
-        g.endFill();
-        // Small pattern on back
-        g.lineStyle(1,0x1a3050,1);
-        g.drawRoundedRect(6,6,CARD_W-12,CARD_H-12,3);
+    function solPixiHandlePointer(e){
+      if(!solPixiApp||!window.PIXI)return;
+      const rect=solPixiApp.view.getBoundingClientRect();
+      const scaleX=solPixiApp.screen.width/rect.width;
+      const scaleY=solPixiApp.screen.height/rect.height;
+      const x=(e.clientX-rect.left)*scaleX;
+      const y=(e.clientY-rect.top)*scaleY;
+
+      // Hit test each interactive region
+      for(const r of solPixiRegions){
+        if(x>=r.x&&x<=r.x+r.w&&y>=r.y&&y<=r.y+r.h){
+          r.action();
+          return;
+        }
       }
-      return g;
     }
+
+    let solPixiRegions=[];
 
     function solDrawPixi(){
       if(!solPixiApp||!window.PIXI)return;
       const PIXI=window.PIXI;
       const stage=solPixiApp.stage;
       stage.removeChildren();
+      solPixiRegions=[];
+
       const W=solPixiApp.screen.width;
       const cs=getComputedStyle(document.documentElement);
       const accentStr=cs.getPropertyValue('--accent').trim()||'#50dca0';
       const accent=parseInt(accentStr.replace('#',''),16);
 
-      // Layout: 7 columns, card width derived from available width
       const ncols=7;
-      const totalGap=(ncols-1)*GAP;
-      const cw=Math.floor((W-totalGap)/ncols);
+      const cw=Math.floor((W-(ncols-1)*GAP)/ncols);
       const ch=Math.round(cw*1.4);
-      const so=Math.round(ch*0.26); // stack offset
+      const so=Math.round(ch*0.26);
+      const cs2=cw+GAP;
 
-      // ── TOP ROW: stock, waste, spacer, 4 foundations ──
-      const topY=0;
-      const colStride=cw+GAP;
-
-      // Stock
-      const stock=new PIXI.Graphics();
-      if(solStock.value.length){
-        stock.beginFill(0x0d1825);
-        stock.lineStyle(1,0x2a6655,1);
-        stock.drawRoundedRect(0,0,cw,ch,6);
-        stock.endFill();
-        const t=new PIXI.Text('🂠',{fontSize:Math.round(ch*0.35)});
-        t.x=cw/2-t.width/2;t.y=ch/2-t.height/2;
-        stock.addChild(t);
-      } else {
-        stock.lineStyle(1,0x334455,0.5);
-        stock.drawRoundedRect(0,0,cw,ch,6);
-        const t=new PIXI.Text('↺',{fontSize:Math.round(ch*0.35),fill:0x668899});
-        t.x=cw/2-t.width/2;t.y=ch/2-t.height/2;
-        stock.addChild(t);
+      function drawCard(x,y,label,faceUp,isRed,isSelected){
+        const g=new PIXI.Graphics();
+        if(faceUp){
+          g.beginFill(0x14203a);
+          g.lineStyle(isSelected?2.5:1,isSelected?accent:0x334466,1);
+          g.drawRoundedRect(0,0,cw,ch,6);
+          g.endFill();
+          const t=new PIXI.Text(label,{fontFamily:'monospace',fontWeight:'bold',fontSize:Math.round(cw*0.22),fill:isRed?0xff6b6b:0xe8f4f0});
+          t.x=5;t.y=4;g.addChild(t);
+        } else {
+          g.beginFill(0x0d1825);
+          g.lineStyle(1,0x2a4060,1);
+          g.drawRoundedRect(0,0,cw,ch,6);
+          g.endFill();
+          g.lineStyle(1,0x1a3050,1);
+          g.drawRoundedRect(6,6,cw-12,ch-12,3);
+        }
+        g.x=x;g.y=y;
+        stage.addChild(g);
       }
-      stock.x=0;stock.y=topY;
-      stock.eventMode='static';stock.cursor='pointer';
-      stock.on('pointertap',()=>solDraw());
-      stage.addChild(stock);
+
+      // ── TOP ROW ──
+      // Stock
+      const stockG=new PIXI.Graphics();
+      if(solStock.value.length){
+        stockG.beginFill(0x0d1825);stockG.lineStyle(1,0x2a6655,1);
+        stockG.drawRoundedRect(0,0,cw,ch,6);stockG.endFill();
+        const t=new PIXI.Text('🂠',{fontSize:Math.round(ch*0.3)});
+        t.x=cw/2-t.width/2;t.y=ch/2-t.height/2;stockG.addChild(t);
+      } else {
+        stockG.lineStyle(1,0x334455,0.4);stockG.drawRoundedRect(0,0,cw,ch,6);
+        const t=new PIXI.Text('↺',{fontSize:Math.round(ch*0.3),fill:0x668899});
+        t.x=cw/2-t.width/2;t.y=ch/2-t.height/2;stockG.addChild(t);
+      }
+      stockG.x=0;stockG.y=0;stage.addChild(stockG);
+      solPixiRegions.push({x:0,y:0,w:cw,h:ch,action:()=>solDraw()});
 
       // Waste
-      const waste=new PIXI.Graphics();
       if(solWaste.value.length){
         const card=solWaste.value[solWaste.value.length-1];
         const isSel=solSelected.value?.src==='waste';
-        waste.beginFill(0x14203a);
-        waste.lineStyle(isSel?2.5:1,isSel?accent:0x334466,1);
-        waste.drawRoundedRect(0,0,cw,ch,6);
-        waste.endFill();
-        const t=new PIXI.Text(card.display,{fontFamily:'monospace',fontWeight:'bold',fontSize:14,fill:card.suit<2?0xff6b6b:0xe8f4f0});
-        t.x=5;t.y=5;waste.addChild(t);
+        drawCard(cs2,0,card.display,true,card.suit<2,isSel);
       } else {
-        waste.lineStyle(1,0x334455,0.3);
-        waste.drawRoundedRect(0,0,cw,ch,6);
+        const g=new PIXI.Graphics();
+        g.lineStyle(1,0x334455,0.3);g.drawRoundedRect(0,0,cw,ch,6);
+        g.x=cs2;g.y=0;stage.addChild(g);
       }
-      waste.x=colStride;waste.y=topY;
-      waste.eventMode='static';waste.cursor='pointer';
-      waste.on('pointertap',()=>solClickWaste());
-      stage.addChild(waste);
+      solPixiRegions.push({x:cs2,y:0,w:cw,h:ch,action:()=>solClickWaste()});
 
-      // Foundations (cols 3-6, skipping col 2 as spacer)
+      // Foundations (cols 3-6)
       const SUIT_SYMS=['♥','♦','♣','♠'];
       for(let fi=0;fi<4;fi++){
-        const fx=(fi+3)*colStride;
-        const f=new PIXI.Graphics();
+        const fx=(fi+3)*cs2;
         const top=solFoundations.value[fi];
         if(top.length){
           const card=top[top.length-1];
-          f.beginFill(0x14203a);
-          f.lineStyle(1,0x334466,1);
-          f.drawRoundedRect(0,0,cw,ch,6);
-          f.endFill();
-          const t=new PIXI.Text(card.display,{fontFamily:'monospace',fontWeight:'bold',fontSize:14,fill:card.suit<2?0xff6b6b:0xe8f4f0});
-          t.x=5;t.y=5;f.addChild(t);
+          drawCard(fx,0,card.display,true,card.suit<2,false);
         } else {
-          f.lineStyle(1,0x334455,0.3);
-          f.drawRoundedRect(0,0,cw,ch,6);
+          const g=new PIXI.Graphics();
+          g.lineStyle(1,0x334455,0.3);g.drawRoundedRect(0,0,cw,ch,6);g.x=fx;g.y=0;
           const t=new PIXI.Text(SUIT_SYMS[fi],{fontSize:Math.round(ch*0.3),fill:0x445566});
-          t.x=cw/2-t.width/2;t.y=ch/2-t.height/2;
-          f.addChild(t);
+          t.x=cw/2-t.width/2;t.y=ch/2-t.height/2;g.addChild(t);stage.addChild(g);
         }
-        f.x=fx;f.y=topY;
-        f.eventMode='static';f.cursor='pointer';
-        f.on('pointertap',(()=>{const i=fi;return()=>solClickFoundation(i);})());
-        stage.addChild(f);
+        solPixiRegions.push({x:fx,y:0,w:cw,h:ch,action:(()=>{const i=fi;return()=>solClickFoundation(i);})()});
       }
 
       // ── TABLEAU ──
@@ -1817,42 +1818,26 @@ createApp({
       solPixiApp.renderer.resize(W,totalH);
 
       solTableau.value.forEach((col,ci)=>{
-        const cx=ci*colStride;
+        const cx=ci*cs2;
         if(!col.length){
           const g=new PIXI.Graphics();
-          g.lineStyle(1,0x334455,0.3);
-          g.drawRoundedRect(0,0,cw,ch,6);
-          g.x=cx;g.y=tableauY;
-          g.eventMode='static';g.cursor='pointer';
-          g.on('pointertap',()=>solClickCol(ci,0));
-          stage.addChild(g);
+          g.lineStyle(1,0x334455,0.25);g.drawRoundedRect(0,0,cw,ch,6);
+          g.x=cx;g.y=tableauY;stage.addChild(g);
+          solPixiRegions.push({x:cx,y:tableauY,w:cw,h:ch,action:()=>solClickCol(ci,0)});
           return;
         }
         col.forEach((card,ri)=>{
           const cy=tableauY+ri*so;
           const isSel=solSelected.value?.src==='tableau'&&solSelected.value?.ci===ci&&solSelected.value?.ri<=ri;
-          const g=new PIXI.Graphics();
-          if(card.faceUp){
-            g.beginFill(0x14203a);
-            g.lineStyle(isSel?2.5:1,isSel?accent:0x334466,1);
-            g.drawRoundedRect(0,0,cw,ch,6);
-            g.endFill();
-            const t=new PIXI.Text(card.display,{fontFamily:'monospace',fontWeight:'bold',fontSize:14,fill:card.suit<2?0xff6b6b:0xe8f4f0});
-            t.x=5;t.y=5;g.addChild(t);
-          } else {
-            g.beginFill(0x0d1825);
-            g.lineStyle(1,0x2a4060,1);
-            g.drawRoundedRect(0,0,cw,ch,6);
-            g.endFill();
-            g.lineStyle(1,0x1a3050,1);
-            g.drawRoundedRect(6,6,cw-12,ch-12,3);
-          }
-          g.x=cx;g.y=cy;
-          g.eventMode='static';g.cursor='pointer';
-          g.on('pointertap',(()=>{const c=ci,r=ri;return()=>solClickCard(c,r);})());
-          stage.addChild(g);
+          drawCard(cx,cy,card.display,card.faceUp,card.suit<2,isSel);
+          // Hit region = exposed strip only
+          const hitH=ri===col.length-1?ch:so;
+          solPixiRegions.push({x:cx,y:cy,w:cw,h:hitH,action:(()=>{const c=ci,r=ri;return()=>solClickCard(c,r);})()});
         });
       });
+
+      // Regions are checked top-to-bottom, so reverse so topmost card wins
+      solPixiRegions.reverse();
     }
 
     // Init when widget becomes visible
