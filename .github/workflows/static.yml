@@ -24,31 +24,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install html-minifier
-        run: npm install -g html-minifier-terser
-
       - name: Inject build version into service worker
         run: |
           BUILD_VERSION="${{ github.sha }}"
           sed -i "s/__BUILD_VERSION__/${BUILD_VERSION}/g" sw.js
           echo "Build version: ${BUILD_VERSION}"
-
-      - name: Minify HTML
-        run: |
-          html-minifier-terser \
-            --collapse-whitespace \
-            --remove-comments \
-            --minify-css true \
-            --remove-redundant-attributes \
-            --remove-script-type-attributes \
-            --use-short-doctype \
-            index.html -o index.html
-          echo "Minified size: $(wc -c < index.html) bytes"
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
