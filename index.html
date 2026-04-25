@@ -1690,6 +1690,7 @@ createApp({
       }
       const PIXI=window.PIXI;
       if(solPixiApp){
+        solPixiApp.view.removeEventListener('pointerdown',solPixiHandlePointerDown);
         solPixiApp.view.removeEventListener('pointerup',solPixiHandlePointer);
         solPixiApp.destroy(true,{children:true});
         solPixiApp=null;
@@ -1701,15 +1702,33 @@ createApp({
       });
       solPixiApp.view.style.width='100%';
       solPixiApp.view.style.display='block';
+      solPixiApp.view.style.userSelect='none';
+      solPixiApp.view.style.webkitUserSelect='none';
+      solPixiApp.view.style.touchAction='none';
+      container.style.overflow='hidden';
       container.appendChild(solPixiApp.view);
 
       // Single interaction handler on the canvas itself
+      solPixiApp.view.addEventListener('pointerdown', solPixiHandlePointerDown);
       solPixiApp.view.addEventListener('pointerup', solPixiHandlePointer);
       solDrawPixi();
     }
 
+    let solLastPointer=0, solPointerDownX=0, solPointerDownY=0;
+    function solPixiHandlePointerDown(e){
+      solPointerDownX=e.clientX;
+      solPointerDownY=e.clientY;
+    }
     function solPixiHandlePointer(e){
       if(!solPixiApp||!window.PIXI)return;
+      // Ignore if finger dragged more than 8px
+      const dx=Math.abs(e.clientX-solPointerDownX);
+      const dy=Math.abs(e.clientY-solPointerDownY);
+      if(dx>8||dy>8)return;
+      // Debounce double-fire
+      const now=Date.now();
+      if(now-solLastPointer<300)return;
+      solLastPointer=now;
       const rect=solPixiApp.view.getBoundingClientRect();
       const scaleX=solPixiApp.screen.width/rect.width;
       const scaleY=solPixiApp.screen.height/rect.height;
