@@ -1810,11 +1810,20 @@ createApp({
       return{ci,ri};
     }
 
-    const solDebug=ref('');
+    let solLastTouch=0;
     function solCanvasTouch(e){
+      solLastTouch=Date.now();
       const hit=solHitTest(e);
       solDebug.value=hit?`ci=${hit.ci} ri=${hit.ri}`:'null';
       setTimeout(()=>solDebug.value='',3000);
+      if(!hit)return;
+      if(hit.ri<0)solClickCol(hit.ci,0);
+      else solClickCard(hit.ci,hit.ri);
+    }
+    function solCanvasClick(e){
+      // Ignore synthetic click events fired after touchend on iOS
+      if(Date.now()-solLastTouch<500)return;
+      const hit=solHitTest(e);
       if(!hit)return;
       if(hit.ri<0)solClickCol(hit.ci,0);
       else solClickCard(hit.ci,hit.ri);
