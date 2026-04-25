@@ -1691,7 +1691,8 @@ createApp({
       }
       const PIXI=window.PIXI;
       if(solPixiApp){
-        solPixiApp.view.removeEventListener('pointerdown',solPixiHandlePointerDown);
+        const container=document.getElementById('sol-pixi');
+        if(container)container.removeEventListener('pointerdown',solPixiHandlePointerDown);
         solPixiApp.view.removeEventListener('pointerup',solPixiHandlePointer);
         solPixiApp.destroy(true,{children:true});
         solPixiApp=null;
@@ -1709,43 +1710,42 @@ createApp({
       container.style.overflow='hidden';
       container.appendChild(solPixiApp.view);
 
-      // Single interaction handler on the canvas itself
-      solPixiApp.view.addEventListener('pointerdown', solPixiHandlePointerDown);
+      // Attach pointerdown to container so PixiJS text children don't interfere
+      container.addEventListener('pointerdown', solPixiHandlePointerDown);
       solPixiApp.view.addEventListener('pointerup', solPixiHandlePointer);
       solDrawPixi();
     }
 
-    const solDebug=ref("");let solLastPointer=0, solPointerDownX=0, solPointerDownY=0;
+    const solDebug=ref('');
+    let solPointerDownTime=0, solPointerDownX=0, solPointerDownY=0;
     function solPixiHandlePointerDown(e){
+      solPointerDownTime=Date.now();
       solPointerDownX=e.clientX;
       solPointerDownY=e.clientY;
     }
     function solPixiHandlePointer(e){
       if(!solPixiApp||!window.PIXI)return;
-      // Ignore if finger dragged more than 8px
-      const dx=Math.abs(e.clientX-solPointerDownX);
-      const dy=Math.abs(e.clientY-solPointerDownY);
-      if(dx>8||dy>8)return;
-      // Debounce double-fire
-      const now=Date.now();
-      if(now-solLastPointer<300)return;
-      solLastPointer=now;
+      // Must have a matching pointerdown within 500ms
+      if(Date.now()-solPointerDownTime>500)return;
+      // Ignore if moved more than 12px (scroll/drag)
+      if(Math.abs(e.clientX-solPointerDownX)>12||Math.abs(e.clientY-solPointerDownY)>12)return;
+      // Reset so double-fire can't re-trigger
+      solPointerDownTime=0;
       const rect=solPixiApp.view.getBoundingClientRect();
       const scaleX=solPixiApp.screen.width/rect.width;
       const scaleY=solPixiApp.screen.height/rect.height;
       const x=(e.clientX-rect.left)*scaleX;
       const y=(e.clientY-rect.top)*scaleY;
-      solDebug.value=`tap(${Math.round(x)},${Math.round(y)}) scale(${scaleX.toFixed(1)},${scaleY.toFixed(1)}) r=${solPixiRegions.length}`;
-
+      solDebug.value=`tap(${Math.round(x)},${Math.round(y)}) r=${solPixiRegions.length}`;
       for(const r of solPixiRegions){
         if(x>=r.x&&x<=r.x+r.w&&y>=r.y&&y<=r.y+r.h){
-          solDebug.value+=` HIT(${r.x},${r.y},${r.w},${r.h})`;
+          solDebug.value+=` HIT(${r.x},${r.y})`;
           r.action();
           return;
         }
       }
-      const nearby=solPixiRegions.filter(r=>Math.abs(x-r.x)<100&&Math.abs(y-r.y)<100);
-      solDebug.value+=` MISS nearby:${nearby.map(r=>`(${r.x},${r.y},${r.w}x${r.h})`).join(' ')}`;
+      const nearby=solPixiRegions.filter(r=>Math.abs(x-(r.x+r.w/2))<80&&Math.abs(y-(r.y+r.h/2))<80);
+      solDebug.value+=` MISS near:${nearby.map(r=>`(${Math.round(r.x)},${Math.round(r.y)},${Math.round(r.w)}x${Math.round(r.h)})`).join(' ')}`;
     }
 
     let solPixiRegions=[];
@@ -1776,7 +1776,7 @@ createApp({
           g.drawRoundedRect(0,0,cw,ch,6);
           g.endFill();
           const t=new PIXI.Text(label,{fontFamily:'monospace',fontWeight:'bold',fontSize:Math.round(cw*0.22),fill:isRed?0xff6b6b:0xe8f4f0});
-          t.x=5;t.y=4;g.addChild(t);
+          t.x=5;t.y=4;t.eventMode='none';g.addChild(t);
         } else {
           g.beginFill(0x0d1825);
           g.lineStyle(1,0x2a4060,1);
