@@ -25,18 +25,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Inject build version
         run: |
-          BUILD="${{ github.sha }}"
-          sed -i "s|__BUILD_VERSION__|${BUILD}|g" index.html
-          sed -i "s|__BUILD_VERSION__|${BUILD}|g" sw.js
-          echo "Result:"
-          grep "aurora" index.html
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: '.'
-          retention-days: 1
+          sed -i "s|__BUILD_VERSION__|${{ github.sha }}|g" index.html
+          sed -i "s|__BUILD_VERSION__|${{ github.sha }}|g" sw.js
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
