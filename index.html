@@ -813,7 +813,9 @@ body.theme-synthwave #bg-overlay {
 /* TAMAGOTCHI STICKY */
 .tama-sticky{position:fixed;bottom:24px;left:16px;z-index:150;display:flex;flex-direction:column;align-items:center;gap:2px;background:rgba(10,14,26,.75);border:1px solid var(--card-border);border-radius:14px;padding:6px 6px 4px;backdrop-filter:blur(16px);transition:transform .1s;}
 .tama-sticky.walking{animation:tamaWalk .15s steps(1) infinite;}
+.tama-sticky.dancing{animation:tamaDance .4s ease-in-out infinite;border-color:var(--accent);}
 @keyframes tamaWalk{0%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+@keyframes tamaDance{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-3px) rotate(2deg)}}
 .tama-sticky-bar{display:flex;align-items:center;gap:4px;position:relative;}
 .tama-picker-popup{position:absolute;bottom:100%;left:0;margin-bottom:6px;background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:6px;display:flex;gap:4px;z-index:201;backdrop-filter:blur(20px);white-space:nowrap;}
 </style>
@@ -1477,7 +1479,7 @@ body.theme-synthwave #bg-overlay {
     </div>
   </transition>
   <!-- Sticky tamagotchi -->
-  <div class="tama-sticky" :class="{walking:tamaWalking}">
+  <div class="tama-sticky" :class="{walking:tamaWalking,dancing:tamaDancing&&!tamaWalking}">
     <canvas id="tama-canvas" width="64" height="64" style="image-rendering:pixelated;cursor:pointer;display:block;" @click="tamaInteract"></canvas>
     <div class="tama-sticky-bar">
       <button @click="tamaPickerOpen=!tamaPickerOpen" class="icon-btn" title="Change character" style="font-size:14px;width:28px;height:28px;">{{ TAMA_CHARS.find(c=>c.id===tamaChar)?.emoji }}</button>
@@ -2735,7 +2737,10 @@ createApp({
     const tamaChar=ref(localStorage.getItem('aurora_tama')||'blob');
     const tamaPickerOpen=ref(false);
     const tamaWalking=ref(false);
+    const tamaDancing=ref(false);
     let tamaScrollTimer=null;
+
+    watch(somaPlaying,v=>tamaDancing.value=v);
 
     function tamaOnScroll(){
       tamaWalking.value=true;
@@ -2773,18 +2778,22 @@ createApp({
       const happy=tamaHappy>0;
       const sad=tamaSad>0;
       const win=tamaWin>0;
-      // Win = big excited bounce, happy = medium, sad = slow droop
+      const dancing=tamaDancing.value&&!happy&&!sad&&!win;
+      // Dancing = rhythmic bounce with sway, win = big jump, sad = droop
       const bounce=sad
-        ? Math.round(Math.sin(tamaFrame*0.05)*1)  // barely moves
+        ? Math.round(Math.sin(tamaFrame*0.05)*1)
         : win
-          ? Math.round(Math.sin(tamaFrame*0.35)*5) // big excited jump
-          : Math.round(Math.sin(tamaFrame*0.12)*2)+(happy?Math.round(Math.sin(tamaFrame*0.3)*3):0);
-      const foot=Math.sin(tamaFrame*(tamaWalking.value||win?0.4:0.15))>0;
+          ? Math.round(Math.sin(tamaFrame*0.35)*5)
+          : dancing
+            ? Math.round(Math.sin(tamaFrame*0.25)*4)
+            : Math.round(Math.sin(tamaFrame*0.12)*2)+(happy?Math.round(Math.sin(tamaFrame*0.3)*3):0);
+      const sway=dancing?Math.round(Math.sin(tamaFrame*0.25)*3):0;
+      const foot=Math.sin(tamaFrame*(tamaWalking.value||win||dancing?0.4:0.15))>0;
       const char=tamaChar.value;
 
       if(char==='blob'){
         // Round blob
-        const ox=16,oy=10+bounce;
+        const ox=16+sway,oy=10+bounce;
         tamaPx(ctx,col,[[0,1],[0,2],[0,3],[0,4],[1,0],[1,1],[1,2],[1,3],[1,4],[1,5],[2,0],[2,5],[3,0],[3,5],[4,0],[4,5],[5,1],[5,2],[5,3],[5,4]],ox,oy,S);
         // Eyes
         if(happy||win){tamaPx(ctx,'#0a0e1a',[[1,1],[2,0],[2,2],[1,4],[2,3],[2,5]],ox,oy,S);}
@@ -2797,7 +2806,7 @@ createApp({
         tamaPx(ctx,col,foot?[[6,1],[5,4]]:[[5,1],[6,4]],ox,oy,S);
 
       } else if(char==='cat'){
-        const ox=14,oy=8+bounce;
+        const ox=14+sway,oy=8+bounce;
         // Ears
         tamaPx(ctx,col,[[0,0],[1,0],[1,1],[0,5],[1,5],[1,4]],ox,oy,S);
         // Head
@@ -2818,7 +2827,7 @@ createApp({
         tamaPx(ctx,col,foot?[[8,1],[8,3]]:[[8,2],[8,4]],ox,oy,S);
 
       } else if(char==='ghost'){
-        const ox=14,oy=8+bounce;
+        const ox=14+sway,oy=8+bounce;
         // Body
         tamaPx(ctx,col,[[0,1],[0,2],[0,3],[0,4],[1,0],[1,1],[1,2],[1,3],[1,4],[1,5],[2,0],[2,5],[3,0],[3,5],[4,0],[4,5],[5,0],[5,1],[5,2],[5,3],[5,4],[5,5]],ox,oy,S);
         // Wavy bottom
@@ -2832,7 +2841,7 @@ createApp({
         else{tamaPx(ctx,'#0a0e1a',[[4,2],[4,3]],ox,oy,S);}
 
       } else if(char==='robot'){
-        const ox=14,oy=8+bounce;
+        const ox=14+sway,oy=8+bounce;
         // Antenna
         tamaPx(ctx,col,[[0,2],[0,3],[1,2],[1,3]],ox,oy,S);
         // Head (square)
@@ -2851,7 +2860,7 @@ createApp({
         tamaPx(ctx,col,foot?[[10,1],[10,4]]:[[10,2],[10,3]],ox,oy,S);
 
       } else if(char==='frog'){
-        const ox=14,oy=10+bounce;
+        const ox=14+sway,oy=10+bounce;
         // Eyes on top (bulgy)
         tamaPx(ctx,col,[[0,0],[0,1],[0,4],[0,5],[1,0],[1,1],[1,4],[1,5]],ox,oy,S);
         if(blink){tamaPx(ctx,'#0a0e1a',[[1,0],[1,1],[1,4],[1,5]],ox,oy,S);}
@@ -2867,7 +2876,7 @@ createApp({
         tamaPx(ctx,col,foot?[[6,0],[6,1],[6,4],[6,5],[7,0],[7,5]]:[[6,0],[6,5],[7,0],[7,1],[7,4],[7,5]],ox,oy,S);
 
       } else if(char==='alien'){
-        const ox=14,oy=8+bounce;
+        const ox=14+sway,oy=8+bounce;
         // Head (tall oval)
         tamaPx(ctx,col,[[0,2],[0,3],[1,1],[1,2],[1,3],[1,4],[2,0],[2,1],[2,2],[2,3],[2,4],[2,5],[3,0],[3,5],[4,0],[4,5],[5,0],[5,1],[5,2],[5,3],[5,4],[5,5],[6,1],[6,2],[6,3],[6,4]],ox,oy,S);
         // Big eyes
@@ -2889,6 +2898,18 @@ createApp({
         // Body + spindly legs
         tamaPx(ctx,col,[[7,2],[7,3],[8,2],[8,3]],ox,oy,S);
         tamaPx(ctx,col,foot?[[9,1],[9,4],[10,0],[10,5]]:[[9,0],[9,5],[10,1],[10,4]],ox,oy,S);
+      }
+
+      // Music notes when dancing
+      if(dancing){
+        ctx.font='10px serif';
+        ctx.globalAlpha=0.7*(Math.sin(tamaFrame*0.08)*0.4+0.6);
+        ctx.fillStyle=col;
+        const n1y=8+bounce-((tamaFrame*0.5)%20);
+        const n2y=4+bounce-((tamaFrame*0.5+10)%20);
+        ctx.fillText('♪',50,n1y);
+        ctx.fillText('♫',2,n2y);
+        ctx.globalAlpha=1;
       }
 
       // Happy/win sparkles
@@ -2932,7 +2953,7 @@ createApp({
 
     watch(currentTheme,()=>{}); // color auto-picked in tamaDraw
 
-    return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,chatRenderText,formatChatTime,activeWidget,setActiveWidget,clearActiveWidget,solTableau,solFoundations,solStock,solWaste,solMoves,solWon,solInit,solNewGame,solSelected,solDraw,solClickWaste,solClickFoundation,solClickCol,solClickCard,solAutoFoundation,solDrawPixi,solInitPixi,snakeScore,snakeBest,snakeRunning,snakeDead,snakePaused,snakeStart,snakePause,wordleGuesses,wordleResults,wordleCurrent,wordleMsg,wordleKeyRows,wordleGetLetter,wordleGetClass,wordleKeyClass,wordleKey,wordleHandleMobileKey,wordleHandleMobileInput,worldClockCities,worldClockPick,worldClockOptions,worldClockTime,worldClockDate,worldClockAdd,worldClockRemove,steamGenres,steamGenre,steamLoading,steamError,steamGame,steamScoreClass,steamPickGenre,steamNext,film,filmGenre,filmGenres,filmNext,passValue,passLength,passOpts,passCopied,passGenerate,passCopy,paletteBase,paletteType,paletteTypes,paletteColors,paletteCopied,paletteGenerate,paletteCopy,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings,tamaReact,tamaInteract,TAMA_CHARS,tamaChar,tamaPickerOpen,tamaSetChar,tamaWalking};
+    return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,chatRenderText,formatChatTime,activeWidget,setActiveWidget,clearActiveWidget,solTableau,solFoundations,solStock,solWaste,solMoves,solWon,solInit,solNewGame,solSelected,solDraw,solClickWaste,solClickFoundation,solClickCol,solClickCard,solAutoFoundation,solDrawPixi,solInitPixi,snakeScore,snakeBest,snakeRunning,snakeDead,snakePaused,snakeStart,snakePause,wordleGuesses,wordleResults,wordleCurrent,wordleMsg,wordleKeyRows,wordleGetLetter,wordleGetClass,wordleKeyClass,wordleKey,wordleHandleMobileKey,wordleHandleMobileInput,worldClockCities,worldClockPick,worldClockOptions,worldClockTime,worldClockDate,worldClockAdd,worldClockRemove,steamGenres,steamGenre,steamLoading,steamError,steamGame,steamScoreClass,steamPickGenre,steamNext,film,filmGenre,filmGenres,filmNext,passValue,passLength,passOpts,passCopied,passGenerate,passCopy,paletteBase,paletteType,paletteTypes,paletteColors,paletteCopied,paletteGenerate,paletteCopy,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings,tamaReact,tamaInteract,TAMA_CHARS,tamaChar,tamaPickerOpen,tamaSetChar,tamaWalking,tamaDancing};
   }
 }).mount('#app');
 </script>
