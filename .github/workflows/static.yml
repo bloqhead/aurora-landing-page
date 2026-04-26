@@ -28,9 +28,15 @@ jobs:
           BUILD="${{ github.sha }}"
           sed -i "s|__BUILD_VERSION__|${BUILD}|g" index.html
           sed -i "s|__BUILD_VERSION__|${BUILD}|g" sw.js
-          echo "index.html contains SHA: $(grep -c ${BUILD} index.html) times"
-          echo "--- relevant lines ---"
+          echo "Result:"
           grep "aurora" index.html
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+          retention-days: 1
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
