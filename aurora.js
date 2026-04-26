@@ -341,7 +341,7 @@ createApp({
       // Stock
       const stockG=new PIXI.Graphics();
       if(solStock.value.length){
-        stockG.beginFill(0x0d1825);stockG.lineStyle(1,0x2a6655,1);
+        stockG.beginFill(0x0d1825);stockG.lineStyle(1,0x2a4060,1);
         stockG.drawRoundedRect(0,0,cw,ch,6);stockG.endFill();
         const t=new PIXI.Text('🂠',{fontSize:Math.round(ch*0.3)});
         t.x=cw/2-t.width/2;t.y=ch/2-t.height/2;stockG.addChild(t);
