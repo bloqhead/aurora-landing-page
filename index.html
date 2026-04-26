@@ -1260,23 +1260,26 @@ body.theme-synthwave #bg-overlay {
           <div v-if="steamLoading" class="widget-loading">Finding games…</div>
           <div v-else-if="steamError" class="widget-error" style="display:flex;flex-direction:column;gap:8px;">
             <span>{{ steamError }}</span>
-            <span style="font-size:var(--t-xs);color:var(--text-muted);">⚠️ SteamSpy is an unofficial API and can be unreliable — try again or switch genres.</span>
+            <span style="font-size:var(--t-xs);color:var(--text-muted);">⚠️ Data provided by IGDB — try again or switch genres.</span>
             <button class="steam-next-btn" @click="steamPickGenre(steamGenre)" style="align-self:flex-start;">Try again ↺</button>
           </div>
           <div v-else-if="steamGame" class="steam-card">
             <div class="steam-header">
-              <img v-if="steamGame.appid" :src="`https://cdn.akamai.steamstatic.com/steam/apps/${steamGame.appid}/header.jpg`"
+              <img v-if="steamGame.cover||steamGame.appid"
+                :src="steamGame.cover||`https://cdn.akamai.steamstatic.com/steam/apps/${steamGame.appid}/header.jpg`"
                 class="steam-img" :alt="steamGame.name" loading="lazy" @error="$event.target.style.display='none'" />
               <div class="steam-info">
                 <div class="steam-name">{{ steamGame.name }}</div>
+                <div v-if="steamGame.genres" style="font-size:var(--t-xs);color:var(--text-muted);margin-bottom:2px;">{{ steamGame.genres }}</div>
                 <div class="steam-meta">
                   <span class="steam-score" :class="steamScoreClass(steamGame.score)">
-                    {{ steamGame.score }}% positive
+                    ⭐ {{ steamGame.score }}/100
                   </span>
-                  <span class="steam-owners" v-if="steamGame.owners">· {{ steamGame.owners }} owners</span>
+                  <span class="steam-owners" v-if="steamGame.rating_count">· {{ steamGame.rating_count.toLocaleString() }} ratings</span>
                 </div>
+                <div v-if="steamGame.summary" style="font-size:var(--t-xs);color:var(--text-muted);margin-top:4px;line-height:1.4;">{{ steamGame.summary }}</div>
                 <div class="steam-actions">
-                  <a :href="`https://store.steampowered.com/app/${steamGame.appid}`" target="_blank" rel="noopener noreferrer" class="steam-link">View on Steam →</a>
+                  <a :href="steamGame.steamUrl" target="_blank" rel="noopener noreferrer" class="steam-link">View on Steam →</a>
                   <button class="steam-next-btn" @click="steamNext">Shuffle 🔀</button>
                 </div>
               </div>
@@ -2108,18 +2111,18 @@ createApp({
     currencyConvert();
 
     // ── STEAM REC ───────────────────────────────────────────────────────────────
-    const STEAM_PROXY='https://aurora-chat.daryn-codes.workers.dev/steam';
+    const STEAM_PROXY='https://aurora-chat.daryn-codes.workers.dev/igdb';
     const steamGenres=[
-      {label:'Cozy 🌿',tag:'Relaxing'},
-      {label:'RPG ⚔️',tag:'RPG'},
-      {label:'Indie 🎨',tag:'Indie'},
-      {label:'Puzzle 🧩',tag:'Puzzle'},
-      {label:'Horror 👻',tag:'Horror'},
-      {label:'Strategy 🧠',tag:'Strategy'},
-      {label:'Simulation 🏗️',tag:'Simulation'},
-      {label:'Platformer 🏃',tag:'Platformer'},
-      {label:'Roguelike 🎲',tag:'Roguelike'},
-      {label:'Open World 🗺️',tag:'Open World'},
+      {label:'Cozy 🌿',tag:'relaxing'},
+      {label:'RPG ⚔️',tag:'rpg'},
+      {label:'Indie 🎨',tag:'indie'},
+      {label:'Puzzle 🧩',tag:'puzzle'},
+      {label:'Horror 👻',tag:'horror'},
+      {label:'Strategy 🧠',tag:'strategy'},
+      {label:'Simulation 🏗️',tag:'simulation'},
+      {label:'Platformer 🏃',tag:'platformer'},
+      {label:'Roguelike 🎲',tag:'roguelike'},
+      {label:'Open World 🗺️',tag:'open world'},
     ];
     // Load last genre or pick random
     const savedSteamGenre=localStorage.getItem('aurora_steam_genre');
@@ -2131,9 +2134,9 @@ createApp({
     let steamPool=[];
 
     function steamScoreClass(score){
-      if(score>=90)return'great';
+      if(score>=85)return'great';
       if(score>=70)return'good';
-      if(score>=50)return'mixed';
+      if(score>=55)return'mixed';
       return'bad';
     }
 
@@ -2151,7 +2154,7 @@ createApp({
       steamLoading.value=true;
       steamError.value='';
       try{
-        const res=await fetch(`${STEAM_PROXY}?tag=${encodeURIComponent(tag)}`);
+        const res=await fetch(`${STEAM_PROXY}?genre=${encodeURIComponent(tag)}`);
         if(!res.ok)throw new Error(await res.text());
         const data=await res.json();
         if(data.error)throw new Error(data.error);
