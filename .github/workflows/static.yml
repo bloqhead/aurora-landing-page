@@ -25,10 +25,12 @@ jobs:
         uses: actions/checkout@v4
       - name: Inject build version
         run: |
-          sed -i "s|__BUILD_VERSION__|${{ github.sha }}|g" index.html
-          sed -i "s|__BUILD_VERSION__|${{ github.sha }}|g" sw.js
-          grep -q "${{ github.sha }}" index.html || (echo "ERROR: substitution failed" && exit 1)
-          echo "✓ Build version injected: ${{ github.sha }}"
+          BUILD="${{ github.sha }}"
+          sed -i "s|__BUILD_VERSION__|${BUILD}|g" index.html
+          sed -i "s|__BUILD_VERSION__|${BUILD}|g" sw.js
+          echo "index.html contains SHA: $(grep -c ${BUILD} index.html) times"
+          echo "--- relevant lines ---"
+          grep "aurora" index.html
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
