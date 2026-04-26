@@ -826,7 +826,18 @@ body.theme-synthwave #bg-overlay {
         <div class="clock">{{ clockStr }}</div>
         <div class="date-str">{{ dateStr }}</div>
       </div>
-      <canvas id="tama-canvas" width="64" height="64" style="image-rendering:pixelated;cursor:pointer;" title="Your little friend" @click="tamaInteract"></canvas>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;">
+        <canvas id="tama-canvas" width="64" height="64" style="image-rendering:pixelated;cursor:pointer;" :title="'Your little friend — click to interact'" @click="tamaInteract"></canvas>
+        <button @click="tamaPickerOpen=!tamaPickerOpen" style="background:none;border:none;font-size:10px;color:var(--text-muted);cursor:pointer;font-family:var(--font-mono);padding:0;line-height:1;">{{ TAMA_CHARS.find(c=>c.id===tamaChar)?.emoji }} ▾</button>
+        <div v-if="tamaPickerOpen" style="position:absolute;top:100%;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:8px;display:flex;gap:6px;z-index:200;backdrop-filter:blur(20px);">
+          <button v-for="c in TAMA_CHARS" :key="c.id"
+            @click="tamaSetChar(c.id)"
+            :title="c.label"
+            :style="{background:tamaChar===c.id?'rgba(80,220,180,.15)':'none',border:tamaChar===c.id?'1px solid var(--accent)':'1px solid transparent',borderRadius:'6px',padding:'4px',cursor:'pointer',fontSize:'20px',lineHeight:'1'}">
+            {{ c.emoji }}
+          </button>
+        </div>
+      </div>
       <div class="header-right">
         <button class="icon-btn" @click="refreshBg" title="New background">↺</button>
         <button class="icon-btn changelog-btn" @click="openChangelog" title="What's new" style="position:relative">
@@ -2703,117 +2714,168 @@ createApp({
     watch(useFahrenheit,v=>localStorage.setItem('aurora_fahrenheit',v));
 
     // ── TAMAGOTCHI ──────────────────────────────────────────────────────────────
-    let tamaFrame=0, tamaState='idle', tamaBlinkTimer=0, tamaBounce=0, tamaHappy=0, tamaAnimId=null;
+    let tamaFrame=0, tamaBlinkTimer=0, tamaHappy=0, tamaAnimId=null;
+
+    const TAMA_CHARS=[
+      {id:'blob',  label:'Blob',   emoji:'🫧'},
+      {id:'cat',   label:'Cat',    emoji:'🐱'},
+      {id:'ghost', label:'Ghost',  emoji:'👻'},
+      {id:'robot', label:'Robot',  emoji:'🤖'},
+      {id:'frog',  label:'Frog',   emoji:'🐸'},
+      {id:'alien', label:'Alien',  emoji:'👾'},
+    ];
+    const tamaChar=ref(localStorage.getItem('aurora_tama')||'blob');
+    const tamaPickerOpen=ref(false);
+
+    function tamaSetChar(id){
+      tamaChar.value=id;
+      localStorage.setItem('aurora_tama',id);
+      tamaPickerOpen.value=false;
+    }
+    function tamaInteract(){tamaHappy=40;}
 
     function tamaGetColor(){
       const cs=getComputedStyle(document.documentElement);
       return cs.getPropertyValue('--accent').trim()||'#50dca0';
     }
 
-    function tamaInteract(){
-      tamaState='happy'; tamaHappy=30;
+    // Draw helpers
+    function tamaPx(ctx,col,pixels,ox,oy,S){
+      ctx.fillStyle=col;
+      pixels.forEach(([r,c])=>ctx.fillRect(ox+c*S,oy+r*S,S,S));
     }
 
     function tamaDraw(){
       const cv=document.getElementById('tama-canvas');
       if(!cv)return;
       const ctx=cv.getContext('2d');
-      const S=4; // pixel size
-      const W=64,H=64;
-      ctx.clearRect(0,0,W,H);
-
+      ctx.clearRect(0,0,64,64);
       const col=tamaGetColor();
-      const dark=col; // body color from theme
-      const eye='#e8f4f0';
-      const pupil='#0a0e1a';
-
-      // Bounce offset
-      const by=Math.round(Math.sin(tamaFrame*0.12)*2);
-      // Happy bounce is bigger
-      const hby=tamaHappy>0?Math.round(Math.sin(tamaFrame*0.3)*4):0;
-      const oy=by+hby;
-
-      // Body — round blob shape (pixel art)
-      const body=[
-        [0,0,1,1,1,1,0,0],
-        [0,1,1,1,1,1,1,0],
-        [1,1,1,1,1,1,1,1],
-        [1,1,1,1,1,1,1,1],
-        [1,1,1,1,1,1,1,1],
-        [1,1,1,1,1,1,1,1],
-        [0,1,1,1,1,1,1,0],
-        [0,0,1,1,1,1,0,0],
-      ];
-
-      const bx=16,bstart=12+oy;
-      ctx.fillStyle=dark;
-      body.forEach((row,r)=>row.forEach((px,c)=>{
-        if(px)ctx.fillRect(bx+c*S,bstart+r*S,S,S);
-      }));
-
-      // Eyes
+      const S=4;
       const blink=tamaBlinkTimer>0;
-      const eyeY=bstart+S*2;
-      if(tamaHappy>0){
-        // Happy eyes — ^ shape
-        [[bx+S,eyeY],[bx+S*5,eyeY]].forEach(([ex,ey])=>{
-          ctx.fillStyle=pupil;
-          ctx.fillRect(ex+S,ey,S,S);
-          ctx.fillRect(ex,ey+S,S,S);
-          ctx.fillRect(ex+S*2,ey+S,S,S);
-        });
-      } else if(blink){
-        // Blink — horizontal line
-        ctx.fillStyle=pupil;
-        [[bx+S,eyeY+S],[bx+S*5,eyeY+S]].forEach(([ex,ey])=>{
-          ctx.fillRect(ex,ey,S*2,S);
-        });
-      } else {
-        // Normal eyes
-        [[bx+S,eyeY],[bx+S*5,eyeY]].forEach(([ex,ey])=>{
-          ctx.fillStyle=eye;
-          ctx.fillRect(ex,ey,S*2,S*2);
-          ctx.fillStyle=pupil;
-          ctx.fillRect(ex+S/2,ey+S/2,S,S);
-        });
-      }
+      const happy=tamaHappy>0;
+      const bounce=Math.round(Math.sin(tamaFrame*0.12)*2)+(happy?Math.round(Math.sin(tamaFrame*0.3)*3):0);
+      const foot=Math.sin(tamaFrame*0.15)>0;
+      const char=tamaChar.value;
 
-      // Mouth
-      const mouthY=bstart+S*5;
-      if(tamaHappy>0){
-        // Big smile
-        ctx.fillStyle=pupil;
-        [[bx+S,mouthY+S],[bx+S*2,mouthY],[bx+S*3,mouthY],[bx+S*4,mouthY],[bx+S*5,mouthY+S]].forEach(([mx,my])=>{
-          ctx.fillRect(mx,my,S,S);
-        });
-      } else {
-        // Small smile
-        ctx.fillStyle=pupil;
-        [[bx+S*2,mouthY+S],[bx+S*3,mouthY+S],[bx+S*4,mouthY]].forEach(([mx,my])=>{
-          ctx.fillRect(mx,my,S,S);
-        });
-      }
+      if(char==='blob'){
+        // Round blob
+        const ox=16,oy=10+bounce;
+        tamaPx(ctx,col,[[0,1],[0,2],[0,3],[0,4],[1,0],[1,1],[1,2],[1,3],[1,4],[1,5],[2,0],[2,5],[3,0],[3,5],[4,0],[4,5],[5,1],[5,2],[5,3],[5,4]],ox,oy,S);
+        // Eyes
+        if(happy){tamaPx(ctx,'#0a0e1a',[[1,1],[2,0],[2,2],[1,4],[2,3],[2,5]],ox,oy,S);}
+        else if(blink){tamaPx(ctx,'#0a0e1a',[[2,1],[2,2],[2,4],[2,5]],ox,oy,S);}
+        else{tamaPx(ctx,'#e8f4f0',[[1,1],[1,2],[1,4],[1,5]],ox,oy,S);tamaPx(ctx,'#0a0e1a',[[2,1],[2,4]],ox,oy,S);}
+        // Mouth
+        if(happy){tamaPx(ctx,'#0a0e1a',[[4,1],[3,2],[3,3],[4,4]],ox,oy,S);}
+        else{tamaPx(ctx,'#0a0e1a',[[4,2],[4,3]],ox,oy,S);}
+        // Feet
+        tamaPx(ctx,col,foot?[[6,1],[5,4]]:[[5,1],[6,4]],ox,oy,S);
 
-      // Little feet
-      ctx.fillStyle=dark;
-      if(Math.sin(tamaFrame*0.15)>0){
-        ctx.fillRect(bx,bstart+S*8,S*2,S);
-        ctx.fillRect(bx+S*6,bstart+S*7,S*2,S);
-      } else {
-        ctx.fillRect(bx,bstart+S*7,S*2,S);
-        ctx.fillRect(bx+S*6,bstart+S*8,S*2,S);
+      } else if(char==='cat'){
+        const ox=14,oy=8+bounce;
+        // Ears
+        tamaPx(ctx,col,[[0,0],[1,0],[1,1],[0,5],[1,5],[1,4]],ox,oy,S);
+        // Head
+        tamaPx(ctx,col,[[2,0],[2,1],[2,2],[2,3],[2,4],[2,5],[3,0],[3,1],[3,2],[3,3],[3,4],[3,5],[4,0],[4,1],[4,2],[4,3],[4,4],[4,5],[5,1],[5,2],[5,3],[5,4]],ox,oy,S);
+        // Eyes
+        if(happy){tamaPx(ctx,'#0a0e1a',[[3,1],[4,0],[4,2],[3,4],[4,3],[4,5]],ox,oy,S);}
+        else if(blink){tamaPx(ctx,'#0a0e1a',[[4,1],[4,2],[4,4],[4,5]],ox,oy,S);}
+        else{tamaPx(ctx,'#e8f4f0',[[3,1],[3,2],[3,4],[3,5]],ox,oy,S);tamaPx(ctx,'#0a0e1a',[[4,1],[4,4]],ox,oy,S);}
+        // Nose + whiskers
+        tamaPx(ctx,'#ffb3ba',[[5,2],[5,3]],ox,oy,S);
+        tamaPx(ctx,'#0a0e1a',[[5,0],[5,5]],ox,oy,S);
+        // Mouth
+        if(happy){tamaPx(ctx,'#0a0e1a',[[6,1],[5,2],[5,3],[6,4]],ox,oy,S);}
+        // Body + tail
+        tamaPx(ctx,col,[[6,1],[6,2],[6,3],[6,4],[7,1],[7,2],[7,3],[7,4]],ox,oy,S);
+        tamaPx(ctx,col,[[6,5],[7,5],[7,6],[6,6]],ox,oy,S);
+        // Feet
+        tamaPx(ctx,col,foot?[[8,1],[8,3]]:[[8,2],[8,4]],ox,oy,S);
+
+      } else if(char==='ghost'){
+        const ox=14,oy=8+bounce;
+        // Body
+        tamaPx(ctx,col,[[0,1],[0,2],[0,3],[0,4],[1,0],[1,1],[1,2],[1,3],[1,4],[1,5],[2,0],[2,5],[3,0],[3,5],[4,0],[4,5],[5,0],[5,1],[5,2],[5,3],[5,4],[5,5]],ox,oy,S);
+        // Wavy bottom
+        tamaPx(ctx,col,foot?[[6,0],[6,2],[6,4],[7,1],[7,3],[7,5]]:[[6,1],[6,3],[6,5],[7,0],[7,2],[7,4]],ox,oy,S);
+        // Eyes
+        if(happy){tamaPx(ctx,'#0a0e1a',[[2,1],[3,0],[3,2],[2,4],[3,3],[3,5]],ox,oy,S);}
+        else if(blink){tamaPx(ctx,'#0a0e1a',[[3,1],[3,2],[3,4],[3,5]],ox,oy,S);}
+        else{tamaPx(ctx,'#e8f4f0',[[2,1],[2,2],[2,4],[2,5]],ox,oy,S);tamaPx(ctx,'#0a0e1a',[[3,1],[3,4]],ox,oy,S);}
+        // Mouth
+        if(happy){tamaPx(ctx,'#0a0e1a',[[4,1],[4,2],[4,3],[4,4]],ox,oy,S);}
+        else{tamaPx(ctx,'#0a0e1a',[[4,2],[4,3]],ox,oy,S);}
+
+      } else if(char==='robot'){
+        const ox=14,oy=8+bounce;
+        // Antenna
+        tamaPx(ctx,col,[[0,2],[0,3],[1,2],[1,3]],ox,oy,S);
+        // Head (square)
+        tamaPx(ctx,col,[[2,0],[2,1],[2,2],[2,3],[2,4],[2,5],[3,0],[3,5],[4,0],[4,5],[5,0],[5,1],[5,2],[5,3],[5,4],[5,5]],ox,oy,S);
+        // Eyes - LED style
+        if(happy){ctx.fillStyle='#ffff00';}else{ctx.fillStyle=blink?col:'#00ff99';}
+        if(!blink||happy){[[3,1],[3,2],[3,4],[3,5]].forEach(([r,c])=>ctx.fillRect(ox+c*S,oy+r*S,S,S));}
+        // Mouth - grid of squares
+        const mouthPx=happy?[[4,1],[4,2],[4,3],[4,4]]:[[4,1],[4,3]];
+        tamaPx(ctx,'#0a0e1a',mouthPx,ox,oy,S);
+        // Body
+        tamaPx(ctx,col,[[6,0],[6,1],[6,2],[6,3],[6,4],[6,5],[7,0],[7,5],[8,0],[8,5],[9,0],[9,1],[9,2],[9,3],[9,4],[9,5]],ox,oy,S);
+        // Arms
+        tamaPx(ctx,col,[[7,6],[8,6],[7,-1],[8,-1]],ox,oy,S);
+        // Legs
+        tamaPx(ctx,col,foot?[[10,1],[10,4]]:[[10,2],[10,3]],ox,oy,S);
+
+      } else if(char==='frog'){
+        const ox=14,oy=10+bounce;
+        // Eyes on top (bulgy)
+        tamaPx(ctx,col,[[0,0],[0,1],[0,4],[0,5],[1,0],[1,1],[1,4],[1,5]],ox,oy,S);
+        if(blink){tamaPx(ctx,'#0a0e1a',[[1,0],[1,1],[1,4],[1,5]],ox,oy,S);}
+        else{tamaPx(ctx,'#e8f4f0',[[0,0],[0,1],[0,4],[0,5]],ox,oy,S);tamaPx(ctx,'#0a0e1a',[[0,0],[0,4]],ox,oy,S);}
+        // Head/body
+        tamaPx(ctx,col,[[2,0],[2,1],[2,2],[2,3],[2,4],[2,5],[3,0],[3,1],[3,2],[3,3],[3,4],[3,5],[4,0],[4,1],[4,2],[4,3],[4,4],[4,5],[5,0],[5,1],[5,2],[5,3],[5,4],[5,5]],ox,oy,S);
+        // Belly (lighter)
+        tamaPx(ctx,'#e8f4f0',[[3,1],[3,2],[3,3],[3,4],[4,1],[4,2],[4,3],[4,4]],ox,oy,S);
+        // Mouth
+        if(happy){tamaPx(ctx,'#0a0e1a',[[4,0],[3,1],[3,2],[3,3],[3,4],[4,5]],ox,oy,S);}
+        else{tamaPx(ctx,'#0a0e1a',[[5,1],[5,2],[5,3],[5,4]],ox,oy,S);}
+        // Legs
+        tamaPx(ctx,col,foot?[[6,0],[6,1],[6,4],[6,5],[7,0],[7,5]]:[[6,0],[6,5],[7,0],[7,1],[7,4],[7,5]],ox,oy,S);
+
+      } else if(char==='alien'){
+        const ox=14,oy=8+bounce;
+        // Head (tall oval)
+        tamaPx(ctx,col,[[0,2],[0,3],[1,1],[1,2],[1,3],[1,4],[2,0],[2,1],[2,2],[2,3],[2,4],[2,5],[3,0],[3,5],[4,0],[4,5],[5,0],[5,1],[5,2],[5,3],[5,4],[5,5],[6,1],[6,2],[6,3],[6,4]],ox,oy,S);
+        // Big eyes
+        if(happy){
+          tamaPx(ctx,'#ffffff',[[2,1],[2,2],[3,1],[3,2],[2,4],[2,5],[3,4],[3,5]],ox,oy,S);
+          tamaPx(ctx,'#0a0e1a',[[3,1],[3,4]],ox,oy,S);
+          tamaPx(ctx,'#ffff00',[[2,1],[2,4]],ox,oy,S);
+        } else if(blink){
+          tamaPx(ctx,'#0a0e1a',[[3,1],[3,2],[3,4],[3,5]],ox,oy,S);
+        } else {
+          tamaPx(ctx,'#ffffff',[[2,1],[2,2],[3,1],[3,2],[2,4],[2,5],[3,4],[3,5]],ox,oy,S);
+          tamaPx(ctx,'#0a0e1a',[[3,1],[3,4]],ox,oy,S);
+        }
+        // Mouth slots
+        if(happy){tamaPx(ctx,'#0a0e1a',[[5,1],[5,2],[5,3],[5,4]],ox,oy,S);}
+        else{tamaPx(ctx,'#0a0e1a',[[5,1],[5,3]],ox,oy,S);}
+        // Antennae
+        tamaPx(ctx,col,[[-1,1],[-2,0],[-1,4],[-2,5]],ox,oy,S);
+        // Body + spindly legs
+        tamaPx(ctx,col,[[7,2],[7,3],[8,2],[8,3]],ox,oy,S);
+        tamaPx(ctx,col,foot?[[9,1],[9,4],[10,0],[10,5]]:[[9,0],[9,5],[10,1],[10,4]],ox,oy,S);
       }
 
       // Happy sparkles
-      if(tamaHappy>0){
-        ctx.fillStyle=col;
-        [[8,8],[52,10],[12,52],[50,48]].forEach(([sx,sy],i)=>{
-          const alpha=tamaHappy/30;
-          const pulse=Math.sin(tamaFrame*0.4+i)*0.5+0.5;
-          ctx.globalAlpha=alpha*pulse;
-          ctx.fillRect(sx,sy+oy,S,S);
-          ctx.fillRect(sx+S,sy-S+oy,S,S);
-          ctx.fillRect(sx-S,sy-S+oy,S,S);
+      if(happy){
+        const alpha=tamaHappy/40;
+        [[6,6],[56,8],[8,52],[54,50]].forEach(([sx,sy],i)=>{
+          ctx.globalAlpha=alpha*(Math.sin(tamaFrame*0.4+i)*0.5+0.5);
+          ctx.fillStyle=col;
+          ctx.fillRect(sx,sy+bounce,S,S);
+          ctx.fillRect(sx+S,sy-S+bounce,S,S);
+          ctx.fillRect(sx-S,sy-S+bounce,S,S);
         });
         ctx.globalAlpha=1;
       }
@@ -2821,9 +2883,7 @@ createApp({
       tamaFrame++;
       tamaBlinkTimer=Math.max(0,tamaBlinkTimer-1);
       if(tamaHappy>0)tamaHappy--;
-
-      // Random blink every ~4 seconds
-      if(tamaFrame%180===0&&tamaBlinkTimer===0)tamaBlinkTimer=8;
+      if(tamaFrame%200===0&&tamaBlinkTimer===0)tamaBlinkTimer=8;
     }
 
     function tamaInit(){
@@ -2832,10 +2892,9 @@ createApp({
       loop();
     }
 
-    // Redraw on theme change
-    watch(currentTheme,()=>{ /* color auto-picked in tamaDraw */ });
+    watch(currentTheme,()=>{}); // color auto-picked in tamaDraw
 
-    return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,chatRenderText,formatChatTime,activeWidget,setActiveWidget,clearActiveWidget,solTableau,solFoundations,solStock,solWaste,solMoves,solWon,solInit,solNewGame,solSelected,solDraw,solClickWaste,solClickFoundation,solClickCol,solClickCard,solAutoFoundation,solDrawPixi,solInitPixi,snakeScore,snakeBest,snakeRunning,snakeDead,snakePaused,snakeStart,snakePause,wordleGuesses,wordleResults,wordleCurrent,wordleMsg,wordleKeyRows,wordleGetLetter,wordleGetClass,wordleKeyClass,wordleKey,wordleHandleMobileKey,wordleHandleMobileInput,worldClockCities,worldClockPick,worldClockOptions,worldClockTime,worldClockDate,worldClockAdd,worldClockRemove,steamGenres,steamGenre,steamLoading,steamError,steamGame,steamScoreClass,steamPickGenre,steamNext,film,filmGenre,filmGenres,filmNext,passValue,passLength,passOpts,passCopied,passGenerate,passCopy,paletteBase,paletteType,paletteTypes,paletteColors,paletteCopied,paletteGenerate,paletteCopy,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings,tamaInteract};
+    return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,chatRenderText,formatChatTime,activeWidget,setActiveWidget,clearActiveWidget,solTableau,solFoundations,solStock,solWaste,solMoves,solWon,solInit,solNewGame,solSelected,solDraw,solClickWaste,solClickFoundation,solClickCol,solClickCard,solAutoFoundation,solDrawPixi,solInitPixi,snakeScore,snakeBest,snakeRunning,snakeDead,snakePaused,snakeStart,snakePause,wordleGuesses,wordleResults,wordleCurrent,wordleMsg,wordleKeyRows,wordleGetLetter,wordleGetClass,wordleKeyClass,wordleKey,wordleHandleMobileKey,wordleHandleMobileInput,worldClockCities,worldClockPick,worldClockOptions,worldClockTime,worldClockDate,worldClockAdd,worldClockRemove,steamGenres,steamGenre,steamLoading,steamError,steamGame,steamScoreClass,steamPickGenre,steamNext,film,filmGenre,filmGenres,filmNext,passValue,passLength,passOpts,passCopied,passGenerate,passCopy,paletteBase,paletteType,paletteTypes,paletteColors,paletteCopied,paletteGenerate,paletteCopy,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings,tamaInteract,TAMA_CHARS,tamaChar,tamaPickerOpen,tamaSetChar};
   }
 }).mount('#app');
 </script>
