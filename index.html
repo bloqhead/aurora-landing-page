@@ -826,6 +826,7 @@ body.theme-synthwave #bg-overlay {
         <div class="clock">{{ clockStr }}</div>
         <div class="date-str">{{ dateStr }}</div>
       </div>
+      <canvas id="tama-canvas" width="64" height="64" style="image-rendering:pixelated;cursor:pointer;" title="Your little friend" @click="tamaInteract"></canvas>
       <div class="header-right">
         <button class="icon-btn" @click="refreshBg" title="New background">↺</button>
         <button class="icon-btn changelog-btn" @click="openChangelog" title="What's new" style="position:relative">
@@ -2665,7 +2666,7 @@ createApp({
 
     function saveSettings(){localStorage.setItem('aurora_location',locationInput.value);localStorage.setItem('aurora_unsplash',unsplashKey.value);localStorage.setItem('aurora_lastfm',lastfmKey.value);localStorage.setItem('aurora_nasa',nasaKey.value);localStorage.setItem('aurora_musicapp',musicApp.value);localStorage.setItem('aurora_theme',currentTheme.value);localStorage.setItem('aurora_fahrenheit',useFahrenheit.value);bookmarks.value=bookmarkEdits.value.filter(b=>b.url);localStorage.setItem('aurora_bookmarks',JSON.stringify(bookmarks.value));showSettings.value=false;locateAndLoad();fetchBg(bgTopic.value);fetchAlbum(selectedGenre.value);fetchAPOD();}
 
-    onMounted(()=>{applyTheme(currentTheme.value);updateNumCols();window.addEventListener('resize',updateNumCols);clockTimer=setInterval(()=>{now.value=new Date();},10000);locateAndLoad();fetchKP();fetchQuote();fetchAlbum(selectedGenre.value);fetchBg(bgTopic.value);fetchAnimal();fetchAPOD();fetchChangelogBadge();w2048Init();setInterval(fetchKP,5*60*1000);setInterval(()=>{if(unsplashKey.value)fetchBg(bgTopic.value);},15*60*1000);});
+    onMounted(()=>{applyTheme(currentTheme.value);updateNumCols();window.addEventListener('resize',updateNumCols);clockTimer=setInterval(()=>{now.value=new Date();},10000);locateAndLoad();fetchKP();fetchQuote();fetchAlbum(selectedGenre.value);fetchBg(bgTopic.value);fetchAnimal();fetchAPOD();fetchChangelogBadge();w2048Init();setInterval(fetchKP,5*60*1000);setInterval(()=>{if(unsplashKey.value)fetchBg(bgTopic.value);},15*60*1000);tamaInit();});
     onUnmounted(()=>{clearInterval(clockTimer);window.removeEventListener('resize',updateNumCols);teardownDice();});
 
     // Watch for dice canvas to appear in DOM (widget may not be visible on mount)
@@ -2701,7 +2702,140 @@ createApp({
 
     watch(useFahrenheit,v=>localStorage.setItem('aurora_fahrenheit',v));
 
-    return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,chatRenderText,formatChatTime,activeWidget,setActiveWidget,clearActiveWidget,solTableau,solFoundations,solStock,solWaste,solMoves,solWon,solInit,solNewGame,solSelected,solDraw,solClickWaste,solClickFoundation,solClickCol,solClickCard,solAutoFoundation,solDrawPixi,solInitPixi,snakeScore,snakeBest,snakeRunning,snakeDead,snakePaused,snakeStart,snakePause,wordleGuesses,wordleResults,wordleCurrent,wordleMsg,wordleKeyRows,wordleGetLetter,wordleGetClass,wordleKeyClass,wordleKey,wordleHandleMobileKey,wordleHandleMobileInput,worldClockCities,worldClockPick,worldClockOptions,worldClockTime,worldClockDate,worldClockAdd,worldClockRemove,steamGenres,steamGenre,steamLoading,steamError,steamGame,steamScoreClass,steamPickGenre,steamNext,film,filmGenre,filmGenres,filmNext,passValue,passLength,passOpts,passCopied,passGenerate,passCopy,paletteBase,paletteType,paletteTypes,paletteColors,paletteCopied,paletteGenerate,paletteCopy,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings};
+    // ── TAMAGOTCHI ──────────────────────────────────────────────────────────────
+    let tamaFrame=0, tamaState='idle', tamaBlinkTimer=0, tamaBounce=0, tamaHappy=0, tamaAnimId=null;
+
+    function tamaGetColor(){
+      const cs=getComputedStyle(document.documentElement);
+      return cs.getPropertyValue('--accent').trim()||'#50dca0';
+    }
+
+    function tamaInteract(){
+      tamaState='happy'; tamaHappy=30;
+    }
+
+    function tamaDraw(){
+      const cv=document.getElementById('tama-canvas');
+      if(!cv)return;
+      const ctx=cv.getContext('2d');
+      const S=4; // pixel size
+      const W=64,H=64;
+      ctx.clearRect(0,0,W,H);
+
+      const col=tamaGetColor();
+      const dark=col; // body color from theme
+      const eye='#e8f4f0';
+      const pupil='#0a0e1a';
+
+      // Bounce offset
+      const by=Math.round(Math.sin(tamaFrame*0.12)*2);
+      // Happy bounce is bigger
+      const hby=tamaHappy>0?Math.round(Math.sin(tamaFrame*0.3)*4):0;
+      const oy=by+hby;
+
+      // Body — round blob shape (pixel art)
+      const body=[
+        [0,0,1,1,1,1,0,0],
+        [0,1,1,1,1,1,1,0],
+        [1,1,1,1,1,1,1,1],
+        [1,1,1,1,1,1,1,1],
+        [1,1,1,1,1,1,1,1],
+        [1,1,1,1,1,1,1,1],
+        [0,1,1,1,1,1,1,0],
+        [0,0,1,1,1,1,0,0],
+      ];
+
+      const bx=16,bstart=12+oy;
+      ctx.fillStyle=dark;
+      body.forEach((row,r)=>row.forEach((px,c)=>{
+        if(px)ctx.fillRect(bx+c*S,bstart+r*S,S,S);
+      }));
+
+      // Eyes
+      const blink=tamaBlinkTimer>0;
+      const eyeY=bstart+S*2;
+      if(tamaHappy>0){
+        // Happy eyes — ^ shape
+        [[bx+S,eyeY],[bx+S*5,eyeY]].forEach(([ex,ey])=>{
+          ctx.fillStyle=pupil;
+          ctx.fillRect(ex+S,ey,S,S);
+          ctx.fillRect(ex,ey+S,S,S);
+          ctx.fillRect(ex+S*2,ey+S,S,S);
+        });
+      } else if(blink){
+        // Blink — horizontal line
+        ctx.fillStyle=pupil;
+        [[bx+S,eyeY+S],[bx+S*5,eyeY+S]].forEach(([ex,ey])=>{
+          ctx.fillRect(ex,ey,S*2,S);
+        });
+      } else {
+        // Normal eyes
+        [[bx+S,eyeY],[bx+S*5,eyeY]].forEach(([ex,ey])=>{
+          ctx.fillStyle=eye;
+          ctx.fillRect(ex,ey,S*2,S*2);
+          ctx.fillStyle=pupil;
+          ctx.fillRect(ex+S/2,ey+S/2,S,S);
+        });
+      }
+
+      // Mouth
+      const mouthY=bstart+S*5;
+      if(tamaHappy>0){
+        // Big smile
+        ctx.fillStyle=pupil;
+        [[bx+S,mouthY+S],[bx+S*2,mouthY],[bx+S*3,mouthY],[bx+S*4,mouthY],[bx+S*5,mouthY+S]].forEach(([mx,my])=>{
+          ctx.fillRect(mx,my,S,S);
+        });
+      } else {
+        // Small smile
+        ctx.fillStyle=pupil;
+        [[bx+S*2,mouthY+S],[bx+S*3,mouthY+S],[bx+S*4,mouthY]].forEach(([mx,my])=>{
+          ctx.fillRect(mx,my,S,S);
+        });
+      }
+
+      // Little feet
+      ctx.fillStyle=dark;
+      if(Math.sin(tamaFrame*0.15)>0){
+        ctx.fillRect(bx,bstart+S*8,S*2,S);
+        ctx.fillRect(bx+S*6,bstart+S*7,S*2,S);
+      } else {
+        ctx.fillRect(bx,bstart+S*7,S*2,S);
+        ctx.fillRect(bx+S*6,bstart+S*8,S*2,S);
+      }
+
+      // Happy sparkles
+      if(tamaHappy>0){
+        ctx.fillStyle=col;
+        [[8,8],[52,10],[12,52],[50,48]].forEach(([sx,sy],i)=>{
+          const alpha=tamaHappy/30;
+          const pulse=Math.sin(tamaFrame*0.4+i)*0.5+0.5;
+          ctx.globalAlpha=alpha*pulse;
+          ctx.fillRect(sx,sy+oy,S,S);
+          ctx.fillRect(sx+S,sy-S+oy,S,S);
+          ctx.fillRect(sx-S,sy-S+oy,S,S);
+        });
+        ctx.globalAlpha=1;
+      }
+
+      tamaFrame++;
+      tamaBlinkTimer=Math.max(0,tamaBlinkTimer-1);
+      if(tamaHappy>0)tamaHappy--;
+
+      // Random blink every ~4 seconds
+      if(tamaFrame%180===0&&tamaBlinkTimer===0)tamaBlinkTimer=8;
+    }
+
+    function tamaInit(){
+      if(tamaAnimId)cancelAnimationFrame(tamaAnimId);
+      function loop(){tamaDraw();tamaAnimId=requestAnimationFrame(loop);}
+      loop();
+    }
+
+    // Redraw on theme change
+    watch(currentTheme,()=>{ /* color auto-picked in tamaDraw */ });
+
+    return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,chatRenderText,formatChatTime,activeWidget,setActiveWidget,clearActiveWidget,solTableau,solFoundations,solStock,solWaste,solMoves,solWon,solInit,solNewGame,solSelected,solDraw,solClickWaste,solClickFoundation,solClickCol,solClickCard,solAutoFoundation,solDrawPixi,solInitPixi,snakeScore,snakeBest,snakeRunning,snakeDead,snakePaused,snakeStart,snakePause,wordleGuesses,wordleResults,wordleCurrent,wordleMsg,wordleKeyRows,wordleGetLetter,wordleGetClass,wordleKeyClass,wordleKey,wordleHandleMobileKey,wordleHandleMobileInput,worldClockCities,worldClockPick,worldClockOptions,worldClockTime,worldClockDate,worldClockAdd,worldClockRemove,steamGenres,steamGenre,steamLoading,steamError,steamGame,steamScoreClass,steamPickGenre,steamNext,film,filmGenre,filmGenres,filmNext,passValue,passLength,passOpts,passCopied,passGenerate,passCopy,paletteBase,paletteType,paletteTypes,paletteColors,paletteCopied,paletteGenerate,paletteCopy,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings,tamaInteract};
   }
 }).mount('#app');
 </script>
