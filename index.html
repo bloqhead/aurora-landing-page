@@ -2155,7 +2155,11 @@ createApp({
       steamError.value='';
       try{
         const res=await fetch(`${STEAM_PROXY}?genre=${encodeURIComponent(tag)}`);
-        if(!res.ok)throw new Error(await res.text());
+        if(!res.ok){
+          let msg='Could not load games.';
+          try{const e=await res.json();msg=e.error||msg;}catch{}
+          throw new Error(msg);
+        }
         const data=await res.json();
         if(data.error)throw new Error(data.error);
         if(!data.length)throw new Error('No games found');
