@@ -323,7 +323,7 @@ createApp({
           g.lineStyle(isSelected?2.5:1,isSelected?accent:0x334466,1);
           g.drawRoundedRect(0,0,cw,ch,6);
           g.endFill();
-          const t=new PIXI.Text(label,{fontFamily:'monospace',fontWeight:'bold',fontSize:Math.round(cw*0.22),fill:isRed?0xff6b6b:0xe8f4f0});
+          const t=new PIXI.Text(label,{fontFamily:'monospace',fontWeight:'bold',fontSize:Math.round(cw*0.28),fill:isRed?0xff6b6b:0xe8f4f0});
           t.x=5;t.y=4;t.eventMode='none';g.addChild(t);
         } else {
           g.beginFill(0x0d1825);
