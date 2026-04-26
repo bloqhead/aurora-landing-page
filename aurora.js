@@ -1360,7 +1360,7 @@ createApp({
             ? Math.round(Math.sin(tamaFrame*bpmFreq)*4)
             : Math.round(Math.sin(tamaFrame*0.06)*2)+(happy?Math.round(Math.sin(tamaFrame*0.15)*3):0);
       const sway=rage?Math.round((Math.random()-0.5)*10):sleepy?Math.round(Math.sin(tamaFrame*0.03)*3):dancing?Math.round(Math.sin(tamaFrame*bpmFreq)*3):0;
-      const foot=Math.sin(tamaFrame*(tamaWalking.value||win?0.4:rage?1.2:morning?0.07:dancing?bpmFreq*2:0.07))>0;
+      const foot=Math.sin(tamaFrame*(tamaWalking.value||win?0.4:rage?1.2:happy?0.3:morning?0.07:dancing?bpmFreq*2:0.07))>0;
       const char=tamaChar.value;
 
       if(char==='blob'){
