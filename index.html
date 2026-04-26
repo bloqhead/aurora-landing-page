@@ -2088,7 +2088,7 @@ createApp({
     // ── STEAM REC ───────────────────────────────────────────────────────────────
     const STEAM_PROXY='https://aurora-chat.daryn-codes.workers.dev/steam';
     const steamGenres=[
-      {label:'Cozy 🌿',tag:'Cozy'},
+      {label:'Cozy 🌿',tag:'Relaxing'},
       {label:'RPG ⚔️',tag:'RPG'},
       {label:'Indie 🎨',tag:'Indie'},
       {label:'Puzzle 🧩',tag:'Puzzle'},
@@ -2142,12 +2142,13 @@ createApp({
       }
     }
 
-    // Load when widget becomes visible
-    watch(visibleWidgets,()=>{
+    function steamMaybeLoad(){
       if(visibleWidgets.value.find(w=>w.id==='steam')&&!steamGame.value&&!steamLoading.value){
         steamPickGenre(steamGenre.value);
       }
-    });
+    }
+    // Load when widget becomes visible
+    watch(visibleWidgets, steamMaybeLoad, {immediate:true});
 
     // ── FILM REC ───────────────────────────────────────────────────────────────
     const FILMS={all:[{title:'Stalker',year:1979,director:'Andrei Tarkovsky',desc:'A guide leads two men through a forbidden wasteland called the Zone.'},{title:'Mulholland Drive',year:2001,director:'David Lynch',desc:'A woman with amnesia and an aspiring actress unravel a dark mystery in Hollywood.'},{title:'2001: A Space Odyssey',year:1968,director:'Stanley Kubrick',desc:'Humanity finds a mysterious artifact buried on the moon.'},{title:'Blade Runner',year:1982,director:'Ridley Scott',desc:'A detective hunts rogue androids in a dystopian future Los Angeles.'},{title:"Pan's Labyrinth",year:2006,director:'Guillermo del Toro',desc:'A girl escapes into a dark fantasy world during post-war Spain.'},{title:'Annihilation',year:2018,director:'Alex Garland',desc:'A biologist joins a mission into a mysterious quarantine zone.'},{title:'Her',year:2013,director:'Spike Jonze',desc:'A man falls in love with an AI operating system.'},{title:'Parasite',year:2019,director:'Bong Joon-ho',desc:'A poor family infiltrates the life of a wealthy household.'}],scifi:[{title:'Arrival',year:2016,director:'Denis Villeneuve',desc:'A linguist works to communicate with alien visitors.'},{title:'Interstellar',year:2014,director:'Christopher Nolan',desc:'Astronauts travel through a wormhole in search of humanity\'s new home.'},{title:'Ex Machina',year:2014,director:'Alex Garland',desc:'A programmer is invited to administer a Turing test to an AI.'},{title:'Moon',year:2009,director:'Duncan Jones',desc:'An astronaut nearing the end of his stint discovers something startling.'}],horror:[{title:'Hereditary',year:2018,director:'Ari Aster',desc:'A family unravels after the death of their secretive matriarch.'},{title:'The Witch',year:2015,director:'Robert Eggers',desc:'A Puritan family is torn apart by the forces of witchcraft.'},{title:'Midsommar',year:2019,director:'Ari Aster',desc:'A couple travels to a Swedish midsummer festival with disturbing consequences.'},{title:'Suspiria',year:1977,director:'Dario Argento',desc:'An American dancer joins a prestigious dance academy with dark secrets.'}],drama:[{title:'There Will Be Blood',year:2007,director:'P.T. Anderson',desc:'An oil prospector builds an empire while losing his soul.'},{title:'The Tree of Life',year:2011,director:'Terrence Malick',desc:'The origins of life and existence told through one family\'s story.'},{title:'Oldboy',year:2003,director:'Park Chan-wook',desc:'A man is imprisoned for fifteen years without explanation, then freed.'},{title:'Portrait of a Lady on Fire',year:2019,director:'Céline Sciamma',desc:'A painter and her subject fall in love in 18th century France.'}],comedy:[{title:'The Grand Budapest Hotel',year:2014,director:'Wes Anderson',desc:'A concierge and his lobby boy go on a wild adventure.'},{title:'Being John Malkovich',year:1999,director:'Spike Jonze',desc:'A puppeteer discovers a portal into the mind of John Malkovich.'},{title:'The Big Lebowski',year:1998,director:'Coen Brothers',desc:'A case of mistaken identity leads The Dude into a bewildering conspiracy.'},{title:'Withnail and I',year:1987,director:'Bruce Robinson',desc:'Two unemployed actors take a disastrous holiday in the English countryside.'}]};
