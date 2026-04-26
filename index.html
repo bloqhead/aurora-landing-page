@@ -2039,7 +2039,7 @@ createApp({
     function snakeStart(){clearInterval(snakeInterval);snakeBody=[{x:5,y:5},{x:4,y:5},{x:3,y:5}];snakeDir={x:1,y:0};snakeScore.value=0;snakeDead.value=false;snakeRunning.value=true;snakePaused.value=false;snakePlaceFood();snakeDraw();snakeInterval=setInterval(snakeStep,140);}
     function snakePause(){if(!snakeRunning.value)return;if(snakePaused.value){snakePaused.value=false;snakeInterval=setInterval(snakeStep,140);}else{snakePaused.value=true;clearInterval(snakeInterval);}}
     function snakePlaceFood(){do{snakeFood={x:Math.floor(Math.random()*SGRID),y:Math.floor(Math.random()*SGRID)};}while(snakeBody.some(s=>s.x===snakeFood.x&&s.y===snakeFood.y));}
-    function snakeStep(){const head={x:(snakeBody[0].x+snakeDir.x+SGRID)%SGRID,y:(snakeBody[0].y+snakeDir.y+SGRID)%SGRID};if(snakeBody.some(s=>s.x===head.x&&s.y===head.y)){clearInterval(snakeInterval);snakeRunning.value=false;snakeDead.value=true;if(snakeScore.value>snakeBest.value){snakeBest.value=snakeScore.value;localStorage.setItem('aurora_snake_best',snakeScore.value);}return;}snakeBody.unshift(head);if(head.x===snakeFood.x&&head.y===snakeFood.y){snakeScore.value++;snakePlaceFood();}else snakeBody.pop();snakeDraw();}
+    function snakeStep(){const head={x:(snakeBody[0].x+snakeDir.x+SGRID)%SGRID,y:(snakeBody[0].y+snakeDir.y+SGRID)%SGRID};if(snakeBody.some(s=>s.x===head.x&&s.y===head.y)){clearInterval(snakeInterval);snakeRunning.value=false;snakeDead.value=true;tamaReact('rage');if(snakeScore.value>snakeBest.value){snakeBest.value=snakeScore.value;localStorage.setItem('aurora_snake_best',snakeScore.value);}return;}snakeBody.unshift(head);if(head.x===snakeFood.x&&head.y===snakeFood.y){snakeScore.value++;snakePlaceFood();tamaReact('cheer');}else snakeBody.pop();snakeDraw();}
     function snakeDraw(){const cv=document.getElementById('snake-canvas');if(!cv)return;const ctx=cv.getContext('2d');const cs=getComputedStyle(document.documentElement);const accent=cs.getPropertyValue('--accent').trim()||'#50dca0';const bg=cs.getPropertyValue('--bg').trim()||'#0a0e1a';ctx.fillStyle=bg;ctx.fillRect(0,0,200,200);snakeBody.forEach((s,i)=>{ctx.fillStyle=i===0?accent:accent+'99';ctx.fillRect(s.x*SCELL,s.y*SCELL,SCELL-1,SCELL-1);});ctx.fillStyle='#ff6b6b';ctx.fillRect(snakeFood.x*SCELL,snakeFood.y*SCELL,SCELL-1,SCELL-1);}
     // ACTIVE WIDGET — gates keyboard input so widgets don't conflict
     const activeWidget=ref(null);
@@ -2082,7 +2082,7 @@ createApp({
     function wordleGetLetter(row,col){if(row<wordleGuesses.value.length)return wordleGuesses.value[row][col]||'';if(row===wordleGuesses.value.length)return wordleCurrent.value[col]||'';return '';}
     function wordleGetClass(row,col){if(row>=wordleResults.value.length){if(row===wordleGuesses.value.length&&wordleCurrent.value[col])return 'filled';return '';}return wordleResults.value[row][col];}
     function wordleKeyClass(k){if(k==='ENTER'||k==='⌫')return '';const states=wordleResults.value.flat();const keys=wordleGuesses.value.join('').split('');let best='';keys.forEach((c,i)=>{if(c===k){const s=states[i];if(s==='correct')best='correct';else if(s==='present'&&best!=='correct')best='present';else if(!best)best='absent';}});return best;}
-    function wordleKey(k){if(wordleDone.value)return;if(k==='⌫'||k==='Backspace'){wordleCurrent.value=wordleCurrent.value.slice(0,-1);return;}if(k==='ENTER'||k==='Enter'){if(wordleCurrent.value.length<5){wordleMsg.value='Not enough letters';setTimeout(()=>wordleMsg.value='',1500);return;}const guess=wordleCurrent.value;const result=Array(5).fill('absent');const target=wordleWord.value.split('');const gArr=guess.split('');const used=Array(5).fill(false);gArr.forEach((c,i)=>{if(c===target[i]){result[i]='correct';used[i]=true;}});gArr.forEach((c,i)=>{if(result[i]==='correct')return;const ti=target.findIndex((t,j)=>!used[j]&&t===c);if(ti>=0){result[i]='present';used[ti]=true;}});wordleGuesses.value=[...wordleGuesses.value,guess];wordleResults.value=[...wordleResults.value,result];wordleCurrent.value='';localStorage.setItem('aurora_wordle_guesses',JSON.stringify(wordleGuesses.value));localStorage.setItem('aurora_wordle_results',JSON.stringify(wordleResults.value));if(result.every(r=>r==='correct')){wordleMsg.value='🎉 Brilliant!';wordleDone.value=true;}else if(wordleGuesses.value.length===6){wordleMsg.value=wordleWord.value;wordleDone.value=true;}return;}if(wordleCurrent.value.length<5&&/^[A-Za-z]$/.test(k))wordleCurrent.value+=k.toUpperCase();}
+    function wordleKey(k){if(wordleDone.value)return;if(k==='⌫'||k==='Backspace'){wordleCurrent.value=wordleCurrent.value.slice(0,-1);return;}if(k==='ENTER'||k==='Enter'){if(wordleCurrent.value.length<5){wordleMsg.value='Not enough letters';setTimeout(()=>wordleMsg.value='',1500);return;}const guess=wordleCurrent.value;const result=Array(5).fill('absent');const target=wordleWord.value.split('');const gArr=guess.split('');const used=Array(5).fill(false);gArr.forEach((c,i)=>{if(c===target[i]){result[i]='correct';used[i]=true;}});gArr.forEach((c,i)=>{if(result[i]==='correct')return;const ti=target.findIndex((t,j)=>!used[j]&&t===c);if(ti>=0){result[i]='present';used[ti]=true;}});wordleGuesses.value=[...wordleGuesses.value,guess];wordleResults.value=[...wordleResults.value,result];wordleCurrent.value='';localStorage.setItem('aurora_wordle_guesses',JSON.stringify(wordleGuesses.value));localStorage.setItem('aurora_wordle_results',JSON.stringify(wordleResults.value));if(result.every(r=>r==='correct')){wordleMsg.value='🎉 Brilliant!';wordleDone.value=true;tamaReact('win');}else if(wordleGuesses.value.length===6){wordleMsg.value=wordleWord.value;wordleDone.value=true;tamaReact('rage');}else{const correctCount=result.filter(r=>r==='correct').length;if(correctCount>=3)tamaReact('cheer');else if(correctCount===0&&result.every(r=>r==='absent'))tamaReact('sad');}return;}if(wordleCurrent.value.length<5&&/^[A-Za-z]$/.test(k))wordleCurrent.value+=k.toUpperCase();}
     // Check if it's a new day — reset
     (()=>{const savedDay=localStorage.getItem('aurora_wordle_day');const today=String(Math.floor(Date.now()/86400000));if(savedDay!==today){localStorage.setItem('aurora_wordle_day',today);localStorage.removeItem('aurora_wordle_guesses');localStorage.removeItem('aurora_wordle_results');wordleGuesses.value=[];wordleResults.value=[];}})();
     // Keyboard input for wordle when focused
@@ -2764,7 +2764,26 @@ createApp({
     watch(useFahrenheit,v=>localStorage.setItem('aurora_fahrenheit',v));
 
     // ── TAMAGOTCHI ──────────────────────────────────────────────────────────────
-    let tamaFrame=0, tamaBlinkTimer=0, tamaHappy=0, tamaSad=0, tamaWin=0, tamaRage=0, tamaAnimId=null;
+    let tamaFrame=0, tamaBlinkTimer=0, tamaHappy=0, tamaSad=0, tamaWin=0, tamaRage=0, tamaSleepy=0, tamaAnimId=null;
+    let tamaLastInteraction=Date.now();
+    const tamaIdleMs=2*60*1000; // 2 minutes before getting sleepy
+
+    // Track any user interaction to reset idle
+    document.addEventListener('pointerdown',()=>{
+      tamaLastInteraction=Date.now();
+      if(tamaSleepy>0){tamaSleepy=0;}
+    },{passive:true});
+
+    function tamaTimeOfDay(){
+      const h=new Date().getHours();
+      // Night owl: 23-5 = very sleepy
+      // Morning: 6-8 = happy/energetic
+      // Afternoon: 9-17 = normal
+      // Evening: 18-22 = calm
+      if(h>=23||h<5)return'night';
+      if(h>=6&&h<=8)return'morning';
+      return'day';
+    }
 
     const TAMA_CHARS=[
       {id:'blob',  label:'Blob',   emoji:'🫧'},
@@ -2828,19 +2847,26 @@ createApp({
       const sad=tamaSad>0;
       const win=tamaWin>0;
       const rage=tamaRage>0;
-      const dancing=tamaDancing.value&&!happy&&!sad&&!win&&!rage;
+      const sleepy=tamaSleepy>0||(!happy&&!sad&&!win&&!rage&&Date.now()-tamaLastInteraction>tamaIdleMs);
+      const tod=tamaTimeOfDay();
+      const morning=tod==='morning'&&!happy&&!sad&&!win&&!rage&&!sleepy;
+      const dancing=tamaDancing.value&&!happy&&!sad&&!win&&!rage&&!sleepy;
       const bpmFreq=dancing?(tamaBPM.value/60)*(Math.PI*2/60):0;
       const rageShake=rage?Math.round((Math.random()-0.5)*10):0;
+      // Sleepy: slow nod forward and back
+      const sleepNod=sleepy?Math.round(Math.sin(tamaFrame*0.03)*4):0;
       const bounce=sad
         ? Math.round(Math.sin(tamaFrame*0.05)*1)
         : win
           ? Math.round(Math.sin(tamaFrame*0.35)*5)
           : rage ? rageShake
+          : sleepy ? sleepNod
+          : morning ? Math.round(Math.sin(tamaFrame*0.2)*3) // energetic morning bounce
           : dancing
             ? Math.round(Math.sin(tamaFrame*bpmFreq)*4)
             : Math.round(Math.sin(tamaFrame*0.12)*2)+(happy?Math.round(Math.sin(tamaFrame*0.3)*3):0);
-      const sway=rage?Math.round((Math.random()-0.5)*10):dancing?Math.round(Math.sin(tamaFrame*bpmFreq)*3):0;
-      const foot=Math.sin(tamaFrame*(tamaWalking.value||win?0.4:rage?1.2:dancing?bpmFreq*2:0.15))>0;
+      const sway=rage?Math.round((Math.random()-0.5)*10):sleepy?Math.round(Math.sin(tamaFrame*0.03)*3):dancing?Math.round(Math.sin(tamaFrame*bpmFreq)*3):0;
+      const foot=Math.sin(tamaFrame*(tamaWalking.value||win?0.4:rage?1.2:morning?0.35:dancing?bpmFreq*2:0.15))>0;
       const char=tamaChar.value;
 
       if(char==='blob'){
@@ -2952,6 +2978,30 @@ createApp({
         tamaPx(ctx,col,foot?[[9,1],[9,4],[10,0],[10,5]]:[[9,0],[9,5],[10,1],[10,4]],ox,oy,S);
       }
 
+      // Sleepy ZZZs
+      if(sleepy){
+        ctx.font='bold 9px monospace';
+        ctx.fillStyle='#aaccff';
+        const zAlpha=0.4+Math.sin(tamaFrame*0.05)*0.3;
+        ctx.globalAlpha=zAlpha;
+        ctx.fillText('z',52,12+bounce);
+        ctx.globalAlpha=zAlpha*0.7;
+        ctx.fillText('z',56,7+bounce);
+        ctx.globalAlpha=zAlpha*0.4;
+        ctx.fillText('Z',60,2+bounce);
+        ctx.globalAlpha=1;
+      }
+
+      // Morning sparkle — little sun rays
+      if(morning){
+        ctx.fillStyle='#ffd700';
+        [[8,8],[56,8],[8,56],[56,56]].forEach(([sx,sy],i)=>{
+          ctx.globalAlpha=0.5*(Math.sin(tamaFrame*0.15+i)*0.5+0.5);
+          ctx.fillRect(sx,sy+bounce,S,S);
+        });
+        ctx.globalAlpha=1;
+      }
+
       // Music notes when dancing
       if(dancing){
         ctx.font='10px serif';
@@ -3025,11 +3075,16 @@ createApp({
       if(tamaSad>0)tamaSad--;
       if(tamaWin>0)tamaWin--;
       if(tamaRage>0)tamaRage--;
-      if(tamaFrame%200===0&&tamaBlinkTimer===0)tamaBlinkTimer=8;
+      // Sleepy: blink every ~2s, stay closed longer
+      const blinkInterval=sleepy?80:200;
+      const blinkDur=sleepy?20:8;
+      if(tamaFrame%blinkInterval===0&&tamaBlinkTimer===0)tamaBlinkTimer=blinkDur;
     }
 
     function tamaInit(){
       if(tamaAnimId)cancelAnimationFrame(tamaAnimId);
+      // Morning greeting
+      if(tamaTimeOfDay()==='morning')setTimeout(()=>tamaReact('cheer'),1000);
       function loop(){tamaDraw();tamaAnimId=requestAnimationFrame(loop);}
       loop();
     }
