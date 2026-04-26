@@ -811,7 +811,11 @@ body.theme-synthwave #bg-overlay {
 }
 
 /* TAMAGOTCHI STICKY */
-.tama-sticky{position:fixed;bottom:24px;left:16px;z-index:150;display:flex;flex-direction:column;align-items:center;gap:2px;background:rgba(10,14,26,.75);border:1px solid var(--card-border);border-radius:14px;padding:6px 6px 4px;backdrop-filter:blur(16px);transition:transform .1s;}
+.tama-chat-bubble{position:absolute;bottom:calc(100% + 8px);left:0;background:var(--card);border:1px solid var(--accent);border-radius:12px 12px 12px 2px;padding:8px 10px;font-size:11px;font-family:var(--font-mono);color:var(--text);white-space:nowrap;max-width:220px;overflow:hidden;text-overflow:ellipsis;cursor:pointer;backdrop-filter:blur(16px);box-shadow:0 4px 16px rgba(0,0,0,.4);}
+.tama-chat-bubble::after{content:'';position:absolute;bottom:-6px;left:12px;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid var(--accent);}
+.tama-chat-count{display:inline-block;background:var(--accent);color:#000;border-radius:10px;padding:0 5px;font-size:10px;font-weight:700;margin-right:4px;}
+.bubble-enter-active{transition:all .2s ease;}.bubble-leave-active{transition:all .3s ease;}
+.bubble-enter-from{opacity:0;transform:translateY(8px);}.bubble-leave-to{opacity:0;transform:translateY(-4px);}bottom:24px;left:16px;z-index:150;display:flex;flex-direction:column;align-items:center;gap:2px;background:rgba(10,14,26,.75);border:1px solid var(--card-border);border-radius:14px;padding:6px 6px 4px;backdrop-filter:blur(16px);transition:transform .1s;}
 .tama-sticky.walking{animation:tamaWalk .15s steps(1) infinite;}
 .tama-sticky.dancing{animation:tamaDance .4s ease-in-out infinite;border-color:var(--accent);}
 .tama-sticky.raging{animation:tamaRage .05s linear infinite;border-color:#ff2200 !important;box-shadow:0 0 12px rgba(255,34,0,.6);}
@@ -1488,6 +1492,13 @@ body.theme-synthwave #bg-overlay {
   <div class="tama-sticky" :class="{walking:tamaWalking,dancing:tamaDancing&&!tamaWalking,raging:tamaRaging}"
     :style="tamaDancing&&!tamaWalking?{animationDuration:(60/tamaBPM*1000)+'ms'}:{}"
   >
+    <!-- Chat bubble -->
+    <transition name="bubble">
+      <div v-if="chatBubble&&chatUser" class="tama-chat-bubble" @click="chatUnread=0;chatBubble=''">
+        <span v-if="chatUnread>1" class="tama-chat-count">{{ chatUnread }}</span>
+        {{ chatBubble }}
+      </div>
+    </transition>
     <canvas id="tama-canvas" width="64" height="64" style="image-rendering:pixelated;cursor:pointer;display:block;" @click="tamaInteract"></canvas>
     <div class="tama-sticky-bar">
       <button @click="tamaPickerOpen=!tamaPickerOpen" class="icon-btn" title="Change character" style="font-size:14px;width:28px;height:28px;">{{ TAMA_CHARS.find(c=>c.id===tamaChar)?.emoji }}</button>
@@ -2221,6 +2232,8 @@ createApp({
     const chatUsername=ref(''); const chatPassword=ref('');
     const chatAuthLoading=ref(false); const chatError=ref('');
     const chatMessages=ref([]); const chatOnline=ref([]);
+    const chatUnread=ref(0); const chatBubble=ref('');
+    let chatBubbleTimer=null;
     const chatTypingUsers=ref([]); const chatInput=ref('');
     const chatMessagesEl=ref(null); const chatInputEl=ref(null);
     let chatWs=null; let chatTypingTimer=null;
@@ -2296,6 +2309,17 @@ createApp({
           scrollChatToBottom();
         } else if(data.type==='message'){
           chatMessages.value.push({...data,type:'message'});
+          // Notify if message is from someone else and chat not visible
+          if(data.username!==chatUser.value){
+            const chatEl=document.getElementById('chat-messages');
+            const inView=chatEl&&chatEl.getBoundingClientRect().top<window.innerHeight;
+            if(!inView){
+              chatUnread.value++;
+              tamaReact("cheer");chatBubble.value=data.username+': '+data.text.slice(0,40)+(data.text.length>40?'…':'');
+              clearTimeout(chatBubbleTimer);
+              chatBubbleTimer=setTimeout(()=>chatBubble.value='',5000);
+            }
+          }
           scrollChatToBottom();
         } else if(data.type==='system'){
           chatMessages.value.push({text:data.text,ts:data.ts,type:'system'});
@@ -2345,6 +2369,7 @@ createApp({
       nextTick(()=>{
         const el=document.getElementById('chat-messages');
         if(el)el.scrollTop=el.scrollHeight;
+        chatUnread.value=0;chatBubble.value='';
       });
     }
 
@@ -3011,7 +3036,7 @@ createApp({
 
     watch(currentTheme,()=>{}); // color auto-picked in tamaDraw
 
-    return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,chatRenderText,formatChatTime,activeWidget,setActiveWidget,clearActiveWidget,solTableau,solFoundations,solStock,solWaste,solMoves,solWon,solInit,solNewGame,solSelected,solDraw,solClickWaste,solClickFoundation,solClickCol,solClickCard,solAutoFoundation,solDrawPixi,solInitPixi,snakeScore,snakeBest,snakeRunning,snakeDead,snakePaused,snakeStart,snakePause,wordleGuesses,wordleResults,wordleCurrent,wordleMsg,wordleKeyRows,wordleGetLetter,wordleGetClass,wordleKeyClass,wordleKey,wordleHandleMobileKey,wordleHandleMobileInput,worldClockCities,worldClockPick,worldClockOptions,worldClockTime,worldClockDate,worldClockAdd,worldClockRemove,steamGenres,steamGenre,steamLoading,steamError,steamGame,steamScoreClass,steamPickGenre,steamNext,film,filmGenre,filmGenres,filmNext,passValue,passLength,passOpts,passCopied,passGenerate,passCopy,paletteBase,paletteType,paletteTypes,paletteColors,paletteCopied,paletteGenerate,paletteCopy,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings,tamaReact,tamaInteract,TAMA_CHARS,tamaChar,tamaPickerOpen,tamaSetChar,tamaWalking,tamaDancing,tamaBPM,tamaRaging};
+    return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,chatRenderText,formatChatTime,activeWidget,setActiveWidget,clearActiveWidget,solTableau,solFoundations,solStock,solWaste,solMoves,solWon,solInit,solNewGame,solSelected,solDraw,solClickWaste,solClickFoundation,solClickCol,solClickCard,solAutoFoundation,solDrawPixi,solInitPixi,snakeScore,snakeBest,snakeRunning,snakeDead,snakePaused,snakeStart,snakePause,wordleGuesses,wordleResults,wordleCurrent,wordleMsg,wordleKeyRows,wordleGetLetter,wordleGetClass,wordleKeyClass,wordleKey,wordleHandleMobileKey,wordleHandleMobileInput,worldClockCities,worldClockPick,worldClockOptions,worldClockTime,worldClockDate,worldClockAdd,worldClockRemove,steamGenres,steamGenre,steamLoading,steamError,steamGame,steamScoreClass,steamPickGenre,steamNext,film,filmGenre,filmGenres,filmNext,passValue,passLength,passOpts,passCopied,passGenerate,passCopy,paletteBase,paletteType,paletteTypes,paletteColors,paletteCopied,paletteGenerate,paletteCopy,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings,tamaReact,tamaInteract,TAMA_CHARS,tamaChar,tamaPickerOpen,tamaSetChar,tamaWalking,tamaDancing,tamaBPM,tamaRaging,chatUnread,chatBubble};
   }
 }).mount('#app');
 </script>
