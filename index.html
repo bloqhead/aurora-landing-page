@@ -1252,7 +1252,10 @@ body.theme-synthwave #bg-overlay {
               @click="steamPickGenre(g.tag)">{{ g.label }}</button>
           </div>
           <div v-if="steamLoading" class="widget-loading">Finding games…</div>
-          <div v-else-if="steamError" class="widget-error">{{ steamError }}</div>
+          <div v-else-if="steamError" class="widget-error" style="display:flex;flex-direction:column;gap:8px;">
+            <span>{{ steamError }}</span>
+            <button class="steam-next-btn" @click="steamPickGenre(steamGenre)" style="align-self:flex-start;">Try again ↺</button>
+          </div>
           <div v-else-if="steamGame" class="steam-card">
             <div class="steam-header">
               <img v-if="steamGame.appid" :src="`https://cdn.akamai.steamstatic.com/steam/apps/${steamGame.appid}/header.jpg`"
@@ -2096,7 +2099,10 @@ createApp({
       {label:'Roguelike 🎲',tag:'Roguelike'},
       {label:'Open World 🗺️',tag:'Open World'},
     ];
-    const steamGenre=ref('Cozy');
+    // Load last genre or pick random
+    const savedSteamGenre=localStorage.getItem('aurora_steam_genre');
+    const randomSteamGenre=steamGenres[Math.floor(Math.random()*steamGenres.length)].tag;
+    const steamGenre=ref(savedSteamGenre||randomSteamGenre);
     const steamLoading=ref(false);
     const steamError=ref('');
     const steamGame=ref(null);
@@ -2116,19 +2122,21 @@ createApp({
 
     async function steamPickGenre(tag){
       steamGenre.value=tag;
+      localStorage.setItem('aurora_steam_genre',tag);
       steamGame.value=null;
       steamPool=[];
       steamLoading.value=true;
       steamError.value='';
       try{
         const res=await fetch(`${STEAM_PROXY}?tag=${encodeURIComponent(tag)}`);
-        if(!res.ok)throw new Error('Failed to fetch');
+        if(!res.ok)throw new Error(await res.text());
         const data=await res.json();
+        if(data.error)throw new Error(data.error);
         if(!data.length)throw new Error('No games found');
         steamPool=data;
         steamGame.value=steamPool[Math.floor(Math.random()*steamPool.length)];
       }catch(e){
-        steamError.value='Could not load games. Try again later.';
+        steamError.value=e.message||'Could not load games.';
       }finally{
         steamLoading.value=false;
       }
