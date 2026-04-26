@@ -1479,7 +1479,9 @@ body.theme-synthwave #bg-overlay {
     </div>
   </transition>
   <!-- Sticky tamagotchi -->
-  <div class="tama-sticky" :class="{walking:tamaWalking,dancing:tamaDancing&&!tamaWalking}">
+  <div class="tama-sticky" :class="{walking:tamaWalking,dancing:tamaDancing&&!tamaWalking}"
+    :style="tamaDancing&&!tamaWalking?{animationDuration:(60/tamaBPM*1000)+'ms'}:{}"
+  >
     <canvas id="tama-canvas" width="64" height="64" style="image-rendering:pixelated;cursor:pointer;display:block;" @click="tamaInteract"></canvas>
     <div class="tama-sticky-bar">
       <button @click="tamaPickerOpen=!tamaPickerOpen" class="icon-btn" title="Change character" style="font-size:14px;width:28px;height:28px;">{{ TAMA_CHARS.find(c=>c.id===tamaChar)?.emoji }}</button>
@@ -2740,6 +2742,14 @@ createApp({
     const tamaDancing=ref(false);
     let tamaScrollTimer=null;
 
+    const SOMA_BPM={
+      dronezone:  40,
+      spacestation:55,
+      lush:       70,
+      groovesalad:88,
+      thetrip:    110,
+    };
+    const tamaBPM=computed(()=>tamaDancing.value?(SOMA_BPM[somaStation.value]||80):80);
     watch(somaPlaying,v=>tamaDancing.value=v);
 
     function tamaOnScroll(){
@@ -2779,16 +2789,17 @@ createApp({
       const sad=tamaSad>0;
       const win=tamaWin>0;
       const dancing=tamaDancing.value&&!happy&&!sad&&!win;
-      // Dancing = rhythmic bounce with sway, win = big jump, sad = droop
+      // Convert BPM to radians per frame (at 60fps)
+      const bpmFreq=dancing?(tamaBPM.value/60)*(Math.PI*2/60):0;
       const bounce=sad
         ? Math.round(Math.sin(tamaFrame*0.05)*1)
         : win
           ? Math.round(Math.sin(tamaFrame*0.35)*5)
           : dancing
-            ? Math.round(Math.sin(tamaFrame*0.25)*4)
+            ? Math.round(Math.sin(tamaFrame*bpmFreq)*4)
             : Math.round(Math.sin(tamaFrame*0.12)*2)+(happy?Math.round(Math.sin(tamaFrame*0.3)*3):0);
-      const sway=dancing?Math.round(Math.sin(tamaFrame*0.25)*3):0;
-      const foot=Math.sin(tamaFrame*(tamaWalking.value||win||dancing?0.4:0.15))>0;
+      const sway=dancing?Math.round(Math.sin(tamaFrame*bpmFreq)*3):0;
+      const foot=Math.sin(tamaFrame*(tamaWalking.value||win?0.4:dancing?bpmFreq*2:0.15))>0;
       const char=tamaChar.value;
 
       if(char==='blob'){
@@ -2953,7 +2964,7 @@ createApp({
 
     watch(currentTheme,()=>{}); // color auto-picked in tamaDraw
 
-    return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,chatRenderText,formatChatTime,activeWidget,setActiveWidget,clearActiveWidget,solTableau,solFoundations,solStock,solWaste,solMoves,solWon,solInit,solNewGame,solSelected,solDraw,solClickWaste,solClickFoundation,solClickCol,solClickCard,solAutoFoundation,solDrawPixi,solInitPixi,snakeScore,snakeBest,snakeRunning,snakeDead,snakePaused,snakeStart,snakePause,wordleGuesses,wordleResults,wordleCurrent,wordleMsg,wordleKeyRows,wordleGetLetter,wordleGetClass,wordleKeyClass,wordleKey,wordleHandleMobileKey,wordleHandleMobileInput,worldClockCities,worldClockPick,worldClockOptions,worldClockTime,worldClockDate,worldClockAdd,worldClockRemove,steamGenres,steamGenre,steamLoading,steamError,steamGame,steamScoreClass,steamPickGenre,steamNext,film,filmGenre,filmGenres,filmNext,passValue,passLength,passOpts,passCopied,passGenerate,passCopy,paletteBase,paletteType,paletteTypes,paletteColors,paletteCopied,paletteGenerate,paletteCopy,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings,tamaReact,tamaInteract,TAMA_CHARS,tamaChar,tamaPickerOpen,tamaSetChar,tamaWalking,tamaDancing};
+    return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,chatRenderText,formatChatTime,activeWidget,setActiveWidget,clearActiveWidget,solTableau,solFoundations,solStock,solWaste,solMoves,solWon,solInit,solNewGame,solSelected,solDraw,solClickWaste,solClickFoundation,solClickCol,solClickCard,solAutoFoundation,solDrawPixi,solInitPixi,snakeScore,snakeBest,snakeRunning,snakeDead,snakePaused,snakeStart,snakePause,wordleGuesses,wordleResults,wordleCurrent,wordleMsg,wordleKeyRows,wordleGetLetter,wordleGetClass,wordleKeyClass,wordleKey,wordleHandleMobileKey,wordleHandleMobileInput,worldClockCities,worldClockPick,worldClockOptions,worldClockTime,worldClockDate,worldClockAdd,worldClockRemove,steamGenres,steamGenre,steamLoading,steamError,steamGame,steamScoreClass,steamPickGenre,steamNext,film,filmGenre,filmGenres,filmNext,passValue,passLength,passOpts,passCopied,passGenerate,passCopy,paletteBase,paletteType,paletteTypes,paletteColors,paletteCopied,paletteGenerate,paletteCopy,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings,tamaReact,tamaInteract,TAMA_CHARS,tamaChar,tamaPickerOpen,tamaSetChar,tamaWalking,tamaDancing,tamaBPM};
   }
 }).mount('#app');
 </script>
