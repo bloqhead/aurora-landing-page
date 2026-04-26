@@ -1260,6 +1260,7 @@ body.theme-synthwave #bg-overlay {
           <div v-if="steamLoading" class="widget-loading">Finding games…</div>
           <div v-else-if="steamError" class="widget-error" style="display:flex;flex-direction:column;gap:8px;">
             <span>{{ steamError }}</span>
+            <span style="font-size:var(--t-xs);color:var(--text-muted);">⚠️ SteamSpy is an unofficial API and can be unreliable — try again or switch genres.</span>
             <button class="steam-next-btn" @click="steamPickGenre(steamGenre)" style="align-self:flex-start;">Try again ↺</button>
           </div>
           <div v-else-if="steamGame" class="steam-card">
@@ -2139,6 +2140,7 @@ createApp({
     function steamNext(){
       if(!steamPool.length)return;
       steamGame.value=steamPool[Math.floor(Math.random()*steamPool.length)];
+      tamaReact('cheer');
     }
 
     async function steamPickGenre(tag){
@@ -2156,8 +2158,10 @@ createApp({
         if(!data.length)throw new Error('No games found');
         steamPool=data;
         steamGame.value=steamPool[Math.floor(Math.random()*steamPool.length)];
+        tamaReact('cheer');
       }catch(e){
         steamError.value=e.message||'Could not load games.';
+        tamaReact('sad');
       }finally{
         steamLoading.value=false;
       }
