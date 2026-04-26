@@ -1355,12 +1355,12 @@ createApp({
           ? Math.round(Math.sin(tamaFrame*0.35)*5)
           : rage ? rageShake
           : sleepy ? sleepNod
-          : morning ? Math.round(Math.sin(tamaFrame*0.2)*3) // energetic morning bounce
+          : morning ? Math.round(Math.sin(tamaFrame*0.06)*2) // gentle morning bounce
           : dancing
             ? Math.round(Math.sin(tamaFrame*bpmFreq)*4)
             : Math.round(Math.sin(tamaFrame*0.06)*2)+(happy?Math.round(Math.sin(tamaFrame*0.15)*3):0);
       const sway=rage?Math.round((Math.random()-0.5)*10):sleepy?Math.round(Math.sin(tamaFrame*0.03)*3):dancing?Math.round(Math.sin(tamaFrame*bpmFreq)*3):0;
-      const foot=Math.sin(tamaFrame*(tamaWalking.value||win?0.4:rage?1.2:morning?0.35:dancing?bpmFreq*2:0.07))>0;
+      const foot=Math.sin(tamaFrame*(tamaWalking.value||win?0.4:rage?1.2:morning?0.07:dancing?bpmFreq*2:0.07))>0;
       const char=tamaChar.value;
 
       if(char==='blob'){
@@ -1490,7 +1490,7 @@ createApp({
       if(morning){
         ctx.fillStyle='#ffd700';
         [[8,8],[56,8],[8,56],[56,56]].forEach(([sx,sy],i)=>{
-          ctx.globalAlpha=0.5*(Math.sin(tamaFrame*0.15+i)*0.5+0.5);
+          ctx.globalAlpha=0.5*(Math.sin(tamaFrame*0.05+i)*0.5+0.5);
           ctx.fillRect(sx,sy+bounce,S,S);
         });
         ctx.globalAlpha=1;
