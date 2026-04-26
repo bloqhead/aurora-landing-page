@@ -27,6 +27,7 @@ jobs:
         run: |
           sed -i "s/__BUILD_VERSION__/${{ github.sha }}/g" index.html
           sed -i "s/__BUILD_VERSION__/${{ github.sha }}/g" sw.js
+          grep -c "${{ github.sha }}" index.html && echo "Substitution verified in index.html"
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
