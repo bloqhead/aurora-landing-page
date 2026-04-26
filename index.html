@@ -2659,6 +2659,9 @@ createApp({
       setTimeout(()=>{
         diceResult.value=result;diceRolling.value=false;
         diceHistory.value=[{die:activeDie.value,val:result},...diceHistory.value].slice(0,10);
+        if(result===sides)tamaReact('win');
+        else if(result>=Math.ceil(sides*0.7))tamaReact('cheer');
+        else if(result<=Math.ceil(sides*0.15))tamaReact('sad');
       },820);
     }
 
