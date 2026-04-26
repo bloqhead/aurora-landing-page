@@ -559,12 +559,13 @@ createApp({
 
     // ── WORDLE ─────────────────────────────────────────────────────────────────
     const WORDLE_WORDS=['CRANE','SLATE','AUDIO','STARE','AROSE','SNARE','IRATE','ARISE','LEAST','LEARN','RENAL','TRAIL','TRIAL','GRAIL','TRAIN','BRAIN','GRAIN','DRAIN','PLAIN','PLANK','BLANK','BLACK','SLACK','CRACK','TRACK','TRICK','BRICK','PRICE','GRACE','TRACE','PLACE','PLANE','FLAME','FRAME','BRAVE','GRAVE','CRAVE','GROVE','DROVE','PROVE','ABOVE','ABUSE','ACUTE','ADOPT','ADULT','AFTER','AGAIN','AGENT','AGREE','AHEAD','ALARM','ALBUM','ALERT','ALIEN','ALIGN','ALIVE','ALLEY','ALLOW','ALONE','ALPHA','ALTER','ANGEL','ANGER','ANGLE','ANGRY','ANIME','ANKLE','ANNEX','ANTIC','ANVIL','AORTA','APART','APPLE','APPLY','APRON','ARBOR','ARDOR','ARENA','ARGON','ARMOR','AROMA','ARRAY','ASIDE','ASKED','ATLAS','ATOLL','ATONE','ATTIC','AVIAN','AVOID','AWAKE','AWARD','AWARE','AWFUL','BASIC','BASIN','BATCH','BEACH','BEARD','BEAST','BEGAN','BEGIN','BELLE','BENCH','BERRY','BIRTH','BISON','BLADE','BLAND','BLARE','BLAZE','BLEAK','BLEAT','BLEED','BLEND','BLESS','BLIND','BLINK','BLISS','BLOAT','BLOCK','BLOOD','BLOOM','BLOWN','BLUNT','BLUSH','BOARD','BOAST','BONUS','BOOST','BOOTH','BORAX','BOUND','BOXER','BRAID','BRAND','BRASH','BRASS','BREAD','BREAK','BREED','BREVE','BRIDE','BRIEF','BRINE','BRISK','BROIL','BROOD','BROOK','BROTH','BROWN','BRUNT','BRUSH','BRUTE','BUILD','BUILT','BULGE','BURST','BUYER'];
-    function wordleGetDailyWord(){const d=new Date();const idx=Math.floor(d.getTime()/86400000)%WORDLE_WORDS.length;return WORDLE_WORDS[idx];}
+    function wordleGetDailyWord(){const d=new Date();const localDay=`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;const idx=parseInt(localDay)%WORDLE_WORDS.length;return WORDLE_WORDS[idx];}
     const wordleWord=ref(wordleGetDailyWord());
     // Daily reset — must run before restoring state
     (()=>{
+      const d=new Date();
+      const today=`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
       const savedDay=localStorage.getItem('aurora_wordle_day');
-      const today=String(Math.floor(Date.now()/86400000));
       if(savedDay!==today){
         localStorage.setItem('aurora_wordle_day',today);
         localStorage.removeItem('aurora_wordle_guesses');
