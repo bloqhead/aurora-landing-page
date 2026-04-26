@@ -393,6 +393,23 @@ a{color:inherit;} button{font-family:inherit;}
 .currency-result{font-family:var(--font-display);font-size:var(--t-2xl);font-weight:200;color:var(--accent);text-align:center;margin:var(--s-xs) 0;}
 .currency-rate{font-family:var(--font-mono);font-size:var(--t-xs);color:var(--text-muted);text-align:center;}
 
+/* STEAM */
+.steam-genres{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:var(--s-sm);}
+.steam-genre-btn{padding:4px 10px;border-radius:20px;border:1px solid var(--card-border);background:transparent;color:var(--text-muted);font-family:var(--font-mono);font-size:var(--t-xs);cursor:pointer;transition:all .2s;}
+.steam-genre-btn.active,.steam-genre-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(80,220,180,.08);}
+.steam-card{display:flex;flex-direction:column;gap:var(--s-sm);}
+.steam-header{display:flex;flex-direction:column;gap:var(--s-sm);}
+.steam-img{width:100%;border-radius:8px;object-fit:cover;max-height:140px;}
+.steam-info{display:flex;flex-direction:column;gap:6px;}
+.steam-name{font-family:var(--font-display);font-size:var(--t-md);font-weight:400;line-height:1.3;}
+.steam-meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-family:var(--font-mono);font-size:var(--t-xs);color:var(--text-muted);}
+.steam-score{font-weight:700;}
+.steam-score.great{color:#50dca0;}.steam-score.good{color:#8bc34a;}.steam-score.mixed{color:#ff9800;}.steam-score.bad{color:#ff6b6b;}
+.steam-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:2px;}
+.steam-link{font-family:var(--font-mono);font-size:var(--t-xs);color:var(--accent);text-decoration:none;}
+.steam-link:hover{text-decoration:underline;}
+.steam-next-btn{padding:4px 10px;border-radius:20px;border:1px solid var(--card-border);background:transparent;color:var(--text-muted);font-family:var(--font-mono);font-size:var(--t-xs);cursor:pointer;transition:all .2s;}
+.steam-next-btn:hover{border-color:var(--accent);color:var(--accent);}
 /* FILM REC */
 .film-card{display:flex;flex-direction:column;gap:var(--s-xs);}
 .film-title{font-family:var(--font-display);font-size:var(--t-lg);font-weight:300;line-height:1.3;}
@@ -1226,6 +1243,37 @@ body.theme-synthwave #bg-overlay {
         </div>
 
 
+        <!-- STEAM REC -->
+        <div v-else-if="wid.id==='steam'" class="card">
+          <div class="card-label">Steam 🎮</div>
+          <div class="steam-genres">
+            <button v-for="g in steamGenres" :key="g.tag"
+              class="steam-genre-btn" :class="{active:steamGenre===g.tag}"
+              @click="steamPickGenre(g.tag)">{{ g.label }}</button>
+          </div>
+          <div v-if="steamLoading" class="widget-loading">Finding games…</div>
+          <div v-else-if="steamError" class="widget-error">{{ steamError }}</div>
+          <div v-else-if="steamGame" class="steam-card">
+            <div class="steam-header">
+              <img v-if="steamGame.appid" :src="`https://cdn.akamai.steamstatic.com/steam/apps/${steamGame.appid}/header.jpg`"
+                class="steam-img" :alt="steamGame.name" loading="lazy" @error="$event.target.style.display='none'" />
+              <div class="steam-info">
+                <div class="steam-name">{{ steamGame.name }}</div>
+                <div class="steam-meta">
+                  <span class="steam-score" :class="steamScoreClass(steamGame.score)">
+                    {{ steamGame.score }}% positive
+                  </span>
+                  <span class="steam-owners" v-if="steamGame.owners">· {{ steamGame.owners }} owners</span>
+                </div>
+                <div class="steam-actions">
+                  <a :href="`https://store.steampowered.com/app/${steamGame.appid}`" target="_blank" rel="noopener noreferrer" class="steam-link">View on Steam →</a>
+                  <button class="steam-next-btn" @click="steamNext">Shuffle 🔀</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- FILM REC -->
         <div v-else-if="wid.id==='filmrec'" class="card" style="position:relative">
           <div class="card-label">Film Rec 🎬</div>
@@ -1454,8 +1502,8 @@ const SOMA_STATIONS=[{id:'dronezone',name:'Drone Zone',desc:'Atmospheric ambient
 const ALBUM_FALLBACKS={'ambient':{title:'Discreet Music',artist:'Brian Eno',year:'1975',url:null,why:'The blueprint for ambient music.'},'jazz':{title:'Kind of Blue',artist:'Miles Davis',year:'1959',url:null,why:'Still the best-selling jazz album ever made.'},'folk':{title:'For Emma, Forever Ago',artist:'Bon Iver',year:'2007',url:null,why:'Recorded alone in a Wisconsin cabin.'},'post-rock':{title:'Lift Your Skinny Fists…',artist:'Godspeed You! Black Emperor',year:'2000',url:null,why:'Sprawling, cinematic, unforgettable.'},'classical':{title:'Goldberg Variations',artist:'Glenn Gould',year:'1981',url:null,why:"Gould's quiet, introspective goodbye."},'shoegaze':{title:'Loveless',artist:'My Bloody Valentine',year:'1991',url:null,why:'Changed guitar music forever.'},'blues':{title:'Electric Mud',artist:'Muddy Waters',year:'1968',url:null,why:'Muddy goes psychedelic, brilliantly.'},'soul':{title:"There's a Riot Goin' On",artist:'Sly & the Family Stone',year:'1971',url:null,why:'The sound of utopia collapsing.'},'experimental':{title:'Trout Mask Replica',artist:'Captain Beefheart',year:'1969',url:null,why:'Difficult and rewarding in equal measure.'},'drone':{title:'The Tired Sounds of Stars of the Lid',artist:'Stars of the Lid',year:'2001',url:null,why:'Time feels elastic here.'},'krautrock':{title:'Autobahn',artist:'Kraftwerk',year:'1974',url:null,why:'Invented electronic pop.'},'neo-soul':{title:'Voodoo',artist:"D'Angelo",year:'2000',url:null,why:'Worth every year of the wait.'}};
 const QUOTES=[{text:"The world is quiet here.",author:"Lemony Snicket"},{text:"Not all those who wander are lost.",author:"J.R.R. Tolkien"},{text:"I took a deep breath and listened to the old brag of my heart: I am, I am, I am.",author:"Sylvia Plath"},{text:"The sky is everywhere, it begins at your feet.",author:"Jandy Nelson"},{text:"To live is so startling it leaves little time for anything else.",author:"Emily Dickinson"},{text:"The cure for anything is salt water: sweat, tears, or the sea.",author:"Isak Dinesen"},{text:"In the middle of winter, I at last discovered that there was in me an invincible summer.",author:"Albert Camus"},{text:"Stars are not small or gentle. They are writhing and dying and burning.",author:"Tamsyn Muir"},{text:"The most beautiful thing we can experience is the mysterious.",author:"Albert Einstein"},{text:"Everything you can imagine is real.",author:"Pablo Picasso"},{text:"There is no exquisite beauty without some strangeness in the proportion.",author:"Edgar Allan Poe"},{text:"I am not afraid of storms, for I am learning how to sail my ship.",author:"Louisa May Alcott"},{text:"Wherever you go becomes a part of you somehow.",author:"Anita Desai"},{text:"We shall not cease from exploration.",author:"T.S. Eliot"},{text:"One must always maintain one's connection to the past and yet ceaselessly pull away from it.",author:"Gaston Bachelard"},{text:"I would rather die of passion than of boredom.",author:"Vincent van Gogh"},{text:"The job of the artist is always to deepen the mystery.",author:"Francis Bacon"},{text:"You can't use up creativity. The more you use, the more you have.",author:"Maya Angelou"},{text:"To photograph is to appropriate the thing photographed.",author:"Susan Sontag"},{text:"The aim of art is to represent not the outward appearance of things, but their inward significance.",author:"Aristotle"}];
 
-const DEFAULT_WIDGET_ORDER=['kp','weather','sun','moon','aqi','tides','iss','planets','quote','animal','apod','soma','album','notes','todo','bookmarks','dice','chat','solitaire','snake','wordle','worldclock','filmrec','passgen','palette','bg'];
-const WIDGET_META={kp:{label:'KP Index',icon:'🌌',desc:'Aurora activity — updated every 5 min',cols:4,weight:3},weather:{label:'Weather',icon:'🌤️',desc:'Local conditions from Open-Meteo',cols:4,weight:3},sun:{label:'Sunrise & Sunset',icon:'🌅',desc:'Daily sun arc with daylight duration',cols:4,weight:3},moon:{label:'Moon Phase',icon:'🌕',desc:'Calculated phase, illumination & next full moon',cols:3,weight:2},aqi:{label:'Air Quality',icon:'🌬️',desc:'AQI, PM2.5, PM10 and ozone',cols:3,weight:2},tides:{label:'Tides',icon:'🌊',desc:'Tide highs and lows from Open-Meteo Marine',cols:5,weight:3},iss:{label:'ISS Pass Times',icon:'📡',desc:'When the space station flies over you',cols:4,weight:3},planets:{label:'Planets Tonight',icon:'🔭',desc:'Calculated visibility for naked-eye planets',cols:4,weight:4},quote:{label:'Inspiration',icon:'💬',desc:'Curated quotes from writers, artists, thinkers',cols:6,weight:2},animal:{label:'Animal of the Day',icon:'🦎',desc:'Random wildlife observation + Wikipedia fact',cols:5,weight:5},apod:{label:'NASA APOD',icon:'🌌',desc:'Astronomy Picture of the Day',cols:6,weight:5},soma:{label:'SomaFM Radio',icon:'📻',desc:'Curated ambient & electronic streams',cols:5,weight:3},album:{label:'Album Rec',icon:'🎵',desc:'Last.fm genre recommendations',cols:8,weight:4},notes:{label:'Notes',icon:'📋',desc:'Quick scratchpad, auto-saved locally',cols:5,weight:3},todo:{label:'To-Do',icon:'✅',desc:'Simple checklist, persisted locally',cols:4,weight:3},bookmarks:{label:'Bookmarks',icon:'🔗',desc:'Your personal speed-dial links',cols:12,weight:2},dice:{label:'Dice Roller',icon:'🎲',desc:'D&D dice — d4 through d20',cols:4,weight:3},chat:{label:'Chat',icon:'💬',desc:'Live chat with presence & typing indicators',cols:6,weight:5},solitaire:{label:'Solitaire',icon:'🃏',desc:'Klondike solitaire — drag & drop',cols:8,weight:8},snake:{label:'Snake',icon:'🐍',desc:'Classic snake game',cols:4,weight:4},wordle:{label:'Wordle',icon:'✏️',desc:'Daily 5-letter word game',cols:4,weight:6},worldclock:{label:'World Clock',icon:'🌍',desc:'Multiple city times',cols:4,weight:3},filmrec:{label:'Film Rec',icon:'🎬',desc:'Random film recommendation by genre',cols:4,weight:3},passgen:{label:'Password',icon:'🔑',desc:'Secure password generator',cols:4,weight:3},palette:{label:'Color Palette',icon:'🎨',desc:'Generate harmonious color palettes',cols:5,weight:3},bg:{label:'Background',icon:'🖼️',desc:'Unsplash photo topic picker',cols:7,weight:2}};
+const DEFAULT_WIDGET_ORDER=['kp','weather','sun','moon','aqi','tides','iss','planets','quote','animal','apod','soma','album','notes','todo','bookmarks','dice','chat','solitaire','snake','wordle','worldclock','steam','filmrec','passgen','palette','bg'];
+const WIDGET_META={kp:{label:'KP Index',icon:'🌌',desc:'Aurora activity — updated every 5 min',cols:4,weight:3},weather:{label:'Weather',icon:'🌤️',desc:'Local conditions from Open-Meteo',cols:4,weight:3},sun:{label:'Sunrise & Sunset',icon:'🌅',desc:'Daily sun arc with daylight duration',cols:4,weight:3},moon:{label:'Moon Phase',icon:'🌕',desc:'Calculated phase, illumination & next full moon',cols:3,weight:2},aqi:{label:'Air Quality',icon:'🌬️',desc:'AQI, PM2.5, PM10 and ozone',cols:3,weight:2},tides:{label:'Tides',icon:'🌊',desc:'Tide highs and lows from Open-Meteo Marine',cols:5,weight:3},iss:{label:'ISS Pass Times',icon:'📡',desc:'When the space station flies over you',cols:4,weight:3},planets:{label:'Planets Tonight',icon:'🔭',desc:'Calculated visibility for naked-eye planets',cols:4,weight:4},quote:{label:'Inspiration',icon:'💬',desc:'Curated quotes from writers, artists, thinkers',cols:6,weight:2},animal:{label:'Animal of the Day',icon:'🦎',desc:'Random wildlife observation + Wikipedia fact',cols:5,weight:5},apod:{label:'NASA APOD',icon:'🌌',desc:'Astronomy Picture of the Day',cols:6,weight:5},soma:{label:'SomaFM Radio',icon:'📻',desc:'Curated ambient & electronic streams',cols:5,weight:3},album:{label:'Album Rec',icon:'🎵',desc:'Last.fm genre recommendations',cols:8,weight:4},notes:{label:'Notes',icon:'📋',desc:'Quick scratchpad, auto-saved locally',cols:5,weight:3},todo:{label:'To-Do',icon:'✅',desc:'Simple checklist, persisted locally',cols:4,weight:3},bookmarks:{label:'Bookmarks',icon:'🔗',desc:'Your personal speed-dial links',cols:12,weight:2},dice:{label:'Dice Roller',icon:'🎲',desc:'D&D dice — d4 through d20',cols:4,weight:3},chat:{label:'Chat',icon:'💬',desc:'Live chat with presence & typing indicators',cols:6,weight:5},solitaire:{label:'Solitaire',icon:'🃏',desc:'Klondike solitaire — drag & drop',cols:8,weight:8},snake:{label:'Snake',icon:'🐍',desc:'Classic snake game',cols:4,weight:4},wordle:{label:'Wordle',icon:'✏️',desc:'Daily 5-letter word game',cols:4,weight:6},worldclock:{label:'World Clock',icon:'🌍',desc:'Multiple city times',cols:4,weight:3},steam:{label:'Steam Rec',icon:'🎮',desc:'Game recommendations by genre from Steam',cols:6,weight:4},filmrec:{label:'Film Rec',icon:'🎬',desc:'Random film recommendation by genre',cols:4,weight:3},passgen:{label:'Password',icon:'🔑',desc:'Secure password generator',cols:4,weight:3},palette:{label:'Color Palette',icon:'🎨',desc:'Generate harmonious color palettes',cols:5,weight:3},bg:{label:'Background',icon:'🖼️',desc:'Unsplash photo topic picker',cols:7,weight:2}};
 
 async function geocode(city){
   // Strip country suffix if user typed "City, Country" format — API works best with city name only
@@ -1493,7 +1541,7 @@ createApp({
     // widget registry — order + visibility persisted
     const savedOrder=JSON.parse(localStorage.getItem('aurora_widget_order')||'null');
     const savedVis=JSON.parse(localStorage.getItem('aurora_widget_vis')||'null');
-    const defaultVis={kp:true,weather:true,sun:true,moon:true,aqi:true,tides:false,iss:false,planets:false,quote:true,animal:true,apod:false,soma:false,album:true,notes:false,todo:false,bookmarks:false,dice:true,chat:true,solitaire:false,snake:false,wordle:false,worldclock:false,filmrec:false,passgen:false,palette:false,bg:true};
+    const defaultVis={kp:true,weather:true,sun:true,moon:true,aqi:true,tides:false,iss:false,planets:false,quote:true,animal:true,apod:false,soma:false,album:true,notes:false,todo:false,bookmarks:false,dice:true,chat:true,solitaire:false,snake:false,wordle:false,worldclock:false,steam:false,filmrec:false,passgen:false,palette:false,bg:true};
     // Merge any new widgets not in the saved order so they always show up in picker
     const mergedOrder=savedOrder
       ? [...savedOrder, ...DEFAULT_WIDGET_ORDER.filter(id=>!savedOrder.includes(id))]
@@ -2033,6 +2081,65 @@ createApp({
     let currencyTimer=null;
     async function currencyConvert(){clearTimeout(currencyTimer);currencyTimer=setTimeout(async()=>{if(!currencyAmount.value||currencyFrom.value===currencyTo.value){currencyResult.value=currencyAmount.value;currencyRate.value=null;return;}currencyLoading.value=true;try{const r=await fetch(`https://www.frankfurter.app/latest?amount=${currencyAmount.value}&from=${currencyFrom.value}&to=${currencyTo.value}`);const d=await r.json();const res=d.rates[currencyTo.value];currencyResult.value=res.toFixed(2)+' '+currencyTo.value;const rr=await fetch(`https://www.frankfurter.app/latest?amount=1&from=${currencyFrom.value}&to=${currencyTo.value}`);const rd=await rr.json();currencyRate.value=rd.rates[currencyTo.value].toFixed(4);}catch{currencyResult.value='—';}currencyLoading.value=false;},400);}
     currencyConvert();
+
+    // ── STEAM REC ───────────────────────────────────────────────────────────────
+    const STEAM_PROXY='https://aurora-chat.daryn-codes.workers.dev/steam';
+    const steamGenres=[
+      {label:'Cozy 🌿',tag:'Cozy'},
+      {label:'RPG ⚔️',tag:'RPG'},
+      {label:'Indie 🎨',tag:'Indie'},
+      {label:'Puzzle 🧩',tag:'Puzzle'},
+      {label:'Horror 👻',tag:'Horror'},
+      {label:'Strategy 🧠',tag:'Strategy'},
+      {label:'Simulation 🏗️',tag:'Simulation'},
+      {label:'Platformer 🏃',tag:'Platformer'},
+      {label:'Roguelike 🎲',tag:'Roguelike'},
+      {label:'Open World 🗺️',tag:'Open World'},
+    ];
+    const steamGenre=ref('Cozy');
+    const steamLoading=ref(false);
+    const steamError=ref('');
+    const steamGame=ref(null);
+    let steamPool=[];
+
+    function steamScoreClass(score){
+      if(score>=90)return'great';
+      if(score>=70)return'good';
+      if(score>=50)return'mixed';
+      return'bad';
+    }
+
+    function steamNext(){
+      if(!steamPool.length)return;
+      steamGame.value=steamPool[Math.floor(Math.random()*steamPool.length)];
+    }
+
+    async function steamPickGenre(tag){
+      steamGenre.value=tag;
+      steamGame.value=null;
+      steamPool=[];
+      steamLoading.value=true;
+      steamError.value='';
+      try{
+        const res=await fetch(`${STEAM_PROXY}?tag=${encodeURIComponent(tag)}`);
+        if(!res.ok)throw new Error('Failed to fetch');
+        const data=await res.json();
+        if(!data.length)throw new Error('No games found');
+        steamPool=data;
+        steamGame.value=steamPool[Math.floor(Math.random()*steamPool.length)];
+      }catch(e){
+        steamError.value='Could not load games. Try again later.';
+      }finally{
+        steamLoading.value=false;
+      }
+    }
+
+    // Load when widget becomes visible
+    watch(visibleWidgets,()=>{
+      if(visibleWidgets.value.find(w=>w.id==='steam')&&!steamGame.value&&!steamLoading.value){
+        steamPickGenre(steamGenre.value);
+      }
+    });
 
     // ── FILM REC ───────────────────────────────────────────────────────────────
     const FILMS={all:[{title:'Stalker',year:1979,director:'Andrei Tarkovsky',desc:'A guide leads two men through a forbidden wasteland called the Zone.'},{title:'Mulholland Drive',year:2001,director:'David Lynch',desc:'A woman with amnesia and an aspiring actress unravel a dark mystery in Hollywood.'},{title:'2001: A Space Odyssey',year:1968,director:'Stanley Kubrick',desc:'Humanity finds a mysterious artifact buried on the moon.'},{title:'Blade Runner',year:1982,director:'Ridley Scott',desc:'A detective hunts rogue androids in a dystopian future Los Angeles.'},{title:"Pan's Labyrinth",year:2006,director:'Guillermo del Toro',desc:'A girl escapes into a dark fantasy world during post-war Spain.'},{title:'Annihilation',year:2018,director:'Alex Garland',desc:'A biologist joins a mission into a mysterious quarantine zone.'},{title:'Her',year:2013,director:'Spike Jonze',desc:'A man falls in love with an AI operating system.'},{title:'Parasite',year:2019,director:'Bong Joon-ho',desc:'A poor family infiltrates the life of a wealthy household.'}],scifi:[{title:'Arrival',year:2016,director:'Denis Villeneuve',desc:'A linguist works to communicate with alien visitors.'},{title:'Interstellar',year:2014,director:'Christopher Nolan',desc:'Astronauts travel through a wormhole in search of humanity\'s new home.'},{title:'Ex Machina',year:2014,director:'Alex Garland',desc:'A programmer is invited to administer a Turing test to an AI.'},{title:'Moon',year:2009,director:'Duncan Jones',desc:'An astronaut nearing the end of his stint discovers something startling.'}],horror:[{title:'Hereditary',year:2018,director:'Ari Aster',desc:'A family unravels after the death of their secretive matriarch.'},{title:'The Witch',year:2015,director:'Robert Eggers',desc:'A Puritan family is torn apart by the forces of witchcraft.'},{title:'Midsommar',year:2019,director:'Ari Aster',desc:'A couple travels to a Swedish midsummer festival with disturbing consequences.'},{title:'Suspiria',year:1977,director:'Dario Argento',desc:'An American dancer joins a prestigious dance academy with dark secrets.'}],drama:[{title:'There Will Be Blood',year:2007,director:'P.T. Anderson',desc:'An oil prospector builds an empire while losing his soul.'},{title:'The Tree of Life',year:2011,director:'Terrence Malick',desc:'The origins of life and existence told through one family\'s story.'},{title:'Oldboy',year:2003,director:'Park Chan-wook',desc:'A man is imprisoned for fifteen years without explanation, then freed.'},{title:'Portrait of a Lady on Fire',year:2019,director:'Céline Sciamma',desc:'A painter and her subject fall in love in 18th century France.'}],comedy:[{title:'The Grand Budapest Hotel',year:2014,director:'Wes Anderson',desc:'A concierge and his lobby boy go on a wild adventure.'},{title:'Being John Malkovich',year:1999,director:'Spike Jonze',desc:'A puppeteer discovers a portal into the mind of John Malkovich.'},{title:'The Big Lebowski',year:1998,director:'Coen Brothers',desc:'A case of mistaken identity leads The Dude into a bewildering conspiracy.'},{title:'Withnail and I',year:1987,director:'Bruce Robinson',desc:'Two unemployed actors take a disastrous holiday in the English countryside.'}]};
@@ -2585,7 +2692,7 @@ createApp({
 
     watch(useFahrenheit,v=>localStorage.setItem('aurora_fahrenheit',v));
 
-    return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,chatRenderText,formatChatTime,activeWidget,setActiveWidget,clearActiveWidget,solTableau,solFoundations,solStock,solWaste,solMoves,solWon,solInit,solNewGame,solSelected,solDraw,solClickWaste,solClickFoundation,solClickCol,solClickCard,solAutoFoundation,solDrawPixi,solInitPixi,snakeScore,snakeBest,snakeRunning,snakeDead,snakePaused,snakeStart,snakePause,wordleGuesses,wordleResults,wordleCurrent,wordleMsg,wordleKeyRows,wordleGetLetter,wordleGetClass,wordleKeyClass,wordleKey,wordleHandleMobileKey,wordleHandleMobileInput,worldClockCities,worldClockPick,worldClockOptions,worldClockTime,worldClockDate,worldClockAdd,worldClockRemove,film,filmGenre,filmGenres,filmNext,passValue,passLength,passOpts,passCopied,passGenerate,passCopy,paletteBase,paletteType,paletteTypes,paletteColors,paletteCopied,paletteGenerate,paletteCopy,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings};
+    return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,chatRenderText,formatChatTime,activeWidget,setActiveWidget,clearActiveWidget,solTableau,solFoundations,solStock,solWaste,solMoves,solWon,solInit,solNewGame,solSelected,solDraw,solClickWaste,solClickFoundation,solClickCol,solClickCard,solAutoFoundation,solDrawPixi,solInitPixi,snakeScore,snakeBest,snakeRunning,snakeDead,snakePaused,snakeStart,snakePause,wordleGuesses,wordleResults,wordleCurrent,wordleMsg,wordleKeyRows,wordleGetLetter,wordleGetClass,wordleKeyClass,wordleKey,wordleHandleMobileKey,wordleHandleMobileInput,worldClockCities,worldClockPick,worldClockOptions,worldClockTime,worldClockDate,worldClockAdd,worldClockRemove,steamGenres,steamGenre,steamLoading,steamError,steamGame,steamScoreClass,steamPickGenre,steamNext,film,filmGenre,filmGenres,filmNext,passValue,passLength,passOpts,passCopied,passGenerate,passCopy,paletteBase,paletteType,paletteTypes,paletteColors,paletteCopied,paletteGenerate,paletteCopy,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings};
   }
 }).mount('#app');
 </script>
