@@ -815,7 +815,8 @@ body.theme-synthwave #bg-overlay {
 .tama-chat-bubble::after{content:'';position:absolute;bottom:-6px;left:12px;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid var(--accent);}
 .tama-chat-count{display:inline-block;background:var(--accent);color:#000;border-radius:10px;padding:0 5px;font-size:10px;font-weight:700;margin-right:4px;}
 .bubble-enter-active{transition:all .2s ease;}.bubble-leave-active{transition:all .3s ease;}
-.bubble-enter-from{opacity:0;transform:translateY(8px);}.bubble-leave-to{opacity:0;transform:translateY(-4px);}bottom:24px;left:16px;z-index:150;display:flex;flex-direction:column;align-items:center;gap:2px;background:rgba(10,14,26,.75);border:1px solid var(--card-border);border-radius:14px;padding:6px 6px 4px;backdrop-filter:blur(16px);transition:transform .1s;}
+.bubble-enter-from{opacity:0;transform:translateY(8px);}.bubble-leave-to{opacity:0;transform:translateY(-4px);}
+.tama-sticky{position:fixed;bottom:24px;left:16px;z-index:150;display:flex;flex-direction:column;align-items:center;gap:2px;background:rgba(10,14,26,.75);border:1px solid var(--card-border);border-radius:14px;padding:6px 6px 4px;backdrop-filter:blur(16px);transition:border-color .3s,box-shadow .3s;}
 .tama-sticky.walking{animation:tamaWalk .15s steps(1) infinite;}
 .tama-sticky.dancing{animation:tamaDance .4s ease-in-out infinite;border-color:var(--accent);}
 .tama-sticky.raging{animation:tamaRage .05s linear infinite;border-color:#ff2200 !important;box-shadow:0 0 12px rgba(255,34,0,.6);}
@@ -823,7 +824,12 @@ body.theme-synthwave #bg-overlay {
 @keyframes tamaDance{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-3px) rotate(2deg)}}
 @keyframes tamaRage{0%{transform:translate(-3px,-2px) rotate(-3deg)}25%{transform:translate(3px,2px) rotate(3deg)}50%{transform:translate(-2px,3px) rotate(-2deg)}75%{transform:translate(2px,-3px) rotate(2deg)}100%{transform:translate(-3px,-2px) rotate(-3deg)}}
 .tama-sticky-bar{display:flex;align-items:center;gap:4px;position:relative;}
-.tama-picker-popup{position:absolute;bottom:100%;left:0;margin-bottom:6px;background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:6px;display:flex;gap:4px;z-index:201;backdrop-filter:blur(20px);white-space:nowrap;}
+.tama-pick-btn{width:44px;height:22px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:11px;cursor:pointer;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;transition:background .2s,border-color .2s;touch-action:manipulation;}
+.tama-pick-btn:hover,.tama-pick-btn:active{background:rgba(255,255,255,.12);border-color:var(--accent);}
+.tama-pick-opt{width:44px;height:44px;background:none;border:1px solid transparent;border-radius:8px;cursor:pointer;font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;touch-action:manipulation;transition:background .15s,border-color .15s;}
+.tama-pick-opt.active{background:rgba(80,220,180,.15);border-color:var(--accent);}
+.tama-pick-opt:hover{background:rgba(255,255,255,.08);}
+.tama-picker-popup{position:absolute;bottom:calc(100% + 6px);left:0;background:var(--card);border:1px solid var(--card-border);border-radius:12px;padding:6px;display:flex;gap:2px;z-index:201;backdrop-filter:blur(20px);white-space:nowrap;}
 </style>
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(r=>r.forEach(s=>s.unregister()));caches.keys().then(k=>k.forEach(c=>caches.delete(c)));}</script>
 </head>
@@ -1501,12 +1507,17 @@ body.theme-synthwave #bg-overlay {
     </transition>
     <canvas id="tama-canvas" width="64" height="64" style="image-rendering:pixelated;cursor:pointer;display:block;" @click="tamaInteract"></canvas>
     <div class="tama-sticky-bar">
-      <button @click="tamaPickerOpen=!tamaPickerOpen" class="icon-btn" title="Change character" style="font-size:14px;width:28px;height:28px;">{{ TAMA_CHARS.find(c=>c.id===tamaChar)?.emoji }}</button>
+      <button @click.stop="tamaPickerOpen=!tamaPickerOpen"
+        class="tama-pick-btn"
+        :title="'Character: '+TAMA_CHARS.find(c=>c.id===tamaChar)?.label">
+        {{ TAMA_CHARS.find(c=>c.id===tamaChar)?.emoji }}
+      </button>
       <div v-if="tamaPickerOpen" class="tama-picker-popup">
         <button v-for="c in TAMA_CHARS" :key="c.id"
           @click="tamaSetChar(c.id)"
           :title="c.label"
-          :style="{background:tamaChar===c.id?'rgba(80,220,180,.15)':'none',border:tamaChar===c.id?'1px solid var(--accent)':'1px solid transparent',borderRadius:'6px',padding:'4px',cursor:'pointer',fontSize:'18px',lineHeight:'1'}">
+          class="tama-pick-opt"
+          :class="{active:tamaChar===c.id}">
           {{ c.emoji }}
         </button>
       </div>
