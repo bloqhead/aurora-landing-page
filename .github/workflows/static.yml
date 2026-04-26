@@ -25,17 +25,16 @@ jobs:
         uses: actions/checkout@v4
       - name: Inject build version
         run: |
-          mkdir -p dist
-          cp -r . dist/ 2>/dev/null || true
-          sed -i "s/__BUILD_VERSION__/${{ github.sha }}/g" dist/index.html
-          sed -i "s/__BUILD_VERSION__/${{ github.sha }}/g" dist/sw.js
-          grep "${{ github.sha }}" dist/index.html && echo "✓ Substitution verified"
+          sed -i "s|__BUILD_VERSION__|${{ github.sha }}|g" index.html
+          sed -i "s|__BUILD_VERSION__|${{ github.sha }}|g" sw.js
+          grep -q "${{ github.sha }}" index.html || (echo "ERROR: substitution failed" && exit 1)
+          echo "✓ Build version injected: ${{ github.sha }}"
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './dist'
+          path: '.'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
