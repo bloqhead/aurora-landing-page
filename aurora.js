@@ -1542,6 +1542,9 @@ createApp({
       {id:'robot', label:'Robot',  emoji:'🤖'},
       {id:'frog',  label:'Frog',   emoji:'🐸'},
       {id:'alien', label:'Alien',  emoji:'👾'},
+      {id:'dragon',label:'Dragon', emoji:'🐉'},
+      {id:'skull', label:'Skull',  emoji:'💀'},
+      {id:'plant', label:'Plant',  emoji:'🌱'},
     ];
     const tamaChar=ref(localStorage.getItem('aurora_tama')||'blob');
     const tamaEnabled=ref(localStorage.getItem('aurora_tama_enabled')!=='false');
@@ -1760,6 +1763,98 @@ createApp({
         // Body + spindly legs
         tamaPx(ctx,col,[[7,2],[7,3],[8,2],[8,3]],ox,oy,S);
         tamaPx(ctx,col,foot?[[9,1],[9,4],[10,0],[10,5]]:[[9,0],[9,5],[10,1],[10,4]],ox,oy,S);
+
+      } else if(char==='dragon'){
+        // Dragon — wide head, spines on top, wings hint, stubby legs
+        // Centered: ~7 cols wide, 9 rows tall → ox=27, oy=21
+        const ox=27+sway,oy=18+bounce;
+        // Spines on top
+        tamaPx(ctx,col,[[0,1],[0,3],[0,5]],ox,oy,S);
+        // Head (wide)
+        tamaPx(ctx,col,[[1,0],[1,1],[1,2],[1,3],[1,4],[1,5],[1,6],[2,0],[2,6],[3,0],[3,1],[3,2],[3,3],[3,4],[3,5],[3,6]],ox,oy,S);
+        // Nostrils
+        tamaPx(ctx,'#ff6666',[[2,1],[2,5]],ox,oy,S);
+        // Eyes
+        if(happy||win){tamaPx(ctx,'#0a0e1a',[[2,2],[3,1],[3,3],[2,4],[3,3],[3,5]],ox,oy,S);}
+        else if(blink){tamaPx(ctx,'#0a0e1a',[[2,2],[2,3],[2,4],[2,5]],ox,oy,S);}
+        else{tamaPx(ctx,'#ffff00',[[2,2],[2,3],[2,4],[2,5]],ox,oy,S);tamaPx(ctx,'#0a0e1a',[[2,2],[2,4]],ox,oy,S);}
+        // Mouth / teeth
+        if(happy||win){tamaPx(ctx,'#0a0e1a',[[3,1],[3,2],[3,3],[3,4],[3,5]],ox,oy,S);tamaPx(ctx,'#fff',[[3,1],[3,3],[3,5]],ox,oy,S);}
+        else{tamaPx(ctx,'#0a0e1a',[[3,2],[3,3],[3,4]],ox,oy,S);}
+        // Neck + body
+        tamaPx(ctx,col,[[4,2],[4,3],[4,4],[5,1],[5,2],[5,3],[5,4],[5,5],[6,1],[6,2],[6,3],[6,4],[6,5]],ox,oy,S);
+        // Wing hints
+        tamaPx(ctx,col,[[5,0],[6,0],[5,6],[6,6]],ox,oy,S);
+        // Belly lighter
+        tamaPx(ctx,'#e8f4f0',[[5,2],[5,3],[5,4],[6,2],[6,3],[6,4]],ox,oy,S);
+        // Legs
+        tamaPx(ctx,col,foot?[[7,2],[8,1],[7,4],[8,5]]:[[7,1],[8,2],[7,5],[8,4]],ox,oy,S);
+        // Tail
+        tamaPx(ctx,col,[[6,6],[7,6],[8,6],[8,7]],ox,oy,S);
+
+      } else if(char==='skull'){
+        // Skull — round cranium, hollow eyes, big grin
+        // Centered: 6 cols, 8 rows → ox=30, oy=24
+        const ox=30+sway,oy=24+bounce;
+        // Cranium
+        tamaPx(ctx,col,[[0,1],[0,2],[0,3],[0,4],[1,0],[1,1],[1,2],[1,3],[1,4],[1,5],[2,0],[2,5],[3,0],[3,5],[4,0],[4,5]],ox,oy,S);
+        // Eye sockets — dark holes
+        if(happy||win){
+          // X eyes when happy (cute skull)
+          tamaPx(ctx,'#0a0e1a',[[2,1],[3,2],[2,2],[3,1],[2,4],[3,5],[2,5],[3,4]],ox,oy,S);
+        } else if(blink){
+          tamaPx(ctx,'#0a0e1a',[[2,1],[2,2],[2,4],[2,5],[3,1],[3,2],[3,4],[3,5]],ox,oy,S);
+        } else {
+          tamaPx(ctx,'#0a0e1a',[[2,1],[2,2],[3,1],[3,2],[2,4],[2,5],[3,4],[3,5]],ox,oy,S);
+        }
+        // Nose cavity
+        tamaPx(ctx,'#0a0e1a',[[3,3]],ox,oy,S);
+        // Jaw
+        tamaPx(ctx,col,[[4,1],[4,2],[4,3],[4,4],[5,0],[5,2],[5,4],[5,5]],ox,oy,S);
+        // Teeth
+        tamaPx(ctx,'#0a0e1a',[[5,1],[5,3]],ox,oy,S);
+        // Chin
+        tamaPx(ctx,col,[[6,1],[6,2],[6,3],[6,4]],ox,oy,S);
+        // Tiny legs
+        tamaPx(ctx,col,foot?[[7,1],[7,4]]:[[7,2],[7,3]],ox,oy,S);
+        // Sad mood — droopy jaw
+        if(sad){tamaPx(ctx,'#0a0e1a',[[6,2],[6,3]],ox,oy,S);}
+
+      } else if(char==='plant'){
+        // Little potted plant — pot at bottom, stem, leaves
+        // Centered: 6 cols, 9 rows → ox=30, oy=21
+        const ox=30+sway,oy=18+bounce;
+        // Leaves — sway with bounce for life
+        const leafSway=Math.round(Math.sin(tamaFrame*0.08)*1);
+        // Left leaf
+        tamaPx(ctx,col,[[-1+leafSway,0],[0+leafSway,0],[0+leafSway,1]],ox,oy,S);
+        // Right leaf
+        tamaPx(ctx,col,[[-1-leafSway,5],[0-leafSway,5],[0-leafSway,4]],ox,oy,S);
+        // Top flower/bud
+        if(happy||win){
+          tamaPx(ctx,'#ffdd00',[[0,2],[0,3],[-1,2],[-1,3]],ox,oy,S);
+          tamaPx(ctx,'#ff88aa',[[-2,1],[-2,2],[-2,3],[-2,4]],ox,oy,S);
+        } else {
+          tamaPx(ctx,'#88cc44',[[0,2],[0,3],[-1,3]],ox,oy,S);
+        }
+        // Stem
+        tamaPx(ctx,'#88cc44',[[1,2],[1,3],[2,2],[2,3],[3,2],[3,3]],ox,oy,S);
+        // Face on stem (cute)
+        if(sad){
+          tamaPx(ctx,'#0a0e1a',[[1,2],[1,3],[2,2],[2,3]],ox,oy,S);
+          tamaPx(ctx,'#88cc44',[[1,2],[1,3]],ox,oy,S);
+          tamaPx(ctx,'#0a0e1a',[[1,2],[1,3]],ox,oy,S);
+        }
+        // Eyes on leaves area
+        if(happy||win){tamaPx(ctx,'#0a0e1a',[[1,1],[2,0],[2,2],[1,4],[2,3],[2,5]],ox,oy,S);}
+        else if(blink){tamaPx(ctx,'#0a0e1a',[[1,1],[1,2],[1,4],[1,5]],ox,oy,S);}
+        else{tamaPx(ctx,'#0a0e1a',[[1,1],[1,4]],ox,oy,S);}
+        // Pot
+        tamaPx(ctx,'#cc6644',[[4,1],[4,2],[4,3],[4,4],[5,0],[5,1],[5,2],[5,3],[5,4],[5,5],[6,1],[6,2],[6,3],[6,4]],ox,oy,S);
+        // Soil
+        tamaPx(ctx,'#664433',[[4,1],[4,2],[4,3],[4,4]],ox,oy,S);
+        // Pot feet
+        tamaPx(ctx,'#cc6644',foot?[[7,1],[7,4]]:[[7,0],[7,5]],ox,oy,S);
       }
 
       // Sleepy ZZZs
