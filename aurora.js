@@ -1385,24 +1385,22 @@ createApp({
         textMargin:1.2,
       },
       d10:{
-        tab:0,af:Math.PI*6/5,chamfer:0.945,scaleFactor:0.9,
+        tab:0,af:Math.PI*6/5,chamfer:0.965,scaleFactor:0.9,
         vertices:(()=>{
-          const v=[[0,0,1],[0,0,-1]]; // 0=top pole, 1=bottom pole
-          for(let i=0;i<10;i++){
-            const b=i*Math.PI*2/10;
-            v.push([-Math.cos(b),-Math.sin(b),0.105*(i%2?1:-1)]);
+          const v=[];
+          for(let i=0,b=0;i<10;i++,b+=Math.PI*2/10){
+            v.push([Math.cos(b),Math.sin(b),0.105*(i%2?1:-1)]);
           }
-          return v; // equatorial verts at indices 2-11
+          v.push([0,0,-1],[0,0,1]);
+          return v;
         })(),
         faces:[
-          // top faces: pole 0 + sequential equatorial pairs
-          [0,11,2,0],[0,2,3,1],[0,3,4,2],[0,4,5,3],[0,5,6,4],
-          [0,6,7,5],[0,7,8,6],[0,8,9,7],[0,9,10,8],[0,10,11,9],
-          // bottom faces: pole 1 + sequential equatorial pairs (reversed)
-          [1,3,2,-1],[1,4,3,-1],[1,5,4,-1],[1,6,5,-1],[1,7,6,-1],
-          [1,8,7,-1],[1,9,8,-1],[1,10,9,-1],[1,11,10,-1],[1,2,11,-1],
+          [5,7,11,0],[4,2,10,1],[1,3,11,2],[0,8,10,3],[7,9,11,4],
+          [8,6,10,5],[9,1,11,6],[2,0,10,7],[3,5,11,8],[6,4,10,9],
+          [1,0,2,-1],[1,2,3,-1],[3,2,4,-1],[3,4,5,-1],[5,4,6,-1],
+          [5,6,7,-1],[7,6,8,-1],[7,8,9,-1],[9,8,0,-1],[9,0,1,-1],
         ],
-        faceTexts:[null,'1','2','3','4','5','6','7','8','9','10'],
+        faceTexts:[null,' ','1','2','3','4','5','6','7','8','9','10'],
         textMargin:1.0,
       },
       d12:{
