@@ -143,7 +143,7 @@ createApp({
         :`linear-gradient(135deg,${t.bg}dd 0%,${t.bg2||t.bg}bb 100%)`;
       document.body.style.background=t.bg;
       // Remove all pixel theme classes
-      document.body.classList.remove('theme-pixel','theme-crt','theme-synthwave','theme-advanced');
+      document.body.classList.remove('theme-pixel','theme-crt','theme-synthwave','theme-advanced','theme-win95');
       if(t.pixelClass) t.pixelClass.split(' ').forEach(c=>document.body.classList.add(c));
       // Force a style recalc to unstick any lingering overrides
       document.body.style.fontFamily='';

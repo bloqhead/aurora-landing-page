@@ -426,14 +426,14 @@ a{color:inherit;} button{font-family:inherit;}
 body.theme-pixel .wordle-cell,
 body.theme-pixel .w2048-cell,
 body.theme-pixel .s-card { border-radius: 0 !important; }
-body.theme-pixel .game-btn { font-family: 'Pixelify Sans', monospace !important; }
+body.theme-pixel .game-btn { font-family: 'VCR OSD Mono', monospace !important; }
 
 
    Applied via .theme-pixel-* on body. Override the smooth modern defaults
    with sharp edges, pixel fonts, scanlines, and neon glow.                   */
 
 body.theme-pixel {
-  font-family: 'Pixelify Sans', monospace !important;
+  font-family: 'VCR OSD Mono', monospace !important;
   font-size: 13px !important;
   image-rendering: pixelated;
 }
@@ -505,7 +505,7 @@ body.theme-pixel .picker-title,
 body.theme-pixel .chat-auth-title,
 body.theme-pixel .planet-name,
 body.theme-pixel .planet-icon {
-  font-family: 'Pixelify Sans', monospace !important;
+  font-family: 'VCR OSD Mono', monospace !important;
   font-style: normal !important;
 }
 /* Big display numbers — heavy weight */
@@ -529,7 +529,7 @@ body.theme-pixel .album-title { font-weight: 500 !important; font-size: clamp(0.
 body.theme-pixel .quote-text { font-weight: 400 !important; font-size: clamp(0.8rem, 1vw, 1rem) !important; font-style: normal !important; line-height: 1.8 !important; }
 body.theme-pixel .planet-name { font-weight: 500 !important; font-size: clamp(0.85rem, 1vw, 1rem) !important; }
 /* Labels — light, spaced */
-body.theme-pixel .card-label { font-family: 'Pixelify Sans', monospace !important; font-weight: 400 !important; font-size: clamp(0.65rem, 0.8vw, 0.75rem) !important; letter-spacing: 0.18em !important; }
+body.theme-pixel .card-label { font-family: 'VCR OSD Mono', monospace !important; font-weight: 400 !important; font-size: clamp(0.65rem, 0.8vw, 0.75rem) !important; letter-spacing: 0.18em !important; }
 
 /* Neon glow on accent elements — CRT and Synthwave only, not 2Advanced */
 body.theme-crt .kp-big,
@@ -559,7 +559,7 @@ body.theme-pixel .card-btn,
 body.theme-pixel .genre-btn,
 body.theme-pixel .topic-btn,
 body.theme-pixel .dice-type-btn {
-  font-family: 'Pixelify Sans', monospace !important;
+  font-family: 'VCR OSD Mono', monospace !important;
   font-size: 8px !important;
   border-width: 2px !important;
   box-shadow: 2px 2px 0 rgba(0,0,0,0.8) !important;
@@ -584,7 +584,7 @@ body.theme-pixel .chat-input-field,
 body.theme-pixel .chat-send-input,
 body.theme-pixel .todo-input,
 body.theme-pixel .notes-area {
-  font-family: 'Pixelify Sans', monospace !important;
+  font-family: 'VCR OSD Mono', monospace !important;
   font-size: 9px !important;
   border-width: 2px !important;
   backdrop-filter: none !important;
@@ -604,12 +604,12 @@ body.theme-pixel .kp-bar-track { height: 8px !important; }
 body.theme-pixel .kp-bar-fill { image-rendering: pixelated; }
 
 /* Theme swatch labels */
-body.theme-pixel .theme-swatch span { font-family: 'Pixelify Sans', monospace !important; font-size: 6px !important; }
+body.theme-pixel .theme-swatch span { font-family: 'VCR OSD Mono', monospace !important; font-size: 6px !important; }
 
 /* ── 2Advanced specific ── */
 /* Cold steel-blue, angular, geometric — 2001 Flash portal energy */
 body.theme-advanced {
-  font-family: 'Pixelify Sans', monospace !important;
+  font-family: 'VCR OSD Mono', monospace !important;
 }
 body.theme-advanced .card {
   border-width: 1px !important;
@@ -726,7 +726,7 @@ body.theme-synthwave #bg-overlay {
 
 /* ── Windows 95 ── */
 body.theme-win95 {
-  font-family: 'Pixelify Sans', 'MS Sans Serif', Arial, sans-serif !important;
+  font-family: 'VCR OSD Mono', 'MS Sans Serif', Arial, sans-serif !important;
   image-rendering: pixelated;
 }
 body.theme-win95 #bg-layer { display: none; }
@@ -798,7 +798,7 @@ body.theme-win95 .card-label {
 body.theme-win95 .clock {
   color: #000 !important;
   text-shadow: none !important;
-  font-family: 'Pixelify Sans', monospace !important;
+  font-family: 'VCR OSD Mono', monospace !important;
 }
 /* Tama panel */
 body.theme-win95 .tama-sticky {
