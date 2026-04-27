@@ -1498,6 +1498,8 @@ createApp({
           album:track.album?.['#text']||null,
           art:art&&!art.includes('2a96cbd8b46e442fc41c2b86b821562f')?art:null,
           url:track.url||null,
+          artistUrl:track.url?`https://www.last.fm/music/${encodeURIComponent(track.artist?.['#text']||track.artist)}`:null,
+          albumUrl:track.album?.['#text']&&track.url?`https://www.last.fm/music/${encodeURIComponent(track.artist?.['#text']||track.artist)}/${encodeURIComponent(track.album['#text'])}`:null,
         };
         // Tama reacts to new track
         if(!prev||prev.name!==nowPlaying.value.name){

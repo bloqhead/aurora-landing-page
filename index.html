@@ -739,16 +739,31 @@
   <!-- Last.fm Now Playing bar -->
   <transition name="nowplaying">
     <div v-if="nowPlaying" class="now-playing-bar">
+      <!-- Corner bolts -->
+      <span class="np-bolt np-bolt-tl"></span>
+      <span class="np-bolt np-bolt-tr"></span>
+      <span class="np-bolt np-bolt-bl"></span>
+      <span class="np-bolt np-bolt-br"></span>
+
       <img v-if="nowPlaying.art" :src="nowPlaying.art" class="np-art" @error="$event.target.style.display='none'" />
       <div v-else class="np-art np-art-placeholder"><i data-lucide="music"></i></div>
+
       <div class="np-info">
-        <div class="np-track">{{ nowPlaying.name }}</div>
-        <div class="np-artist">{{ nowPlaying.artist }}<span v-if="nowPlaying.album" class="np-album"> · {{ nowPlaying.album }}</span></div>
+        <a class="np-track" :href="nowPlaying.url||'#'" target="_blank" rel="noopener" :class="{unlinked:!nowPlaying.url}">{{ nowPlaying.name }}</a>
+        <div class="np-meta">
+          <a class="np-artist" :href="nowPlaying.artistUrl||'#'" target="_blank" rel="noopener" :class="{unlinked:!nowPlaying.artistUrl}">{{ nowPlaying.artist }}</a>
+          <template v-if="nowPlaying.album">
+            <span class="np-sep">·</span>
+            <a class="np-album-link" :href="nowPlaying.albumUrl||'#'" target="_blank" rel="noopener" :class="{unlinked:!nowPlaying.albumUrl}">{{ nowPlaying.album }}</a>
+          </template>
+        </div>
       </div>
-      <div class="np-viz" v-if="nowPlaying">
-        <div class="np-viz-bar" v-for="n in 8" :key="n"></div>
+
+      <!-- Winamp visualizer -->
+      <div class="np-viz">
+        <div class="np-viz-bar" v-for="n in 16" :key="n"></div>
       </div>
-      <a v-if="nowPlaying.url" :href="nowPlaying.url" target="_blank" rel="noopener" class="np-open" title="Open on Last.fm"><i data-lucide="external-link"></i></a>
+
       <div class="np-lastfm-badge">last.fm</div>
     </div>
   </transition>
