@@ -1388,20 +1388,22 @@ createApp({
         tab:0,af:Math.PI*6/5,chamfer:0.945,scaleFactor:0.9,
         vertices:(()=>{
           const v=[];
-          for(let i=0;i<10;i++){
-            const a=i*Math.PI*2/10+(Math.PI/10);
-            v.push([Math.cos(a),Math.sin(a),i%2===0?0.105:-0.105]);
+          for(let i=0,b=0;i<10;i++,b+=Math.PI*2/10){
+            v.push([Math.cos(b),Math.sin(b),0.105*(i%2?1:-1)]);
           }
-          v.push([0,0,1],[0,0,-1]); // 10=top, 11=bottom
+          v.push([0,0,-1],[0,0,1]); // 10=bottom pole, 11=top pole
           return v;
         })(),
         faces:[
-          // upper kite faces (top pole + two even + one odd)
-          [0,2,10,1],[2,4,10,2],[4,6,10,3],[6,8,10,4],[8,0,10,5],
-          // lower kite faces (bottom pole + one odd + two even)
-          [1,3,11,6],[3,5,11,7],[5,7,11,8],[7,9,11,9],[9,1,11,10],
+          // top faces (connect to pole 11)
+          [5,7,11,0],[3,1,11,1],[7,9,11,2],[9,1,11,3],[1,3,11,4],
+          // bottom faces (connect to pole 10)
+          [2,4,10,5],[0,2,10,6],[6,8,10,7],[4,6,10,8],[8,0,10,9],
+          // equatorial triangles
+          [1,0,2,-1],[1,2,3,-1],[3,2,4,-1],[3,4,5,-1],[5,4,6,-1],
+          [5,6,7,-1],[7,6,8,-1],[7,8,9,-1],[9,8,0,-1],[9,0,1,-1],
         ],
-        faceTexts:[null,'1','2','3','4','5','6','7','8','9','10'],
+        faceTexts:[null,' ','1','2','3','4','5','6','7','8','9','10'],
         textMargin:1.0,
       },
       d12:{
