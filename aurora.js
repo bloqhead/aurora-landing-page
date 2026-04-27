@@ -69,13 +69,16 @@ createApp({
     const savedOrder=JSON.parse(localStorage.getItem('aurora_widget_order')||'null');
     const savedVis=JSON.parse(localStorage.getItem('aurora_widget_vis')||'null');
     const defaultVis={kp:true,weather:true,sun:true,moon:true,aqi:true,tides:false,iss:false,planets:false,quote:true,animal:true,apod:false,soma:false,album:true,notes:false,todo:false,bookmarks:false,dice:true,chat:true,solitaire:false,snake:false,wordle:false,worldclock:false,gif:false,steam:false,filmrec:false,passgen:false,palette:false,bg:true};
-    // Merge any new widgets not in the saved order so they always show up in picker
-    const mergedOrder=savedOrder
-      ? [...savedOrder, ...DEFAULT_WIDGET_ORDER.filter(id=>!savedOrder.includes(id))]
+    const knownIds=new Set(DEFAULT_WIDGET_ORDER);
+    // Prune stale IDs (removed widgets) and merge any new ones
+    const cleanOrder=savedOrder?savedOrder.filter(id=>knownIds.has(id)):null;
+    const mergedOrder=cleanOrder
+      ? [...cleanOrder, ...DEFAULT_WIDGET_ORDER.filter(id=>!cleanOrder.includes(id))]
       : DEFAULT_WIDGET_ORDER;
+    const cleanVis=savedVis?Object.fromEntries(Object.entries(savedVis).filter(([id])=>knownIds.has(id))):null;
     const order=ref(mergedOrder);
-    const visibility=ref(savedVis||defaultVis);
-    const widgetRegistry=computed(()=>order.value.map(id=>({id,...WIDGET_META[id],visible:visibility.value[id]??true})));
+    const visibility=ref(cleanVis||defaultVis);
+    const widgetRegistry=computed(()=>order.value.map(id=>({id,...WIDGET_META[id],visible:visibility.value[id]??defaultVis[id]??false})));
     const visibleWidgets=computed(()=>widgetRegistry.value.filter(w=>w.visible));
     function toggleWidget(id){visibility.value={...visibility.value,[id]:!visibility.value[id]};saveWidgetState();}
     function saveWidgetState(){localStorage.setItem('aurora_widget_order',JSON.stringify(order.value));localStorage.setItem('aurora_widget_vis',JSON.stringify(visibility.value));}
