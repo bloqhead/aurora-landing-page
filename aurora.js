@@ -1438,7 +1438,7 @@ createApp({
     function toggleSoma(){if(somaPlaying.value){somaAudio.pause();somaPlaying.value=false;}else{somaAudio.src=currentSoma.value.stream;somaAudio.volume=parseFloat(somaVolume.value);somaAudio.play().catch(()=>{});somaPlaying.value=true;}}
     function updateSomaVolume(){somaAudio.volume=parseFloat(somaVolume.value);}
 
-    function saveSettings(){localStorage.setItem('aurora_location',locationInput.value);localStorage.setItem('aurora_unsplash',unsplashKey.value);localStorage.setItem('aurora_lastfm',lastfmKey.value);localStorage.setItem('aurora_nasa',nasaKey.value);localStorage.setItem('aurora_musicapp',musicApp.value);localStorage.setItem('aurora_theme',currentTheme.value);localStorage.setItem('aurora_fahrenheit',useFahrenheit.value);bookmarks.value=bookmarkEdits.value.filter(b=>b.url);localStorage.setItem('aurora_bookmarks',JSON.stringify(bookmarks.value));showSettings.value=false;locateAndLoad();fetchBg(bgTopic.value);fetchAlbum(selectedGenre.value);fetchAPOD();}
+    function saveSettings(){localStorage.setItem('aurora_location',locationInput.value);localStorage.setItem('aurora_unsplash',unsplashKey.value);localStorage.setItem('aurora_lastfm',lastfmKey.value);localStorage.setItem('aurora_nasa',nasaKey.value);localStorage.setItem('aurora_musicapp',musicApp.value);localStorage.setItem('aurora_theme',currentTheme.value);localStorage.setItem('aurora_fahrenheit',useFahrenheit.value);localStorage.setItem('aurora_spotify_client_id',SPOTIFY_CLIENT_ID.value);bookmarks.value=bookmarkEdits.value.filter(b=>b.url);localStorage.setItem('aurora_bookmarks',JSON.stringify(bookmarks.value));showSettings.value=false;locateAndLoad();fetchBg(bgTopic.value);fetchAlbum(selectedGenre.value);fetchAPOD();}
 
     onMounted(()=>{applyTheme(currentTheme.value);updateNumCols();window.addEventListener('resize',updateNumCols);window.addEventListener('scroll',tamaOnScroll,{passive:true});document.addEventListener('pointerdown',()=>{tamaLastInteraction=Date.now();tamaSleepy=0;},{passive:true});clockTimer=setInterval(()=>{now.value=new Date();},10000);locateAndLoad();fetchKP();fetchQuote();fetchAlbum(selectedGenre.value);fetchBg(bgTopic.value);fetchAnimal();fetchAPOD();fetchChangelogBadge();w2048Init();setInterval(fetchKP,5*60*1000);setInterval(()=>{if(unsplashKey.value)fetchBg(bgTopic.value);},15*60*1000);tamaInit();setTimeout(drawMoonCanvas,300);});
     onUnmounted(()=>{clearInterval(clockTimer);window.removeEventListener('resize',updateNumCols);window.removeEventListener('scroll',tamaOnScroll);teardownDice();});
@@ -1475,6 +1475,118 @@ createApp({
     watch(kp,()=>checkKpAlert());
 
     watch(useFahrenheit,v=>localStorage.setItem('aurora_fahrenheit',v));
+
+    // ── SPOTIFY NOW PLAYING ──────────────────────────────────────────────────
+    const SPOTIFY_CLIENT_ID=ref(localStorage.getItem('aurora_spotify_client_id')||'');
+    const SPOTIFY_REDIRECT=`${location.origin}${location.pathname.replace(/\/[^/]*$/,'')}/spotify-callback.html`;
+    const SPOTIFY_SCOPES='user-read-currently-playing user-read-playback-state user-modify-playback-state';
+    const SPOTIFY_PROXY='https://aurora-chat.daryn-codes.workers.dev';
+
+    const spotifyToken=ref(localStorage.getItem('aurora_spotify_token')||'');
+    const spotifyRefresh=ref(localStorage.getItem('aurora_spotify_refresh')||'');
+    const spotifyTrack=ref(null);
+    let spotifyPollTimer=null;
+
+    function spotifyConnect(){
+      if(!SPOTIFY_CLIENT_ID.value){
+        alert('Enter your Spotify Client ID in Settings first.');
+        return;
+      }
+      const state=Math.random().toString(36).slice(2);
+      const url=`https://accounts.spotify.com/authorize?client_id=${SPOTIFY_CLIENT_ID.value}&response_type=code&redirect_uri=${encodeURIComponent(SPOTIFY_REDIRECT)}&scope=${encodeURIComponent(SPOTIFY_SCOPES)}&state=${state}`;
+      const popup=window.open(url,'spotify-auth','width=500,height=700');
+      window.addEventListener('message',async(e)=>{
+        if(e.data?.type!=='spotify-callback')return;
+        popup?.close();
+        await spotifyExchangeCode(e.data.code);
+      },{once:true});
+    }
+
+    async function spotifyExchangeCode(code){
+      try{
+        const res=await fetch(`${SPOTIFY_PROXY}/spotify/token`,{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({code,redirect_uri:SPOTIFY_REDIRECT,grant_type:'authorization_code'})
+        });
+        const data=await res.json();
+        if(data.access_token){
+          spotifyToken.value=data.access_token;
+          spotifyRefresh.value=data.refresh_token||'';
+          localStorage.setItem('aurora_spotify_token',data.access_token);
+          localStorage.setItem('aurora_spotify_refresh',data.refresh_token||'');
+          spotifyStartPolling();
+        }
+      }catch(e){console.error('Spotify auth error',e);}
+    }
+
+    async function spotifyRefreshToken(){
+      if(!spotifyRefresh.value)return false;
+      try{
+        const res=await fetch(`${SPOTIFY_PROXY}/spotify/token`,{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({refresh_token:spotifyRefresh.value,grant_type:'refresh_token'})
+        });
+        const data=await res.json();
+        if(data.access_token){
+          spotifyToken.value=data.access_token;
+          localStorage.setItem('aurora_spotify_token',data.access_token);
+          if(data.refresh_token){spotifyRefresh.value=data.refresh_token;localStorage.setItem('aurora_spotify_refresh',data.refresh_token);}
+          return true;
+        }
+      }catch{}
+      return false;
+    }
+
+    async function spotifyPoll(){
+      if(!spotifyToken.value)return;
+      try{
+        const res=await fetch(`${SPOTIFY_PROXY}/spotify/now-playing`,{
+          headers:{'X-Spotify-Token':spotifyToken.value}
+        });
+        if(res.status===401){
+          const ok=await spotifyRefreshToken();
+          if(!ok){spotifyDisconnect();return;}
+          return spotifyPoll();
+        }
+        const data=await res.json();
+        spotifyTrack.value=data.playing===false?null:data;
+        // Make tama dance when playing
+        if(data.playing&&!tamaDancing.value)tamaReact('cheer');
+      }catch{}
+    }
+
+    const spotifyProgress=computed(()=>{
+      if(!spotifyTrack.value?.duration)return 0;
+      return Math.round((spotifyTrack.value.progress/spotifyTrack.value.duration)*100);
+    });
+
+    function spotifyStartPolling(){
+      clearInterval(spotifyPollTimer);
+      spotifyPoll();
+      spotifyPollTimer=setInterval(spotifyPoll,5000);
+    }
+
+    async function spotifyControl(action){
+      if(!spotifyToken.value)return;
+      await fetch(`${SPOTIFY_PROXY}/spotify/control`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json','X-Spotify-Token':spotifyToken.value},
+        body:JSON.stringify({action})
+      });
+      setTimeout(spotifyPoll,500);
+    }
+
+    function spotifyDisconnect(){
+      clearInterval(spotifyPollTimer);
+      spotifyToken.value='';spotifyRefresh.value='';spotifyTrack.value=null;
+      localStorage.removeItem('aurora_spotify_token');
+      localStorage.removeItem('aurora_spotify_refresh');
+    }
+
+    // Start polling if already connected
+    if(spotifyToken.value)spotifyStartPolling();
 
     // ── TAMAGOTCHI ──────────────────────────────────────────────────────────────
     let tamaFrame=0, tamaBlinkTimer=0, tamaHappy=0, tamaSad=0, tamaWin=0, tamaRage=0, tamaSleepy=0, tamaAnimId=null;
@@ -1798,6 +1910,6 @@ createApp({
 
     watch(currentTheme,()=>{}); // color auto-picked in tamaDraw
 
-    return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,albumExpanded,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,chatRenderText,formatChatTime,activeWidget,setActiveWidget,clearActiveWidget,solTableau,solFoundations,solStock,solWaste,solMoves,solWon,solInit,solNewGame,solSelected,solDraw,solClickWaste,solClickFoundation,solClickCol,solClickCard,solAutoFoundation,solDrawPixi,solInitPixi,snakeScore,snakeBest,snakeRunning,snakeDead,snakePaused,snakeStart,snakePause,snakeSetDir,wordleGuesses,wordleResults,wordleCurrent,wordleMsg,wordleKeyRows,wordleGetLetter,wordleGetClass,wordleKeyClass,wordleKey,wordleHandleMobileKey,wordleHandleMobileInput,worldClockCities,worldClockPick,worldClockOptions,worldClockTime,worldClockDate,worldClockAdd,worldClockRemove,steamGenres,steamGenre,steamLoading,steamError,steamGame,steamScoreClass,steamPickGenre,steamNext,film,filmGenre,filmGenres,filmNext,passValue,passLength,passOpts,passCopied,passGenerate,passCopy,paletteBase,paletteType,paletteTypes,paletteColors,paletteCopied,paletteGenerate,paletteCopy,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,pickerSearch,filteredWidgetRegistry,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings,tamaReact,tamaInteract,TAMA_CHARS,tamaChar,tamaPickerOpen,tamaSetChar,tamaWalking,tamaDancing,tamaBPM,tamaRaging,chatUnread,chatBubble};
+    return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,albumExpanded,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,chatRenderText,formatChatTime,activeWidget,setActiveWidget,clearActiveWidget,solTableau,solFoundations,solStock,solWaste,solMoves,solWon,solInit,solNewGame,solSelected,solDraw,solClickWaste,solClickFoundation,solClickCol,solClickCard,solAutoFoundation,solDrawPixi,solInitPixi,snakeScore,snakeBest,snakeRunning,snakeDead,snakePaused,snakeStart,snakePause,snakeSetDir,wordleGuesses,wordleResults,wordleCurrent,wordleMsg,wordleKeyRows,wordleGetLetter,wordleGetClass,wordleKeyClass,wordleKey,wordleHandleMobileKey,wordleHandleMobileInput,worldClockCities,worldClockPick,worldClockOptions,worldClockTime,worldClockDate,worldClockAdd,worldClockRemove,steamGenres,steamGenre,steamLoading,steamError,steamGame,steamScoreClass,steamPickGenre,steamNext,film,filmGenre,filmGenres,filmNext,passValue,passLength,passOpts,passCopied,passGenerate,passCopy,paletteBase,paletteType,paletteTypes,paletteColors,paletteCopied,paletteGenerate,paletteCopy,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,pickerSearch,filteredWidgetRegistry,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings,tamaReact,tamaInteract,TAMA_CHARS,tamaChar,tamaPickerOpen,tamaSetChar,tamaWalking,tamaDancing,tamaBPM,tamaRaging,chatUnread,chatBubble,SPOTIFY_CLIENT_ID,spotifyToken,spotifyTrack,spotifyProgress,spotifyConnect,spotifyControl,spotifyDisconnect};
   }
 }).mount('#app');

@@ -665,6 +665,11 @@
           <div class="settings-hint">Free — powers album recommendations.</div>
         </div>
         <div class="settings-section">
+          <div class="settings-section-label">Spotify Client ID</div>
+          <input class="settings-input" v-model="SPOTIFY_CLIENT_ID" placeholder="From developer.spotify.com/dashboard" />
+          <div class="settings-hint">Free — powers the Now Playing bar. Create an app at developer.spotify.com.</div>
+        </div>
+        <div class="settings-section">
           <div class="settings-section-label">NASA API Key</div>
           <input class="settings-input" v-model="nasaKey" placeholder="From api.nasa.gov (or leave blank for demo)" type="password" />
           <div class="settings-hint">Free at api.nasa.gov — powers Astronomy Picture of the Day. Leave blank to use DEMO_KEY (limited).</div>
@@ -728,6 +733,33 @@
         </button>
       </div>
     </div>
+  </div>
+
+  <!-- Spotify Now Playing bar -->
+  <transition name="nowplaying">
+    <div v-if="spotifyTrack&&spotifyTrack.name" class="now-playing-bar">
+      <img v-if="spotifyTrack.art" :src="spotifyTrack.art" class="np-art" />
+      <div v-else class="np-art np-art-placeholder">♫</div>
+      <div class="np-info">
+        <div class="np-track">{{ spotifyTrack.name }}</div>
+        <div class="np-artist">{{ spotifyTrack.artist }}</div>
+        <div class="np-progress-track">
+          <div class="np-progress-bar" :style="{width:spotifyProgress+'%'}"></div>
+        </div>
+      </div>
+      <div class="np-controls">
+        <button class="np-btn" @click="spotifyControl('previous')" title="Previous">⏮</button>
+        <button class="np-btn np-btn-main" @click="spotifyControl(spotifyTrack.playing?'pause':'play')">{{ spotifyTrack.playing ? '⏸' : '▶' }}</button>
+        <button class="np-btn" @click="spotifyControl('next')" title="Next">⏭</button>
+      </div>
+      <a v-if="spotifyTrack.url" :href="spotifyTrack.url" target="_blank" rel="noopener" class="np-open" title="Open in Spotify">↗</a>
+      <button class="np-disconnect" @click="spotifyDisconnect" title="Disconnect">✕</button>
+    </div>
+  </transition>
+
+  <!-- Spotify connect button (when not connected) -->
+  <div v-if="!spotifyToken&&!spotifyTrack" class="np-connect-hint" @click="spotifyConnect">
+    <span>🎵 Connect Spotify</span>
   </div>
 </div>
 <script type="module" src="aurora.js?v=__BUILD_VERSION__"></script>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Aurora · Spotify</title>
+  <style>
+    body{margin:0;background:#0a0e1a;color:#e8f4f0;font-family:monospace;display:flex;align-items:center;justify-content:center;height:100vh;text-align:center;}
+    .msg{font-size:14px;opacity:.7;}
+  </style>
+</head>
+<body>
+<div class="msg" id="msg">Connecting to Spotify…</div>
+<script>
+  const params=new URLSearchParams(window.location.search);
+  const code=params.get('code');
+  const error=params.get('error');
+  if(error||!code){
+    document.getElementById('msg').textContent='Spotify auth failed: '+(error||'no code');
+  } else {
+    // Send code back to opener
+    if(window.opener){
+      window.opener.postMessage({type:'spotify-callback',code},'*');
+      document.getElementById('msg').textContent='Connected! You can close this tab.';
+      setTimeout(()=>window.close(),1500);
+    } else {
+      // Fallback: store in localStorage for same-tab flow
+      localStorage.setItem('aurora_spotify_code',code);
+      document.getElementById('msg').textContent='Connected! Return to Aurora.';
+    }
+  }
+</script>
+</body>
+</html>
