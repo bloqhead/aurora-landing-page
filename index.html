@@ -479,7 +479,6 @@
           </div>
           <div v-if="gifLoading" class="widget-loading">Searching…</div>
           <div v-else-if="gifError" class="widget-error">{{ gifError }}</div>
-          <div v-if="gifDebug" style="font-size:9px;font-family:monospace;word-break:break-all;color:var(--text-muted);margin-bottom:8px;background:rgba(0,0,0,.3);padding:6px;border-radius:4px;">{{ gifDebug }}</div>
           <div v-else-if="gifResults.length" class="gif-grid">
             <div v-for="gif in gifResults" :key="gif.id" class="gif-item"
               @click="gifSelect(gif)" :title="'Click to copy URL'">

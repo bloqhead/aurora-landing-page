@@ -859,9 +859,10 @@ createApp({
 
     function gifParse(items){
       return(items||[]).map(r=>{
-        const f=r.files;
-        const url=f?.gif?.url||f?.original?.url||'';
-        const preview=f?.small?.url||f?.preview?.url||f?.gif?.url||url||'';
+        // Klipy structure: file.hd.gif.url, file.hd.webp.url etc
+        const f=r.file;
+        const url=f?.hd?.gif?.url||f?.sd?.gif?.url||f?.hd?.webp?.url||'';
+        const preview=f?.sd?.gif?.url||f?.hd?.gif?.url||url||'';
         return{id:r.id||r.slug,title:r.title||'',url,preview};
       }).filter(r=>r.url);
     }
@@ -873,10 +874,6 @@ createApp({
         const res=await fetch(`${KLIPY_BASE}/gifs/search?q=${encodeURIComponent(gifQuery.value)}&per_page=12`);
         if(!res.ok)throw new Error(`${res.status}`);
         const data=await res.json();
-        gifDebug.value=JSON.stringify(data).slice(0,400);
-        console.log('Klipy search keys:',Object.keys(data));
-        if(data.data)console.log('data.data type:',typeof data.data,'keys:',data.data&&typeof data.data==='object'?Object.keys(data.data):'n/a');
-        console.log('Full response:',JSON.stringify(data).slice(0,800));
         const items=gifExtractItems(data);
         gifResults.value=gifParse(items);
         if(!gifResults.value.length)gifError.value='No GIFs found.';
