@@ -1863,18 +1863,18 @@ createApp({
         ctx.fillStyle='#aaccff';
         const zAlpha=0.4+Math.sin(tamaFrame*0.05)*0.3;
         ctx.globalAlpha=zAlpha;
-        ctx.fillText('z',72,22+bounce);
+        ctx.fillText('z',68,26+bounce);
         ctx.globalAlpha=zAlpha*0.7;
-        ctx.fillText('z',79,14+bounce);
+        ctx.fillText('z',76,16+bounce);
         ctx.globalAlpha=zAlpha*0.4;
-        ctx.fillText('Z',86,6+bounce);
+        ctx.fillText('Z',84,6+bounce);
         ctx.globalAlpha=1;
       }
 
       // Morning sparkle — little sun rays
       if(morning){
         ctx.fillStyle='#ffd700';
-        [[10,10],[82,10],[10,82],[82,82]].forEach(([sx,sy],i)=>{
+        [[6,6],[84,6],[6,84],[84,84]].forEach(([sx,sy],i)=>{
           ctx.globalAlpha=0.5*(Math.sin(tamaFrame*0.05+i)*0.5+0.5);
           ctx.fillRect(sx,sy+bounce,S,S);
         });
@@ -1888,8 +1888,8 @@ createApp({
         ctx.fillStyle=col;
         const n1y=8+bounce-((tamaFrame*0.5)%20);
         const n2y=4+bounce-((tamaFrame*0.5+10)%20);
-        ctx.fillText('♪',70,n1y);
-        ctx.fillText('♫',6,n2y);
+        ctx.fillText('♪',78,n1y);
+        ctx.fillText('♫',4,n2y);
         ctx.globalAlpha=1;
       }
 
@@ -1897,7 +1897,7 @@ createApp({
       if(happy||win){
         const alpha=(tamaHappy||tamaWin)/(win?150:60);
         const sparkCol=win?'#ffd700':col;
-        [[8,8],[82,10],[10,78],[80,74]].forEach(([sx,sy],i)=>{
+        [[4,4],[88,4],[4,88],[88,88],[48,2],[2,48],[92,48],[48,92]].forEach(([sx,sy],i)=>{
           ctx.globalAlpha=alpha*(Math.sin(tamaFrame*0.4+i)*0.5+0.5);
           ctx.fillStyle=sparkCol;
           ctx.fillRect(sx,sy+bounce,S,S);
@@ -1911,13 +1911,13 @@ createApp({
       if(rage){
         const alpha=tamaRage/120;
         const sparks=[
-          [4,4,'#ff2200'],[58,4,'#ff6600'],[4,58,'#ff4400'],[58,58,'#ffaa00'],
-          [32,2,'#ff0000'],[2,32,'#ff3300'],[60,32,'#ff6600'],[32,60,'#ff2200'],
+          [4,4,'#ff2200'],[88,4,'#ff6600'],[4,88,'#ff4400'],[88,88,'#ffaa00'],
+          [48,2,'#ff0000'],[2,48,'#ff3300'],[92,48,'#ff6600'],[48,92,'#ff2200'],
         ];
         sparks.forEach(([sx,sy,sparkCol],i)=>{
           // Sparks fly outward over time
           const progress=(120-tamaRage)/120;
-          const dist=progress*20;
+          const dist=progress*36;
           const angle=(i/sparks.length)*Math.PI*2;
           const ex=sx+Math.cos(angle)*dist+rageShake;
           const ey=sy+Math.sin(angle)*dist+bounce;
@@ -1932,8 +1932,10 @@ createApp({
         ctx.globalAlpha=alpha*0.6;
         ctx.strokeStyle='#ff2200';
         ctx.lineWidth=2;
-        ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(15+Math.random()*15,30+Math.random()*15);ctx.stroke();
-        ctx.beginPath();ctx.moveTo(96,0);ctx.lineTo(81-Math.random()*15,30+Math.random()*15);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(20+Math.random()*20,40+Math.random()*20);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(96,0);ctx.lineTo(76-Math.random()*20,40+Math.random()*20);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(0,96);ctx.lineTo(20+Math.random()*15,76-Math.random()*15);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(96,96);ctx.lineTo(76-Math.random()*15,76-Math.random()*15);ctx.stroke();
         ctx.globalAlpha=1;
       }
 
@@ -1942,9 +1944,9 @@ createApp({
         const alpha=tamaSad/40;
         ctx.globalAlpha=alpha*0.8;
         ctx.fillStyle='#6ab4ff';
-        const tearY=32+bounce+Math.floor(tamaFrame/4)%12;
-        ctx.fillRect(34,tearY,S,S);
-        ctx.fillRect(56,tearY+6,S,S);
+        const tearY=40+bounce+Math.floor(tamaFrame/4)%16;
+        ctx.fillRect(30,tearY,S,S);
+        ctx.fillRect(60,tearY+8,S,S);
         ctx.globalAlpha=1;
       }
 
