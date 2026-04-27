@@ -394,7 +394,23 @@ a{color:inherit;} button{font-family:inherit;}
 .currency-result{font-family:var(--font-display);font-size:var(--t-2xl);font-weight:200;color:var(--accent);text-align:center;margin:var(--s-xs) 0;}
 .currency-rate{font-family:var(--font-mono);font-size:var(--t-xs);color:var(--text-muted);text-align:center;}
 
-/* STEAM */
+/* GIF SEARCH */
+.gif-search-row{display:flex;gap:6px;margin-bottom:var(--s-sm);}
+.gif-input{flex:1;background:rgba(255,255,255,.06);border:1px solid var(--card-border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:var(--font-mono);font-size:var(--t-xs);outline:none;transition:border-color .2s;}
+.gif-input:focus{border-color:var(--accent);}
+.gif-input::placeholder{color:var(--text-muted);}
+.gif-search-btn{padding:8px 12px;background:var(--accent);border:none;border-radius:8px;cursor:pointer;color:#000;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.gif-search-btn [data-lucide]{width:16px;height:16px;stroke-width:2.5;}
+.gif-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:var(--s-xs);}
+.gif-item{position:relative;aspect-ratio:1;overflow:hidden;border-radius:6px;cursor:pointer;background:rgba(255,255,255,.04);}
+.gif-item img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .2s;}
+.gif-item:hover img{transform:scale(1.05);}
+.gif-item-overlay{position:absolute;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;}
+.gif-item:hover .gif-item-overlay{opacity:1;}
+.gif-item-overlay [data-lucide]{width:20px;height:20px;stroke:white;stroke-width:2;}
+.gif-footer{display:flex;align-items:center;justify-content:space-between;margin-top:4px;}
+.gif-copied{font-family:var(--font-mono);font-size:var(--t-xs);color:var(--accent);}
+.gif-attr{font-family:var(--font-mono);font-size:9px;color:var(--text-muted);opacity:.4;letter-spacing:.08em;text-transform:uppercase;margin-left:auto;}
 .steam-genres{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:var(--s-sm);}
 .steam-genre-btn{padding:4px 10px;border-radius:20px;border:1px solid var(--card-border);background:transparent;color:var(--text-muted);font-family:var(--font-mono);font-size:var(--t-xs);cursor:pointer;transition:all .2s;}
 .steam-genre-btn.active,.steam-genre-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(80,220,180,.08);}

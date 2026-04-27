@@ -469,6 +469,36 @@
         </div>
 
 
+        <!-- GIF SEARCH -->
+        <div v-else-if="wid.id==='gif'" class="card">
+          <div class="card-label">GIF Search</div>
+          <div class="gif-search-row">
+            <input class="gif-input" v-model="gifQuery" @keyup.enter="gifSearch"
+              placeholder="Search GIFs…" autocomplete="off" spellcheck="false" />
+            <button class="gif-search-btn" @click="gifSearch"><i data-lucide="search"></i></button>
+          </div>
+          <div v-if="gifLoading" class="widget-loading">Searching…</div>
+          <div v-else-if="gifError" class="widget-error">{{ gifError }}</div>
+          <div v-else-if="gifResults.length" class="gif-grid">
+            <div v-for="gif in gifResults" :key="gif.id" class="gif-item"
+              @click="gifSelect(gif)" :title="'Click to copy URL'">
+              <img :src="gif.preview" :alt="gif.title" loading="lazy" />
+              <div class="gif-item-overlay"><i data-lucide="copy"></i></div>
+            </div>
+          </div>
+          <div v-else-if="gifTrending.length" class="gif-grid">
+            <div v-for="gif in gifTrending" :key="gif.id" class="gif-item"
+              @click="gifSelect(gif)" :title="'Click to copy URL'">
+              <img :src="gif.preview" :alt="gif.title" loading="lazy" />
+              <div class="gif-item-overlay"><i data-lucide="copy"></i></div>
+            </div>
+          </div>
+          <div class="gif-footer">
+            <span v-if="gifCopied" class="gif-copied">✓ Copied!</span>
+            <span class="gif-attr">Powered by KLIPY</span>
+          </div>
+        </div>
+
         <!-- STEAM REC -->
         <div v-else-if="wid.id==='steam'" class="card">
           <div class="card-label">Steam 🎮</div>
