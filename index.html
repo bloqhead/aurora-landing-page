@@ -26,6 +26,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,200;0,9..144,400;1,9..144,300&family=DM+Mono:wght@300;400&family=Outfit:wght@200;300;400&display=swap" rel="stylesheet" />
 <link href="https://fonts.cdnfonts.com/css/vcr-osd-mono" rel="stylesheet" />
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <link rel="stylesheet" href="aurora.css?v=__BUILD_VERSION__">
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(r=>r.forEach(s=>s.unregister()));caches.keys().then(k=>k.forEach(c=>caches.delete(c)));}</script>
 </head>
@@ -41,13 +42,13 @@
         <div class="date-str">{{ dateStr }}</div>
       </div>
       <div class="header-right">
-        <button class="icon-btn" @click="refreshBg" title="New background">↺</button>
+        <button class="icon-btn" @click="refreshBg" title="New background"><i data-lucide="image"></i></button>
         <button class="icon-btn changelog-btn" @click="openChangelog" title="What's new" style="position:relative">
-          🔔
+          <i data-lucide="bell"></i>
           <span v-if="changelogUnread > 0" class="changelog-badge">{{ changelogUnread > 9 ? '9+' : changelogUnread }}</span>
         </button>
-        <button class="icon-btn" @click="showPicker = true" title="Widgets">⊞</button>
-        <button class="icon-btn" @click="showSettings = true" title="Settings">⚙</button>
+        <button class="icon-btn" @click="showPicker = true" title="Widgets"><i data-lucide="layout-dashboard"></i></button>
+        <button class="icon-btn" @click="showSettings = true" title="Settings"><i data-lucide="settings"></i></button>
       </div>
     </div>
 
@@ -172,14 +173,14 @@
 
         <!-- QUOTE -->
         <div v-else-if="wid.id==='quote'" class="card" style="position:relative">          <div class="card-label">Inspiration</div>
-          <button class="card-btn" @click="fetchQuote" title="New quote">↺</button>
+          <button class="card-btn" @click="fetchQuote" title="New quote"><i data-lucide="refresh-cw"></i></button>
           <template v-if="quote"><div class="quote-text">"{{ quote.text }}"</div><div class="quote-author">— {{ quote.author }}</div></template>
           <template v-else><div style="font-family:var(--font-mono);font-size:var(--t-sm);color:var(--text-muted);animation:blink 1.4s ease-in-out infinite">conjuring something worth reading…</div></template>
         </div>
 
         <!-- ANIMAL -->
         <div v-else-if="wid.id==='animal'" class="card" style="position:relative">          <div class="card-label">Animal of the Day · iNaturalist</div>
-          <button class="card-btn" @click="fetchAnimal" title="Next animal">→</button>
+          <button class="card-btn" @click="fetchAnimal" title="Next animal"><i data-lucide="arrow-right"></i></button>
           <template v-if="animal">
             <img v-if="animal.photo" :src="animal.photo" :alt="animal.commonName" class="animal-photo" />
             <div v-else class="animal-placeholder">🦎</div>
@@ -215,7 +216,7 @@
               <button v-for="s in somaStations" :key="s.id" class="soma-btn" :class="{active:somaStation===s.id}" @click="setSomaStation(s.id)">{{ s.name }}</button>
             </div>
             <div class="soma-controls">
-              <button class="soma-play" @click="toggleSoma">{{ somaPlaying?'⏸':'▶' }}</button>
+              <button class="soma-play" @click="toggleSoma"><i :data-lucide="somaPlaying?'pause':'play'"></i></button>
               <div class="soma-now">
                 <div class="soma-station-name">{{ currentSoma.name }}</div>
                 <div class="soma-desc">{{ currentSoma.desc }}</div>
@@ -231,7 +232,7 @@
 
         <!-- ALBUM -->
         <div v-else-if="wid.id==='album'" class="card" style="position:relative">          <div class="card-label">Album Rec · Last.fm</div>
-          <button class="card-btn" @click="fetchAlbum(selectedGenre)" title="New recommendation">↺</button>
+          <button class="card-btn" @click="fetchAlbum(selectedGenre)" title="New recommendation"><i data-lucide="refresh-cw"></i></button>
           <template v-if="album">
             <div class="album-row">
               <div class="album-art"><img v-if="album.art" :src="album.art" :alt="album.title" @error="album.art=null"/><template v-else>🎵</template></div>
@@ -247,7 +248,7 @@
             </div>
             <div class="album-summary" v-if="album.why">
               <div class="album-summary-text" :class="{expanded:albumExpanded}">{{ album.why }}</div>
-              <button class="album-expand-btn" @click="albumExpanded=!albumExpanded">{{ albumExpanded ? 'Show less ▲' : 'Read more ▼' }}</button>
+              <button class="album-expand-btn" @click="albumExpanded=!albumExpanded"><i :data-lucide="albumExpanded?'chevron-up':'chevron-down'"></i> {{ albumExpanded ? 'Show less' : 'Read more' }}</button>
             </div>
           </template>
           <div v-else-if="albumLoading" class="album-loading">searching the stacks…</div>
@@ -410,13 +411,13 @@
           <!-- D-pad for touch -->
           <div class="snake-dpad">
             <div></div>
-            <button class="snake-btn" @touchstart.prevent="snakeSetDir(0,-1)" @click.stop="snakeSetDir(0,-1)">▲</button>
+            <button class="snake-btn" @touchstart.prevent="snakeSetDir(0,-1)" @click.stop="snakeSetDir(0,-1)"><i data-lucide="chevron-up"></i></button>
             <div></div>
-            <button class="snake-btn" @touchstart.prevent="snakeSetDir(-1,0)" @click.stop="snakeSetDir(-1,0)">◀</button>
-            <button class="snake-btn" @touchstart.prevent="snakePause" @click.stop="snakePause" style="font-size:10px;opacity:.6">{{ snakePaused?'▶':'⏸' }}</button>
-            <button class="snake-btn" @touchstart.prevent="snakeSetDir(1,0)" @click.stop="snakeSetDir(1,0)">▶</button>
+            <button class="snake-btn" @touchstart.prevent="snakeSetDir(-1,0)" @click.stop="snakeSetDir(-1,0)"><i data-lucide="chevron-left"></i></button>
+            <button class="snake-btn" @touchstart.prevent="snakePause" @click.stop="snakePause" style="font-size:10px;opacity:.6"><i :data-lucide="snakePaused?'play':'pause'"></i></button>
+            <button class="snake-btn" @touchstart.prevent="snakeSetDir(1,0)" @click.stop="snakeSetDir(1,0)"><i data-lucide="chevron-right"></i></button>
             <div></div>
-            <button class="snake-btn" @touchstart.prevent="snakeSetDir(0,1)" @click.stop="snakeSetDir(0,1)">▼</button>
+            <button class="snake-btn" @touchstart.prevent="snakeSetDir(0,1)" @click.stop="snakeSetDir(0,1)"><i data-lucide="chevron-down"></i></button>
             <div></div>
           </div>
         </div>
@@ -478,7 +479,7 @@
           <div v-else-if="steamError" class="widget-error" style="display:flex;flex-direction:column;gap:8px;">
             <span>{{ steamError }}</span>
             <span style="font-size:var(--t-xs);color:var(--text-muted);">⚠️ Data provided by IGDB — try again or switch genres.</span>
-            <button class="steam-next-btn" @click="steamPickGenre(steamGenre)" style="align-self:flex-start;">Try again ↺</button>
+            <button class="steam-next-btn" @click="steamPickGenre(steamGenre)" style="align-self:flex-start;"><i data-lucide="refresh-cw"></i> Try again</button>
           </div>
           <div v-else-if="steamGame" class="steam-card">
             <div class="steam-header">
@@ -497,7 +498,7 @@
                 <div v-if="steamGame.summary" style="font-size:var(--t-xs);color:var(--text-muted);margin-top:4px;line-height:1.4;">{{ steamGame.summary }}</div>
                 <div class="steam-actions">
                   <a :href="steamGame.steamUrl" target="_blank" rel="noopener noreferrer" class="steam-link">View on Steam →</a>
-                  <button class="steam-next-btn" @click="steamNext">Shuffle 🔀</button>
+                  <button class="steam-next-btn" @click="steamNext"><i data-lucide="shuffle"></i> Shuffle</button>
                 </div>
               </div>
             </div>
@@ -507,7 +508,7 @@
         <!-- FILM REC -->
         <div v-else-if="wid.id==='filmrec'" class="card" style="position:relative">
           <div class="card-label">Film Rec 🎬</div>
-          <button class="card-btn" @click="filmNext" title="Another film">↺</button>
+          <button class="card-btn" @click="filmNext" title="Another film"><i data-lucide="refresh-cw"></i></button>
           <template v-if="film">
             <div class="film-card">
               <div class="film-title">{{ film.title }}</div>
@@ -577,7 +578,7 @@
     <div class="kp-alert" v-if="kpAlert">
       <div class="kp-alert-icon">🌌</div>
       <div class="kp-alert-text">KP {{ kp?.toFixed(1) }} — {{ kpInfo?.label }}. {{ kpInfo?.chance }}.</div>
-      <button class="kp-alert-close" @click="dismissKpAlert">✕</button>
+      <button class="kp-alert-close" @click="dismissKpAlert"><i data-lucide="x"></i></button>
     </div>
   </transition>
 
@@ -585,7 +586,7 @@
   <transition name="fade">
     <div class="settings-overlay" v-if="showChangelog" @click.self="showChangelog=false">
       <div class="settings-panel" style="width:min(580px,92vw)">
-        <button class="settings-close" @click="showChangelog=false">✕</button>
+        <button class="settings-close" @click="showChangelog=false"><i data-lucide="x"></i></button>
         <div class="settings-title">What's New</div>
         <div style="font-family:var(--font-mono);font-size:var(--t-xs);color:var(--text-muted);margin-bottom:var(--s-lg)">
           aurora-landing-page · latest commits
@@ -614,7 +615,7 @@
   <transition name="fade">
     <div class="picker-overlay" v-if="showPicker" @click.self="showPicker=false">
       <div class="picker-panel">
-        <button class="settings-close" @click="showPicker=false">✕</button>
+        <button class="settings-close" @click="showPicker=false"><i data-lucide="x"></i></button>
         <div class="picker-title">Widgets</div>
         <div class="picker-subtitle">Toggle visibility and drag to reorder.</div>
         <input class="picker-search" v-model="pickerSearch" placeholder="Search widgets…" autocomplete="off" spellcheck="false" />
@@ -630,7 +631,7 @@
               @dragstart="onPickerDragStart($event,wid.id)"
               @touchstart.passive="onPickerTouchStart($event,wid.id)"
               @touchmove="onPickerTouchMove"
-              @touchend="onPickerTouchEnd">⠿</div>
+              @touchend="onPickerTouchEnd"><i data-lucide="grip-vertical"></i></div>
             <div class="picker-item-icon">{{ wid.icon }}</div>
             <div class="picker-item-info">
               <div class="picker-item-name">{{ wid.label }}</div>
@@ -647,7 +648,7 @@
   <transition name="fade">
     <div class="settings-overlay" v-if="showSettings" @click.self="showSettings=false">
       <div class="settings-panel">
-        <button class="settings-close" @click="showSettings=false">✕</button>
+        <button class="settings-close" @click="showSettings=false"><i data-lucide="x"></i></button>
         <div class="settings-title">Settings</div>
         <div class="settings-section">
           <div class="settings-section-label">Location (city, country)</div>
@@ -739,12 +740,12 @@
   <transition name="nowplaying">
     <div v-if="nowPlaying" class="now-playing-bar">
       <img v-if="nowPlaying.art" :src="nowPlaying.art" class="np-art" @error="$event.target.style.display='none'" />
-      <div v-else class="np-art np-art-placeholder">♫</div>
+      <div v-else class="np-art np-art-placeholder"><i data-lucide="music"></i></div>
       <div class="np-info">
         <div class="np-track">{{ nowPlaying.name }}</div>
         <div class="np-artist">{{ nowPlaying.artist }}<span v-if="nowPlaying.album" class="np-album"> · {{ nowPlaying.album }}</span></div>
       </div>
-      <a v-if="nowPlaying.url" :href="nowPlaying.url" target="_blank" rel="noopener" class="np-open" title="Open on Last.fm">↗</a>
+      <a v-if="nowPlaying.url" :href="nowPlaying.url" target="_blank" rel="noopener" class="np-open" title="Open on Last.fm"><i data-lucide="external-link"></i></a>
       <div class="np-lastfm-badge">last.fm</div>
     </div>
   </transition>

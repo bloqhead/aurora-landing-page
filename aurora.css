@@ -118,7 +118,19 @@ body{font-family:var(--font-body);font-size:var(--t-md);line-height:1.5;color:va
 .moon-info{display:flex;flex-direction:column;gap:4px;}
 .moon-name{font-family:var(--font-display);font-size:var(--t-lg);font-weight:300;}
 .moon-detail{font-family:var(--font-mono);font-size:var(--t-xs);color:var(--text-muted);}
-/* PICKER SEARCH */
+/* LUCIDE ICONS */
+[data-lucide]{display:inline-block;vertical-align:middle;}
+.icon-btn [data-lucide]{width:18px;height:18px;stroke-width:1.75;}
+.card-btn [data-lucide]{width:14px;height:14px;stroke-width:2;}
+.settings-close [data-lucide]{width:16px;height:16px;stroke-width:2;}
+.kp-alert-close [data-lucide]{width:14px;height:14px;stroke-width:2;}
+.soma-play [data-lucide]{width:16px;height:16px;stroke-width:2;}
+.snake-btn [data-lucide]{width:18px;height:18px;stroke-width:2.5;}
+.steam-next-btn [data-lucide]{width:12px;height:12px;stroke-width:2;vertical-align:text-bottom;}
+.picker-item-drag [data-lucide]{width:16px;height:16px;stroke-width:1.75;}
+.np-open [data-lucide]{width:14px;height:14px;stroke-width:2;}
+.np-art-placeholder [data-lucide]{width:20px;height:20px;stroke-width:1.5;opacity:.5;}
+.album-expand-btn [data-lucide]{width:12px;height:12px;stroke-width:2;vertical-align:text-bottom;}
 .picker-search{width:100%;box-sizing:border-box;background:rgba(255,255,255,.06);border:1px solid var(--card-border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:var(--font-mono);font-size:var(--t-xs);margin-bottom:var(--s-sm);outline:none;transition:border-color .2s;}
 .picker-search:focus{border-color:var(--accent);}
 .picker-search::placeholder{color:var(--text-muted);}
