@@ -923,6 +923,7 @@ body.theme-win95 ::-webkit-scrollbar-button {
 @media(max-width:767px){
   #tama-canvas{width:64px !important;height:64px !important;}
 }
+@media(max-width:600px){
   .header{flex-direction:column;gap:var(--s-sm);}
   .header-right{padding-top:0;align-self:flex-end;}
   .clock{font-size:clamp(2.4rem,14vw,3.8rem);}
