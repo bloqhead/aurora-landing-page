@@ -720,6 +720,117 @@ body.theme-synthwave #bg-overlay {
   background-size: 40px 40px !important;
 }
 
+/* ── Windows 95 ── */
+body.theme-win95 {
+  font-family: 'Pixelify Sans', 'MS Sans Serif', Arial, sans-serif !important;
+  image-rendering: pixelated;
+}
+body.theme-win95 #bg-layer { display: none; }
+body.theme-win95 #bg-overlay { display: none; }
+body.theme-win95::after { display: none; }
+body.theme-win95::before { display: none; }
+
+/* Classic raised Win95 button/card border */
+body.theme-win95 .card,
+body.theme-win95 .settings-panel,
+body.theme-win95 .picker-panel {
+  background: #c0c0c0 !important;
+  border-radius: 0 !important;
+  border: none !important;
+  box-shadow: inset -1px -1px #000, inset 1px 1px #fff, inset -2px -2px #808080, inset 2px 2px #dfdfdf !important;
+  backdrop-filter: none !important;
+}
+/* Sunken inset for inputs */
+body.theme-win95 .settings-input,
+body.theme-win95 .chat-input-field,
+body.theme-win95 .chat-send-input,
+body.theme-win95 .notes-textarea,
+body.theme-win95 .todo-input {
+  background: #fff !important;
+  border-radius: 0 !important;
+  border: none !important;
+  box-shadow: inset 1px 1px #000, inset -1px -1px #fff, inset 2px 2px #808080, inset -2px -2px #dfdfdf !important;
+  color: #000 !important;
+}
+/* Buttons */
+body.theme-win95 .icon-btn,
+body.theme-win95 .game-btn,
+body.theme-win95 .card-btn,
+body.theme-win95 .genre-btn,
+body.theme-win95 .topic-btn,
+body.theme-win95 .steam-genre-btn,
+body.theme-win95 .steam-next-btn,
+body.theme-win95 .dice-type-btn,
+body.theme-win95 .dice-mod-btn,
+body.theme-win95 .settings-btn,
+body.theme-win95 .wordle-key,
+body.theme-win95 .snake-btn,
+body.theme-win95 .tama-pick-btn,
+body.theme-win95 .tama-pick-opt {
+  background: #c0c0c0 !important;
+  border-radius: 0 !important;
+  border: none !important;
+  box-shadow: inset -1px -1px #000, inset 1px 1px #fff, inset -2px -2px #808080, inset 2px 2px #dfdfdf !important;
+  color: #000 !important;
+}
+body.theme-win95 .icon-btn:active,
+body.theme-win95 .game-btn:active,
+body.theme-win95 .steam-genre-btn.active,
+body.theme-win95 .dice-type-btn.active,
+body.theme-win95 .wordle-key:active {
+  box-shadow: inset 1px 1px #000, inset -1px -1px #fff, inset 2px 2px #808080, inset -2px -2px #dfdfdf !important;
+}
+/* Title bar style card labels */
+body.theme-win95 .card-label {
+  background: linear-gradient(90deg, #000080, #1084d0) !important;
+  color: #fff !important;
+  padding: 3px 6px !important;
+  margin: -1px -1px 8px -1px !important;
+  font-size: 12px !important;
+  letter-spacing: 0 !important;
+  font-weight: bold !important;
+}
+/* Clock */
+body.theme-win95 .clock {
+  color: #000 !important;
+  text-shadow: none !important;
+  font-family: 'Pixelify Sans', monospace !important;
+}
+/* Tama panel */
+body.theme-win95 .tama-sticky {
+  background: #c0c0c0 !important;
+  border-radius: 0 !important;
+  border: none !important;
+  box-shadow: inset -1px -1px #000, inset 1px 1px #fff, inset -2px -2px #808080, inset 2px 2px #dfdfdf !important;
+  backdrop-filter: none !important;
+}
+/* Remove glows and blurs */
+body.theme-win95 * {
+  backdrop-filter: none !important;
+  text-shadow: none !important;
+}
+/* Wordle cells */
+body.theme-win95 .wordle-cell {
+  border-radius: 0 !important;
+  border: 2px solid #808080 !important;
+}
+body.theme-win95 .wordle-cell.correct { background: #008000 !important; color: #fff !important; }
+body.theme-win95 .wordle-cell.present { background: #808000 !important; color: #fff !important; }
+body.theme-win95 .wordle-cell.absent  { background: #808080 !important; color: #fff !important; }
+/* Scrollbars */
+body.theme-win95 ::-webkit-scrollbar { width: 16px; }
+body.theme-win95 ::-webkit-scrollbar-track { background: #c0c0c0; }
+body.theme-win95 ::-webkit-scrollbar-thumb {
+  background: #c0c0c0;
+  box-shadow: inset -1px -1px #000, inset 1px 1px #fff, inset -2px -2px #808080, inset 2px 2px #dfdfdf;
+}
+body.theme-win95 ::-webkit-scrollbar-button {
+  background: #c0c0c0;
+  box-shadow: inset -1px -1px #000, inset 1px 1px #fff, inset -2px -2px #808080, inset 2px 2px #dfdfdf;
+  display: block;
+  height: 16px;
+}
+
 .kp-alert{position:fixed;top:var(--s-md);left:50%;transform:translateX(-50%);z-index:200;background:linear-gradient(135deg,rgba(255,224,102,.15),rgba(255,170,68,.15));border:1px solid #ffe06688;border-radius:14px;padding:var(--s-sm) var(--s-md);display:flex;align-items:center;gap:var(--s-sm);backdrop-filter:blur(16px);box-shadow:0 4px 24px rgba(0,0,0,.3);max-width:min(480px,90vw);}
 .kp-alert-icon{font-size:var(--t-lg);}
 .kp-alert-text{font-family:var(--font-mono);font-size:var(--t-xs);color:var(--text);flex:1;line-height:1.4;}
