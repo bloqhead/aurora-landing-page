@@ -1863,6 +1863,7 @@ createApp({
     }
 
     watch(tamaEnabled,v=>{if(v)nextTick(()=>setTimeout(tamaInit,50));});
+    function tamaInit(){
       if(tamaAnimId)cancelAnimationFrame(tamaAnimId);
       // Morning greeting
       if(tamaTimeOfDay()==='morning')setTimeout(()=>tamaReact('cheer'),1000);
