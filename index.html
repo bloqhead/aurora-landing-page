@@ -676,6 +676,26 @@
           <div class="settings-hint">Free at api.nasa.gov — powers Astronomy Picture of the Day. Leave blank to use DEMO_KEY (limited).</div>
         </div>
         <div class="settings-section">
+          <div class="settings-section-label">Companion Character</div>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-family:var(--font-mono);font-size:var(--t-xs);color:var(--text-muted);">
+              <input type="checkbox" v-model="tamaEnabled" @change="saveSettings" style="accent-color:var(--accent);width:16px;height:16px;" />
+              Show companion
+            </label>
+          </div>
+          <div v-if="tamaEnabled" style="display:flex;gap:6px;flex-wrap:wrap;">
+            <button v-for="c in TAMA_CHARS" :key="c.id"
+              @click="tamaSetChar(c.id)"
+              :title="c.label"
+              class="tama-pick-opt"
+              :class="{active:tamaChar===c.id}"
+              style="width:44px;height:44px;">
+              {{ c.emoji }}
+            </button>
+          </div>
+          <div class="settings-hint">Your little friend. Reacts to dice rolls, music, games, and more.</div>
+        </div>
+        <div class="settings-section">
           <div class="settings-section-label">Music App for Album Links</div>
           <select class="settings-select" v-model="musicApp">
             <option value="lastfm">Last.fm only</option>
@@ -707,7 +727,7 @@
     </div>
   </transition>
   <!-- Sticky tamagotchi -->
-  <div class="tama-sticky" :class="{walking:tamaWalking,dancing:tamaDancing&&!tamaWalking,raging:tamaRaging}"
+  <div v-if="tamaEnabled" class="tama-sticky" :class="{walking:tamaWalking,dancing:tamaDancing&&!tamaWalking,raging:tamaRaging}"
     :style="tamaDancing&&!tamaWalking?{animationDuration:(60/tamaBPM*1000)+'ms'}:{}"
   >
     <!-- Chat bubble -->
@@ -718,22 +738,6 @@
       </div>
     </transition>
     <canvas id="tama-canvas" width="96" height="96" style="image-rendering:pixelated;cursor:pointer;display:block;width:96px;height:96px;" @click="tamaInteract"></canvas>
-    <div class="tama-sticky-bar">
-      <button @click.stop="tamaPickerOpen=!tamaPickerOpen"
-        class="tama-pick-btn"
-        :title="'Character: '+TAMA_CHARS.find(c=>c.id===tamaChar)?.label">
-        {{ TAMA_CHARS.find(c=>c.id===tamaChar)?.emoji }}
-      </button>
-      <div v-if="tamaPickerOpen" class="tama-picker-popup">
-        <button v-for="c in TAMA_CHARS" :key="c.id"
-          @click="tamaSetChar(c.id)"
-          :title="c.label"
-          class="tama-pick-opt"
-          :class="{active:tamaChar===c.id}">
-          {{ c.emoji }}
-        </button>
-      </div>
-    </div>
   </div>
 
   <!-- Last.fm Now Playing bar -->
