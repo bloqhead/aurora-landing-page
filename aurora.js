@@ -1400,7 +1400,8 @@ createApp({
           [1,0,2,-1],[1,2,3,-1],[3,2,4,-1],[3,4,5,-1],[5,4,6,-1],
           [5,6,7,-1],[7,6,8,-1],[7,8,9,-1],[9,8,0,-1],[9,0,1,-1],
         ],
-        faceTexts:[null,' ','1','2','3','4','5','6','7','8','9','10'],
+        // face index 0→mat 1, 1→mat 2 ... face index -1→mat 0 (chamfer/dark)
+        faceTexts:[null,'1','2','3','4','5','6','7','8','9','10'],
         textMargin:1.0,
       },
       d12:{
@@ -1437,7 +1438,7 @@ createApp({
       const geom=makeGeometry(THREE,chamfered.vectors,chamfered.faces,radius,def.tab,def.af);
 
       // Build per-face materials
-      const mats=[new THREE.MeshPhongMaterial({color:0x050d0a,specular:0x172022,shininess:20})]; // index 0 = chamfer faces
+      const mats=[new THREE.MeshPhongMaterial({color:0x0a0e1a,specular:0x172022,shininess:20,flatShading:false})]; // index 0 = chamfer faces
       const texts=def.faceTexts;
       for(let i=1;i<texts.length;i++){
         const tex=makeFaceTexture(THREE,texts[i],textHex,bgHex,size);
