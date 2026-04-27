@@ -230,11 +230,7 @@ createApp({
     const solParticles=[];
 
     function solSpawnCinders(x, y){
-      if(!solPixiApp)return;
-      if(!solParticleContainer){
-        solParticleContainer=new PIXI.Container();
-        solPixiApp.stage.addChild(solParticleContainer);
-      }
+      if(!solPixiApp||!solParticleContainer)return;
       const col=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#50dca0';
       const hex=parseInt(col.replace('#',''),16);
       const colors=[hex, 0xffffff, 0xffdd88, hex];
@@ -358,6 +354,11 @@ createApp({
       const PIXI=window.PIXI;
       const stage=solPixiApp.stage;
       stage.removeChildren();
+      // Keep particle container on top after every redraw
+      if(!solParticleContainer){
+        solParticleContainer=new PIXI.Container();
+      }
+      stage.addChild(solParticleContainer);
       solPixiRegions=[];
 
       const W=solPixiApp.screen.width;
