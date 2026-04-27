@@ -325,7 +325,7 @@ createApp({
     function solMakeDeck(){const d=[];for(let s=0;s<4;s++)for(let r=0;r<13;r++)d.push({suit:s,rank:r,display:RANKS[r]+SUITS[s],faceUp:false});return d.sort(()=>Math.random()-.5);}
     function solSave(){try{localStorage.setItem('aurora_sol',JSON.stringify({tableau:solTableau.value,foundations:solFoundations.value,stock:solStock.value,waste:solWaste.value,moves:solMoves.value}));}catch{}}
     function solLoad(){const s=localStorage.getItem('aurora_sol');if(!s)return false;try{const d=JSON.parse(s);solTableau.value=d.tableau;solFoundations.value=d.foundations;solStock.value=d.stock;solWaste.value=d.waste;solMoves.value=d.moves;solWon.value=false;return true;}catch{return false;}}
-    function solInit(){solSelected.value=null;if(!solLoad()){const deck=solMakeDeck();solTableau.value=Array.from({length:7},(_,i)=>deck.splice(0,i+1).map((c,j,a)=>({...c,faceUp:j===a.length-1})));solFoundations.value=[[],[],[],[]];solStock.value=deck.map(c=>({...c,faceUp:false}));solWaste.value=[];solMoves.value=0;solWon.value=false;solSave();}nextTick(()=>solDrawTableau());}
+    function solInit(){solSelected.value=null;if(!solLoad()){const deck=solMakeDeck();solTableau.value=Array.from({length:7},(_,i)=>deck.splice(0,i+1).map((c,j,a)=>({...c,faceUp:j===a.length-1})));solFoundations.value=[[],[],[],[]];solStock.value=deck.map(c=>({...c,faceUp:false}));solWaste.value=[];solMoves.value=0;solWon.value=false;solSave();}nextTick(()=>solDrawPixi());}
     function solNewGame(){
       solParticles.forEach(p=>{p.destroy();});
       solParticles.length=0;
@@ -864,7 +864,9 @@ createApp({
         const res=await fetch(`${KLIPY_BASE}/gifs/search?q=${encodeURIComponent(gifQuery.value)}&limit=12&contentfilter=medium`);
         if(!res.ok)throw new Error('Search failed');
         const data=await res.json();
-        gifResults.value=gifParse(data.results);
+        console.log('Klipy search raw:',JSON.stringify(data).slice(0,500));
+        const items=data.results||data.data||data.gifs||data.items||[];
+        gifResults.value=gifParse(items);
         nextTick(refreshIcons);
       }catch(e){gifError.value='Could not load GIFs.';}
       finally{gifLoading.value=false;}
@@ -872,11 +874,14 @@ createApp({
 
     async function gifLoadTrending(){
       try{
-        const res=await fetch(`${KLIPY_BASE}/gifs/featured?limit=12&contentfilter=medium`);
+        const res=await fetch(`${KLIPY_BASE}/gifs/trending?limit=12&contentfilter=medium`);
         if(!res.ok)return;
         const data=await res.json();
-        if(data.results?.length)console.log('Klipy sample item:',JSON.stringify(data.results[0],null,2));
-        gifTrending.value=gifParse(data.results);
+        console.log('Klipy trending raw keys:',Object.keys(data));
+        console.log('Klipy trending sample:',JSON.stringify(data).slice(0,500));
+        const items=data.results||data.data||data.gifs||data.items||[];
+        if(items.length)console.log('Klipy first item:',JSON.stringify(items[0],null,2).slice(0,800));
+        gifTrending.value=gifParse(items);
         nextTick(refreshIcons);
       }catch{}
     }
