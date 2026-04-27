@@ -1883,13 +1883,26 @@ createApp({
 
       // Music notes when dancing
       if(dancing){
-        ctx.font='10px serif';
-        ctx.globalAlpha=0.7*(Math.sin(tamaFrame*0.08)*0.4+0.6);
-        ctx.fillStyle=col;
-        const n1y=8+bounce-((tamaFrame*0.5)%20);
-        const n2y=4+bounce-((tamaFrame*0.5+10)%20);
-        ctx.fillText('♪',78,n1y);
-        ctx.fillText('♫',4,n2y);
+        const noteSymbols=['♪','♫','♩','♬'];
+        const noteConfigs=[
+          {x:76, offset:0,   size:16, sym:0},
+          {x:6,  offset:30,  size:14, sym:1},
+          {x:62, offset:55,  size:13, sym:2},
+          {x:16, offset:15,  size:15, sym:3},
+        ];
+        noteConfigs.forEach(({x,offset,size,sym})=>{
+          const travel=70; // travel distance in px
+          const speed=0.3; // slower float
+          const raw=((tamaFrame*speed+offset)%travel);
+          const noteY=80+bounce-raw; // start near bottom of canvas, float up
+          const fadeZone=24; // fade out in top 24px
+          const alpha=noteY<fadeZone ? Math.max(0,noteY/fadeZone) : 0.8*(Math.sin(tamaFrame*0.08+offset)*0.2+0.8);
+          if(alpha<=0)return;
+          ctx.font=`bold ${size}px serif`;
+          ctx.globalAlpha=alpha;
+          ctx.fillStyle=col;
+          ctx.fillText(noteSymbols[sym],x,noteY);
+        });
         ctx.globalAlpha=1;
       }
 
