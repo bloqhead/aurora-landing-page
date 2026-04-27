@@ -1595,6 +1595,9 @@ createApp({
       tamaWalking.value=true;
       clearTimeout(tamaScrollTimer);
       tamaScrollTimer=setTimeout(()=>tamaWalking.value=false, 300);
+      // Header scrolled state
+      const h=document.querySelector('.header');
+      if(h)h.classList.toggle('scrolled',window.scrollY>10);
     }
 
     function tamaSetChar(id){
