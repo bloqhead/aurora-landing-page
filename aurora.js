@@ -134,73 +134,90 @@ createApp({
       const phase=moon.value.phase;
       ctx.clearRect(0,0,W,H);
 
-      // Stars behind
-      ctx.fillStyle='rgba(255,255,255,0.4)';
-      for(let i=0;i<30;i++){
+      // Background stars
+      ctx.fillStyle='rgba(255,255,255,0.5)';
+      for(let i=0;i<24;i++){
         const sx=(Math.sin(i*137.5)*0.5+0.5)*W;
         const sy=(Math.cos(i*97.3)*0.5+0.5)*H;
-        const dist=Math.sqrt((sx-cx)**2+(sy-cy)**2);
-        if(dist>R+6){ctx.fillRect(sx,sy,1,1);}
+        if(Math.sqrt((sx-cx)**2+(sy-cy)**2)>R+5){ctx.fillRect(sx,sy,1,1);}
       }
 
-      // Dark side of moon (always full circle, dark)
-      ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);
-      ctx.fillStyle='#1a1a2e';ctx.fill();
-
-      // Lit portion — clip to circle, draw ellipse for terminator
+      // Clip everything to the moon circle
       ctx.save();
       ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);ctx.clip();
 
-      // The lit portion depends on phase
-      // phase 0=new, 0.25=first quarter, 0.5=full, 0.75=last quarter
-      const lit=phase<=0.5?'right':'left'; // which side is lit
-      const p=phase<=0.5?phase*2:(phase-0.5)*2; // 0-1 within half cycle
+      // Fill entire circle dark (night side)
+      ctx.fillStyle='#1a1a2e';
+      ctx.fillRect(0,0,W,H);
 
-      // Draw the lit crescent/gibbous shape
+      // Draw lit portion using correct elliptical terminator
+      // phase: 0=new, 0.25=first quarter, 0.5=full, 0.75=last quarter, 1=new
+      // The terminator is an ellipse whose x-radius goes from -R to +R
+      // Negative = lit on right (waxing), Positive = lit on left (waning)
+      const angle=phase*Math.PI*2;
+      // termX: the x-scale of the terminator ellipse (-1 to 1)
+      const termX=Math.cos(angle); // -1 at full, +1 at new, 0 at quarters
+
       ctx.fillStyle='#f0e6c8';
+      ctx.beginPath();
       if(phase<0.02||phase>0.98){
         // New moon — no fill
       } else if(phase>0.48&&phase<0.52){
         // Full moon
-        ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);ctx.fill();
-      } else {
-        ctx.beginPath();
-        if(lit==='right'){
-          // Waxing: right side lit
-          ctx.arc(cx,cy,R,-Math.PI/2,Math.PI/2,false); // right semicircle
-          // Terminator ellipse x-radius: goes from -R (new) to 0 (quarter) to R (full)
-          const tx=R*(1-p*2); // positive = shadow bulges right, negative = lit bulges right
-          ctx.bezierCurveTo(cx+tx,cy-R,cx+tx,cy+R,cx,cy+R);
-        } else {
-          // Waning: left side lit
-          ctx.arc(cx,cy,R,Math.PI/2,-Math.PI/2,false); // left semicircle
-          const tx=R*(p*2-1);
-          ctx.bezierCurveTo(cx-tx,cy+R,cx-tx,cy-R,cx,cy-R);
-        }
+        ctx.arc(cx,cy,R,0,Math.PI*2);
         ctx.fill();
+      } else {
+        // Draw the lit half + terminator ellipse
+        // Waxing (0-0.5): lit on right, shadow on left
+        // Waning (0.5-1): lit on left, shadow on right
+        const waxing=phase<0.5;
+
+        // Start with the lit semicircle
+        if(waxing){
+          ctx.arc(cx,cy,R,-Math.PI/2,Math.PI/2,false); // right half
+        } else {
+          ctx.arc(cx,cy,R,Math.PI/2,-Math.PI/2,false); // left half
+        }
+
+        // Close with elliptical terminator arc
+        // termX ranges: waxing 1→0 (full ellipse right→flat), waning 0→-1 (flat→full ellipse left)
+        const ex=Math.abs(termX)*R; // x-radius of terminator ellipse
+        // For waxing: terminator bulges left (shadow side), so ellipse goes leftward
+        // For waning: terminator bulges right
+        ctx.closePath();
+        ctx.fill();
+
+        // Now subtract or add the terminator crescent
+        ctx.globalCompositeOperation=waxing?'destination-out':'source-over';
+        ctx.fillStyle=waxing?'rgba(0,0,0,1)':'#f0e6c8';
+        ctx.beginPath();
+        ctx.ellipse(cx,cy,ex,R,0,Math.PI/2,-Math.PI/2,!waxing);
+        ctx.closePath();
+        ctx.fill();
+        ctx.globalCompositeOperation='source-over';
       }
 
-      // Moon surface texture (craters)
-      ctx.globalAlpha=0.12;
-      ctx.fillStyle='#888';
+      // Craters
+      ctx.globalAlpha=0.08;
+      ctx.fillStyle='#000';
       [[cx-14,cy-10,8],[cx+10,cy+14,6],[cx-6,cy+18,5],[cx+16,cy-16,4],[cx-18,cy+4,3]].forEach(([mx,my,mr])=>{
         ctx.beginPath();ctx.arc(mx,my,mr,0,Math.PI*2);ctx.fill();
       });
       ctx.globalAlpha=1;
       ctx.restore();
 
-      // Glow for full/near-full
+      // Glow near full
       if(phase>0.4&&phase<0.6){
-        const glow=ctx.createRadialGradient(cx,cy,R*0.8,cx,cy,R*1.4);
-        glow.addColorStop(0,'rgba(240,230,180,0.15)');
+        const glow=ctx.createRadialGradient(cx,cy,R*0.9,cx,cy,R*1.5);
+        glow.addColorStop(0,'rgba(240,230,180,0.2)');
         glow.addColorStop(1,'rgba(240,230,180,0)');
-        ctx.beginPath();ctx.arc(cx,cy,R*1.4,0,Math.PI*2);
+        ctx.beginPath();ctx.arc(cx,cy,R*1.5,0,Math.PI*2);
         ctx.fillStyle=glow;ctx.fill();
       }
 
-      // Outline
+      // Rim
       ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);
-      ctx.strokeStyle='rgba(255,255,255,0.1)';ctx.lineWidth=1;ctx.stroke();
+      ctx.strokeStyle='rgba(255,255,255,0.08)';ctx.lineWidth=1;ctx.stroke();
     }
 
     watch(visibleWidgets,()=>{
