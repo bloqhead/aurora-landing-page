@@ -1601,7 +1601,6 @@ createApp({
       tamaChar.value=id;
       localStorage.setItem('aurora_tama',id);
       nextTick(()=>tamaInit());
-      tamaPickerOpen.value=false;
     }
     function tamaInteract(){tamaHappy=40;}
     function tamaReact(mood){tamaHappy=0;tamaSad=0;tamaWin=0;tamaRage=0;if(mood==='cheer')tamaHappy=60;else if(mood==='sad')tamaSad=40;else if(mood==='rage')tamaRage=120;else if(mood==='win')tamaWin=150;}
