@@ -298,7 +298,17 @@ createApp({
           return;
         }
       }
-      // No saved city — use browser geolocation
+      // No saved city — check for previously saved geo coords first
+      const savedLat=localStorage.getItem('aurora_geo_lat');
+      const savedLon=localStorage.getItem('aurora_geo_lon');
+      const savedGeoName=localStorage.getItem('aurora_geo_name');
+      if(savedLat&&savedLon){
+        userLat.value=parseFloat(savedLat);userLon.value=parseFloat(savedLon);
+        locationName.value=savedGeoName||'Your Location';
+        loadLocationData(parseFloat(savedLat),parseFloat(savedLon));
+        return;
+      }
+      // No saved coords — use browser geolocation
       if(!navigator.geolocation){locationError.value='Set a city in settings.';return;}
       if(navigator.permissions){
         try{
@@ -321,10 +331,13 @@ createApp({
         async pos=>{
           const{latitude:lat,longitude:lon}=pos.coords;
           userLat.value=lat;userLon.value=lon;
+          localStorage.setItem('aurora_geo_lat',lat);
+          localStorage.setItem('aurora_geo_lon',lon);
           try{
             const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
             const d=await r.json();
             locationName.value=d.address?.city||d.address?.town||d.address?.village||'Your Location';
+            localStorage.setItem('aurora_geo_name',locationName.value);
           }catch{locationName.value='Your Location';}
           loadLocationData(lat,lon);
         },
@@ -1532,7 +1545,7 @@ createApp({
     function toggleSoma(){if(somaPlaying.value){somaAudio.pause();somaPlaying.value=false;}else{somaAudio.src=currentSoma.value.stream;somaAudio.volume=parseFloat(somaVolume.value);somaAudio.play().catch(()=>{});somaPlaying.value=true;}}
     function updateSomaVolume(){somaAudio.volume=parseFloat(somaVolume.value);}
 
-    function saveSettings(){localStorage.setItem('aurora_location',locationInput.value);localStorage.setItem('aurora_unsplash',unsplashKey.value);localStorage.setItem('aurora_lastfm',lastfmKey.value);localStorage.setItem('aurora_nasa',nasaKey.value);localStorage.setItem('aurora_musicapp',musicApp.value);localStorage.setItem('aurora_theme',currentTheme.value);localStorage.setItem('aurora_fahrenheit',useFahrenheit.value);localStorage.setItem('aurora_lastfm_user',lastfmUser.value);localStorage.setItem('aurora_tama_enabled',tamaEnabled.value);bookmarks.value=bookmarkEdits.value.filter(b=>b.url);localStorage.setItem('aurora_bookmarks',JSON.stringify(bookmarks.value));showSettings.value=false;locateAndLoad();fetchBg(bgTopic.value);fetchAlbum(selectedGenre.value);fetchAPOD();}
+    function saveSettings(){localStorage.setItem('aurora_location',locationInput.value);if(locationInput.value.trim()){localStorage.removeItem('aurora_geo_lat');localStorage.removeItem('aurora_geo_lon');localStorage.removeItem('aurora_geo_name');}localStorage.setItem('aurora_unsplash',unsplashKey.value);localStorage.setItem('aurora_lastfm',lastfmKey.value);localStorage.setItem('aurora_nasa',nasaKey.value);localStorage.setItem('aurora_musicapp',musicApp.value);localStorage.setItem('aurora_theme',currentTheme.value);localStorage.setItem('aurora_fahrenheit',useFahrenheit.value);localStorage.setItem('aurora_lastfm_user',lastfmUser.value);localStorage.setItem('aurora_tama_enabled',tamaEnabled.value);bookmarks.value=bookmarkEdits.value.filter(b=>b.url);localStorage.setItem('aurora_bookmarks',JSON.stringify(bookmarks.value));showSettings.value=false;locateAndLoad();fetchBg(bgTopic.value);fetchAlbum(selectedGenre.value);fetchAPOD();}
 
     onMounted(()=>{applyTheme(currentTheme.value);updateNumCols();window.addEventListener('resize',updateNumCols);window.addEventListener('scroll',tamaOnScroll,{passive:true});document.addEventListener('pointerdown',()=>{tamaLastInteraction=Date.now();tamaSleepy=0;},{passive:true});clockTimer=setInterval(()=>{now.value=new Date();},10000);locateAndLoad();fetchKP();fetchQuote();fetchAlbum(selectedGenre.value);fetchBg(bgTopic.value);fetchAnimal();fetchAPOD();fetchChangelogBadge();w2048Init();setInterval(fetchKP,5*60*1000);setInterval(()=>{if(unsplashKey.value)fetchBg(bgTopic.value);},15*60*1000);tamaInit();setTimeout(drawMoonCanvas,300);if(window.lucide)window.lucide.createIcons();});
     onUnmounted(()=>{clearInterval(clockTimer);window.removeEventListener('resize',updateNumCols);window.removeEventListener('scroll',tamaOnScroll);teardownDice();});
@@ -2079,7 +2092,7 @@ createApp({
     }
 
     function refreshIcons(){nextTick(()=>{if(window.lucide)window.lucide.createIcons();});}
-    watch([showPicker,showSettings,showChangelog,somaPlaying,snakePaused,albumExpanded,nowPlaying,visibleWidgets],refreshIcons);
+    watch([showPicker,showSettings,showChangelog,somaPlaying,snakePaused,albumExpanded,nowPlaying,visibleWidgets,locationPromptNeeded],refreshIcons);
 
     return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,locationPromptNeeded,doGeolocate,locationPromptNeeded,doGeolocate,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,albumExpanded,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,chatRenderText,formatChatTime,activeWidget,setActiveWidget,clearActiveWidget,solTableau,solFoundations,solStock,solWaste,solMoves,solWon,solInit,solNewGame,solSelected,solDraw,solClickWaste,solClickFoundation,solClickCol,solClickCard,solAutoFoundation,solDrawPixi,solInitPixi,snakeScore,snakeBest,snakeRunning,snakeDead,snakePaused,snakeStart,snakePause,snakeSetDir,wordleGuesses,wordleResults,wordleCurrent,wordleMsg,wordleKeyRows,wordleGetLetter,wordleGetClass,wordleKeyClass,wordleKey,wordleHandleMobileKey,wordleHandleMobileInput,worldClockCities,worldClockPick,worldClockOptions,worldClockTime,worldClockDate,worldClockAdd,worldClockRemove,gifQuery,gifResults,gifTrending,gifLoading,gifError,gifCopied,gifSearch,gifSelect,steamGenres,steamGenre,steamLoading,steamError,steamGame,steamScoreClass,steamPickGenre,steamNext,film,filmGenre,filmGenres,filmNext,passValue,passLength,passOpts,passCopied,passGenerate,passCopy,paletteBase,paletteType,paletteTypes,paletteColors,paletteCopied,paletteGenerate,paletteCopy,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,pickerSearch,filteredWidgetRegistry,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings,tamaReact,tamaInteract,TAMA_CHARS,tamaChar,tamaEnabled,tamaSetChar,tamaWalking,tamaDancing,tamaBPM,tamaRaging,chatUnread,chatBubble,lastfmUser,nowPlaying};
   }
