@@ -665,9 +665,9 @@
           <div class="settings-hint">Free — powers album recommendations.</div>
         </div>
         <div class="settings-section">
-          <div class="settings-section-label">Spotify Client ID</div>
-          <input class="settings-input" v-model="SPOTIFY_CLIENT_ID" placeholder="From developer.spotify.com/dashboard" />
-          <div class="settings-hint">Free — powers the Now Playing bar. Create an app at developer.spotify.com.</div>
+          <div class="settings-section-label">Last.fm Username</div>
+          <input class="settings-input" v-model="lastfmUser" placeholder="Your Last.fm username" autocomplete="off" />
+          <div class="settings-hint">Shows your currently scrobbling track in the Now Playing bar. Needs your Last.fm API key above.</div>
         </div>
         <div class="settings-section">
           <div class="settings-section-label">NASA API Key</div>
@@ -735,31 +735,23 @@
     </div>
   </div>
 
-  <!-- Spotify Now Playing bar -->
+  <!-- Last.fm Now Playing bar -->
   <transition name="nowplaying">
-    <div v-if="spotifyTrack&&spotifyTrack.name" class="now-playing-bar">
-      <img v-if="spotifyTrack.art" :src="spotifyTrack.art" class="np-art" />
+    <div v-if="nowPlaying" class="now-playing-bar">
+      <img v-if="nowPlaying.art" :src="nowPlaying.art" class="np-art" @error="$event.target.style.display='none'" />
       <div v-else class="np-art np-art-placeholder">♫</div>
       <div class="np-info">
-        <div class="np-track">{{ spotifyTrack.name }}</div>
-        <div class="np-artist">{{ spotifyTrack.artist }}</div>
-        <div class="np-progress-track">
-          <div class="np-progress-bar" :style="{width:spotifyProgress+'%'}"></div>
-        </div>
+        <div class="np-track">{{ nowPlaying.name }}</div>
+        <div class="np-artist">{{ nowPlaying.artist }}<span v-if="nowPlaying.album" class="np-album"> · {{ nowPlaying.album }}</span></div>
       </div>
-      <div class="np-controls">
-        <button class="np-btn" @click="spotifyControl('previous')" title="Previous">⏮</button>
-        <button class="np-btn np-btn-main" @click="spotifyControl(spotifyTrack.playing?'pause':'play')">{{ spotifyTrack.playing ? '⏸' : '▶' }}</button>
-        <button class="np-btn" @click="spotifyControl('next')" title="Next">⏭</button>
-      </div>
-      <a v-if="spotifyTrack.url" :href="spotifyTrack.url" target="_blank" rel="noopener" class="np-open" title="Open in Spotify">↗</a>
-      <button class="np-disconnect" @click="spotifyDisconnect" title="Disconnect">✕</button>
+      <a v-if="nowPlaying.url" :href="nowPlaying.url" target="_blank" rel="noopener" class="np-open" title="Open on Last.fm">↗</a>
+      <div class="np-lastfm-badge">last.fm</div>
     </div>
   </transition>
 
-  <!-- Spotify connect button (when not connected) -->
-  <div v-if="!spotifyToken&&!spotifyTrack" class="np-connect-hint" @click="spotifyConnect">
-    <span>🎵 Connect Spotify</span>
+  <!-- Last.fm connect hint -->
+  <div v-if="lastfmKey&&lastfmUser&&!nowPlaying" class="np-connect-hint" style="cursor:default;">
+    <span>🎵 Nothing playing</span>
   </div>
 </div>
 <script type="module" src="aurora.js?v=__BUILD_VERSION__"></script>
