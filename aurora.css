@@ -292,8 +292,9 @@ canvas:focus{outline:none;}
 .bookmark-add-btn{font-family:var(--font-mono);font-size:var(--t-xs);color:var(--accent);background:none;border:1px dashed var(--card-border);border-radius:8px;padding:6px 12px;cursor:pointer;transition:all .2s;}
 .bookmark-add-btn:hover{border-color:var(--accent);}
 
-.photo-credit{position:fixed;bottom:var(--s-sm);right:var(--s-md);font-family:var(--font-mono);font-size:var(--t-xs);color:rgba(255,255,255,.4);z-index:3;text-decoration:none;transition:color .2s;}
+.photo-credit{position:fixed;bottom:var(--s-sm);right:var(--s-md);font-family:var(--font-mono);font-size:var(--t-xs);color:rgba(255,255,255,.4);z-index:141;text-decoration:none;transition:color .2s,bottom .3s;}
 .photo-credit:hover{color:rgba(255,255,255,.8);}
+body:has(.now-playing-bar) .photo-credit{bottom:64px;}
 .dot-loader{display:inline-flex;gap:4px;}
 .dot-loader span{width:4px;height:4px;border-radius:50%;background:var(--text-muted);animation:bounce 1.2s ease-in-out infinite;}
 .dot-loader span:nth-child(2){animation-delay:.2s;} .dot-loader span:nth-child(3){animation-delay:.4s;}
