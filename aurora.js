@@ -1587,9 +1587,9 @@ createApp({
       const cv=document.getElementById('tama-canvas');
       if(!cv)return;
       const ctx=cv.getContext('2d');
-      ctx.clearRect(0,0,64,64);
+      ctx.clearRect(0,0,96,96);
       const col=tamaGetColor();
-      const S=4;
+      const S=6; // pixel size — was 4 for 64px, now 6 for 96px
       const blink=tamaBlinkTimer>0;
       const happy=tamaHappy>0;
       const sad=tamaSad>0;
@@ -1619,7 +1619,7 @@ createApp({
 
       if(char==='blob'){
         // Round blob
-        const ox=16+sway,oy=10+bounce;
+        const ox=24+sway,oy=15+bounce;
         tamaPx(ctx,col,[[0,1],[0,2],[0,3],[0,4],[1,0],[1,1],[1,2],[1,3],[1,4],[1,5],[2,0],[2,5],[3,0],[3,5],[4,0],[4,5],[5,1],[5,2],[5,3],[5,4]],ox,oy,S);
         // Eyes
         if(happy||win){tamaPx(ctx,'#0a0e1a',[[1,1],[2,0],[2,2],[1,4],[2,3],[2,5]],ox,oy,S);}
@@ -1632,7 +1632,7 @@ createApp({
         tamaPx(ctx,col,foot?[[6,1],[5,4]]:[[5,1],[6,4]],ox,oy,S);
 
       } else if(char==='cat'){
-        const ox=14+sway,oy=8+bounce;
+        const ox=21+sway,oy=12+bounce;
         // Ears
         tamaPx(ctx,col,[[0,0],[1,0],[1,1],[0,5],[1,5],[1,4]],ox,oy,S);
         // Head
@@ -1653,7 +1653,7 @@ createApp({
         tamaPx(ctx,col,foot?[[8,1],[8,3]]:[[8,2],[8,4]],ox,oy,S);
 
       } else if(char==='ghost'){
-        const ox=14+sway,oy=8+bounce;
+        const ox=21+sway,oy=12+bounce;
         // Body
         tamaPx(ctx,col,[[0,1],[0,2],[0,3],[0,4],[1,0],[1,1],[1,2],[1,3],[1,4],[1,5],[2,0],[2,5],[3,0],[3,5],[4,0],[4,5],[5,0],[5,1],[5,2],[5,3],[5,4],[5,5]],ox,oy,S);
         // Wavy bottom
@@ -1667,7 +1667,7 @@ createApp({
         else{tamaPx(ctx,'#0a0e1a',[[4,2],[4,3]],ox,oy,S);}
 
       } else if(char==='robot'){
-        const ox=14+sway,oy=8+bounce;
+        const ox=21+sway,oy=12+bounce;
         // Antenna
         tamaPx(ctx,col,[[0,2],[0,3],[1,2],[1,3]],ox,oy,S);
         // Head (square)
@@ -1686,7 +1686,7 @@ createApp({
         tamaPx(ctx,col,foot?[[10,1],[10,4]]:[[10,2],[10,3]],ox,oy,S);
 
       } else if(char==='frog'){
-        const ox=14+sway,oy=10+bounce;
+        const ox=21+sway,oy=15+bounce;
         // Eyes on top (bulgy)
         tamaPx(ctx,col,[[0,0],[0,1],[0,4],[0,5],[1,0],[1,1],[1,4],[1,5]],ox,oy,S);
         if(blink){tamaPx(ctx,'#0a0e1a',[[1,0],[1,1],[1,4],[1,5]],ox,oy,S);}
@@ -1702,7 +1702,7 @@ createApp({
         tamaPx(ctx,col,foot?[[6,0],[6,1],[6,4],[6,5],[7,0],[7,5]]:[[6,0],[6,5],[7,0],[7,1],[7,4],[7,5]],ox,oy,S);
 
       } else if(char==='alien'){
-        const ox=14+sway,oy=8+bounce;
+        const ox=21+sway,oy=12+bounce;
         // Head (tall oval)
         tamaPx(ctx,col,[[0,2],[0,3],[1,1],[1,2],[1,3],[1,4],[2,0],[2,1],[2,2],[2,3],[2,4],[2,5],[3,0],[3,5],[4,0],[4,5],[5,0],[5,1],[5,2],[5,3],[5,4],[5,5],[6,1],[6,2],[6,3],[6,4]],ox,oy,S);
         // Big eyes
@@ -1732,18 +1732,18 @@ createApp({
         ctx.fillStyle='#aaccff';
         const zAlpha=0.4+Math.sin(tamaFrame*0.05)*0.3;
         ctx.globalAlpha=zAlpha;
-        ctx.fillText('z',52,12+bounce);
+        ctx.fillText('z',76,16+bounce);
         ctx.globalAlpha=zAlpha*0.7;
-        ctx.fillText('z',56,7+bounce);
+        ctx.fillText('z',82,9+bounce);
         ctx.globalAlpha=zAlpha*0.4;
-        ctx.fillText('Z',60,2+bounce);
+        ctx.fillText('Z',88,2+bounce);
         ctx.globalAlpha=1;
       }
 
       // Morning sparkle — little sun rays
       if(morning){
         ctx.fillStyle='#ffd700';
-        [[8,8],[56,8],[8,56],[56,56]].forEach(([sx,sy],i)=>{
+        [[10,10],[82,10],[10,82],[82,82]].forEach(([sx,sy],i)=>{
           ctx.globalAlpha=0.5*(Math.sin(tamaFrame*0.05+i)*0.5+0.5);
           ctx.fillRect(sx,sy+bounce,S,S);
         });
@@ -1757,7 +1757,7 @@ createApp({
         ctx.fillStyle=col;
         const n1y=8+bounce-((tamaFrame*0.5)%20);
         const n2y=4+bounce-((tamaFrame*0.5+10)%20);
-        ctx.fillText('♪',50,n1y);
+        ctx.fillText('♪',74,n1y);
         ctx.fillText('♫',2,n2y);
         ctx.globalAlpha=1;
       }
@@ -1766,7 +1766,7 @@ createApp({
       if(happy||win){
         const alpha=(tamaHappy||tamaWin)/(win?150:60);
         const sparkCol=win?'#ffd700':col;
-        [[6,6],[56,8],[8,52],[54,50]].forEach(([sx,sy],i)=>{
+        [[8,8],[82,10],[10,78],[80,74]].forEach(([sx,sy],i)=>{
           ctx.globalAlpha=alpha*(Math.sin(tamaFrame*0.4+i)*0.5+0.5);
           ctx.fillStyle=sparkCol;
           ctx.fillRect(sx,sy+bounce,S,S);
@@ -1801,8 +1801,8 @@ createApp({
         ctx.globalAlpha=alpha*0.6;
         ctx.strokeStyle='#ff2200';
         ctx.lineWidth=2;
-        ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(10+Math.random()*10,20+Math.random()*10);ctx.stroke();
-        ctx.beginPath();ctx.moveTo(64,0);ctx.lineTo(54-Math.random()*10,20+Math.random()*10);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(15+Math.random()*15,30+Math.random()*15);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(96,0);ctx.lineTo(81-Math.random()*15,30+Math.random()*15);ctx.stroke();
         ctx.globalAlpha=1;
       }
 
@@ -1812,8 +1812,8 @@ createApp({
         ctx.globalAlpha=alpha*0.8;
         ctx.fillStyle='#6ab4ff';
         const tearY=32+bounce+Math.floor(tamaFrame/4)%12;
-        ctx.fillRect(20,tearY,S,S);
-        ctx.fillRect(40,tearY+4,S,S);
+        ctx.fillRect(30,tearY,S,S);
+        ctx.fillRect(60,tearY+6,S,S);
         ctx.globalAlpha=1;
       }
 

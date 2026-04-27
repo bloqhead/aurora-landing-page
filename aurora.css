@@ -908,7 +908,21 @@ body.theme-win95 ::-webkit-scrollbar-button {
 .chat-logout:hover{color:#ff8c6b;}
 
 
-@media(max-width:600px){
+/* NOW PLAYING BAR — desktop larger */
+@media(min-width:768px){
+  .now-playing-bar{height:72px;padding:10px 24px;gap:16px;}
+  .np-art{width:52px;height:52px;border-radius:6px;}
+  .np-art-placeholder{width:52px;height:52px;}
+  .np-track{font-size:var(--t-md);}
+  .np-artist{font-size:var(--t-sm);}
+  body:has(.now-playing-bar) .masonry{padding-bottom:88px;}
+  body:has(.now-playing-bar) .tama-sticky{bottom:88px;}
+  body:has(.now-playing-bar) .photo-credit{bottom:80px;}
+}
+/* Tama canvas — mobile size */
+@media(max-width:767px){
+  #tama-canvas{width:64px !important;height:64px !important;}
+}
   .header{flex-direction:column;gap:var(--s-sm);}
   .header-right{padding-top:0;align-self:flex-end;}
   .clock{font-size:clamp(2.4rem,14vw,3.8rem);}
