@@ -745,6 +745,9 @@
         <div class="np-track">{{ nowPlaying.name }}</div>
         <div class="np-artist">{{ nowPlaying.artist }}<span v-if="nowPlaying.album" class="np-album"> · {{ nowPlaying.album }}</span></div>
       </div>
+      <div class="np-viz" v-if="nowPlaying">
+        <div class="np-viz-bar" v-for="n in 8" :key="n"></div>
+      </div>
       <a v-if="nowPlaying.url" :href="nowPlaying.url" target="_blank" rel="noopener" class="np-open" title="Open on Last.fm"><i data-lucide="external-link"></i></a>
       <div class="np-lastfm-badge">last.fm</div>
     </div>
