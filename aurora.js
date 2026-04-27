@@ -1549,16 +1549,46 @@ createApp({
     const tamaDancing=ref(false);
     let tamaScrollTimer=null;
 
-    const SOMA_BPM={
-      dronezone:  40,
-      spacestation:55,
-      lush:       70,
-      groovesalad:88,
-      thetrip:    110,
+    const SOMA_BPM={dronezone:40,spacestation:55,lush:70,groovesalad:88,thetrip:110};
+    const GENRE_BPM={
+      ambient:45,drone:40,classical:60,'new age':50,sleep:40,
+      folk:72,country:76,acoustic:70,blues:74,
+      soul:80,jazz:75,'neo-soul':82,rnb:85,
+      pop:100,indie:95,'indie pop':95,'indie rock':104,
+      rock:110,'classic rock':108,'alternative rock':106,
+      electronic:120,house:124,techno:130,trance:138,
+      'hip-hop':88,'hip hop':88,rap:90,trap:140,
+      metal:160,'heavy metal':155,punk:160,'punk rock':150,
+      dance:124,edm:128,disco:116,reggae:80,ska:130,
+      'drum and bass':174,dubstep:140,
     };
-    const tamaBPM=computed(()=>tamaDancing.value?(SOMA_BPM[somaStation.value]||80):80);
+    function bpmFromTags(tags=[]){
+      for(const tag of tags){const t=tag.toLowerCase();if(GENRE_BPM[t])return GENRE_BPM[t];}
+      for(const tag of tags){const t=tag.toLowerCase();for(const[k,v]of Object.entries(GENRE_BPM)){if(t.includes(k)||k.includes(t))return v;}}
+      return 90;
+    }
+    const lastfmNowBPM=ref(90);
+    const tamaBPM=computed(()=>{
+      if(somaPlaying.value)return SOMA_BPM[somaStation.value]||80;
+      if(nowPlaying.value)return lastfmNowBPM.value;
+      return 80;
+    });
     const tamaRaging=computed(()=>tamaRage>0);
+
+    // Dance triggers
     watch(somaPlaying,v=>tamaDancing.value=v);
+    watch(nowPlaying,async(track)=>{
+      if(!track){tamaDancing.value=false;return;}
+      tamaDancing.value=true;
+      if(lastfmKey.value&&track.artist&&track.name){
+        try{
+          const res=await fetch(`https://ws.audioscrobbler.com/2.0/?method=track.getTopTags&artist=${encodeURIComponent(track.artist)}&track=${encodeURIComponent(track.name)}&api_key=${lastfmKey.value}&format=json`);
+          const data=await res.json();
+          const tags=(data?.toptags?.tag||[]).map(t=>t.name);
+          lastfmNowBPM.value=bpmFromTags(tags);
+        }catch{lastfmNowBPM.value=90;}
+      }
+    });
 
     function tamaOnScroll(){
       tamaWalking.value=true;
