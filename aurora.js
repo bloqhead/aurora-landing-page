@@ -872,6 +872,9 @@ createApp({
         const res=await fetch(`${KLIPY_BASE}/gifs/search?q=${encodeURIComponent(gifQuery.value)}&per_page=12`);
         if(!res.ok)throw new Error(`${res.status}`);
         const data=await res.json();
+        console.log('Klipy search keys:',Object.keys(data));
+        if(data.data)console.log('data.data type:',typeof data.data,'keys:',data.data&&typeof data.data==='object'?Object.keys(data.data):'n/a');
+        console.log('Full response:',JSON.stringify(data).slice(0,800));
         const items=gifExtractItems(data);
         gifResults.value=gifParse(items);
         if(!gifResults.value.length)gifError.value='No GIFs found.';
