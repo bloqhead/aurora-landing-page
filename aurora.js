@@ -218,11 +218,62 @@ createApp({
     function solSave(){try{localStorage.setItem('aurora_sol',JSON.stringify({tableau:solTableau.value,foundations:solFoundations.value,stock:solStock.value,waste:solWaste.value,moves:solMoves.value}));}catch{}}
     function solLoad(){const s=localStorage.getItem('aurora_sol');if(!s)return false;try{const d=JSON.parse(s);solTableau.value=d.tableau;solFoundations.value=d.foundations;solStock.value=d.stock;solWaste.value=d.waste;solMoves.value=d.moves;solWon.value=false;return true;}catch{return false;}}
     function solInit(){solSelected.value=null;if(!solLoad()){const deck=solMakeDeck();solTableau.value=Array.from({length:7},(_,i)=>deck.splice(0,i+1).map((c,j,a)=>({...c,faceUp:j===a.length-1})));solFoundations.value=[[],[],[],[]];solStock.value=deck.map(c=>({...c,faceUp:false}));solWaste.value=[];solMoves.value=0;solWon.value=false;solSave();}nextTick(()=>solDrawTableau());}
-    function solNewGame(){localStorage.removeItem('aurora_sol');solInit();}
+    function solNewGame(){
+      solParticles.forEach(p=>{p.destroy();});
+      solParticles.length=0;
+      solParticleContainer=null;localStorage.removeItem('aurora_sol');solInit();}
     function solGetCardAtY(ci,y){const col=solTableau.value[ci];if(!col.length)return -1;let top=0;for(let ri=0;ri<col.length;ri++){const h=ri===col.length-1?72:22;if(y>=top&&y<top+h)return ri;top+=h;}return col.length-1;}
 
     // ── PIXI SOLITAIRE ──────────────────────────────────────────────────────────
     let solPixiApp=null;
+    let solParticleContainer=null;
+    const solParticles=[];
+
+    function solSpawnCinders(x, y){
+      if(!solPixiApp)return;
+      if(!solParticleContainer){
+        solParticleContainer=new PIXI.Container();
+        solPixiApp.stage.addChild(solParticleContainer);
+      }
+      const col=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#50dca0';
+      const hex=parseInt(col.replace('#',''),16);
+      const colors=[hex, 0xffffff, 0xffdd88, hex];
+      const count=18+Math.floor(Math.random()*10);
+      for(let i=0;i<count;i++){
+        const g=new PIXI.Graphics();
+        const size=2+Math.random()*3;
+        const color=colors[Math.floor(Math.random()*colors.length)];
+        g.beginFill(color,1);g.drawRect(0,0,size,size);g.endFill();
+        g.x=x+Math.random()*20-10;
+        g.y=y+Math.random()*10-5;
+        const angle=(Math.random()*Math.PI*2);
+        const speed=2+Math.random()*4;
+        g._vx=Math.cos(angle)*speed;
+        g._vy=Math.sin(angle)*speed-3; // bias upward
+        g._life=1.0;
+        g._decay=0.025+Math.random()*0.03;
+        g._gravity=0.15;
+        solParticleContainer.addChild(g);
+        solParticles.push(g);
+      }
+    }
+
+    function solUpdateParticles(){
+      for(let i=solParticles.length-1;i>=0;i--){
+        const p=solParticles[i];
+        p._vy+=p._gravity;
+        p.x+=p._vx;
+        p.y+=p._vy;
+        p._vx*=0.92;
+        p._life-=p._decay;
+        p.alpha=Math.max(0,p._life);
+        if(p._life<=0){
+          solParticleContainer.removeChild(p);
+          p.destroy();
+          solParticles.splice(i,1);
+        }
+      }
+    }
     const CARD_W=60, CARD_H=84, GAP=6, STACK_OFFSET=22;
 
     // Manual hit test — checks if a point is inside a display object's bounds
@@ -266,6 +317,9 @@ createApp({
       // Attach pointerdown to container so PixiJS text children don't interfere
       container.addEventListener('pointerdown', solPixiHandlePointerDown);
       solPixiApp.view.addEventListener('pointerup', solPixiHandlePointer);
+
+      // Particle ticker
+      solPixiApp.ticker.add(solUpdateParticles);
       solDrawPixi();
     }
 
@@ -464,6 +518,14 @@ createApp({
       if(src==='waste')solWaste.value=solWaste.value.slice(0,-1);
       else{const col=[...solTableau.value[ci]];col.splice(col.length-1,1);solTableau.value[ci]=col;}
       solSelected.value=null;solReveal();solMoves.value++;solCheckWin();solSave();
+      // Cinders at foundation position
+      nextTick(()=>{
+        if(!solPixiApp)return;
+        const W=solPixiApp.renderer.width/solPixiApp.renderer.resolution;
+        const ncols=7,cw=Math.floor((W-(ncols-1)*GAP)/ncols),ch=Math.round(cw*1.4);
+        const fx=(cw+GAP)*(3+fi);
+        solSpawnCinders(fx+cw/2, ch/2);
+      });
     }
     function solClickCard(ci, ri){
       const col=solTableau.value[ci];
@@ -491,6 +553,16 @@ createApp({
       if(src==='waste')solWaste.value=solWaste.value.slice(0,-1);
       else{const c=[...solTableau.value[fromCi]];c.splice(fromRi,cards.length);solTableau.value[fromCi]=c;}
       solSelected.value=null;solReveal();solMoves.value++;solSave();
+      // Cinders at tableau drop position
+      nextTick(()=>{
+        if(!solPixiApp)return;
+        const W=solPixiApp.renderer.width/solPixiApp.renderer.resolution;
+        const ncols=7,cw=Math.floor((W-(ncols-1)*GAP)/ncols),ch=Math.round(cw*1.4);
+        const tableauY=ch+GAP*2;
+        const cx=ci*(cw+GAP);
+        const cardY=tableauY+Math.max(0,solTableau.value[ci].length-1)*STACK_OFFSET;
+        solSpawnCinders(cx+cw/2, cardY);
+      });
     }
 
     function solClickCol(ci, colLen){
