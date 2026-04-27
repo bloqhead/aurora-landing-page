@@ -846,14 +846,22 @@ createApp({
     const gifCopied=ref(false);
     let gifCopiedTimer=null;
 
-    function gifParse(results){
-      return(results||[]).map(r=>{
-        // Try Tenor-compat format first, then native Klipy files format
-        const mf=r.media_formats;
-        const files=r.files;
-        const url=mf?.gif?.url||mf?.mediumgif?.url||files?.original?.url||files?.gif?.url||'';
-        const preview=mf?.tinygif?.url||mf?.nanogif?.url||files?.preview?.url||files?.small?.url||url||'';
-        return{id:r.id,title:r.title||'',url,preview};
+    // Klipy native response: { result: true, data: { data: [...], has_next, current_page } }
+    // Each item has: id, title, slug, files: { gif: { url, width, height }, small: { url }, preview: { url } }
+    function gifExtractItems(data){
+      if(Array.isArray(data))return data;
+      if(data?.data?.data)return data.data.data;
+      if(data?.data&&Array.isArray(data.data))return data.data;
+      if(data?.results)return data.results;
+      return[];
+    }
+
+    function gifParse(items){
+      return(items||[]).map(r=>{
+        const f=r.files;
+        const url=f?.gif?.url||f?.original?.url||'';
+        const preview=f?.small?.url||f?.preview?.url||f?.gif?.url||url||'';
+        return{id:r.id||r.slug,title:r.title||'',url,preview};
       }).filter(r=>r.url);
     }
 
@@ -861,12 +869,12 @@ createApp({
       if(!gifQuery.value.trim())return;
       gifLoading.value=true;gifError.value='';gifResults.value=[];
       try{
-        const res=await fetch(`${KLIPY_BASE}/gifs/search?q=${encodeURIComponent(gifQuery.value)}&limit=12&contentfilter=medium`);
-        if(!res.ok)throw new Error('Search failed');
+        const res=await fetch(`${KLIPY_BASE}/gifs/search?q=${encodeURIComponent(gifQuery.value)}&per_page=12`);
+        if(!res.ok)throw new Error(`${res.status}`);
         const data=await res.json();
-        console.log('Klipy search raw:',JSON.stringify(data).slice(0,500));
-        const items=data.results||data.data||data.gifs||data.items||[];
+        const items=gifExtractItems(data);
         gifResults.value=gifParse(items);
+        if(!gifResults.value.length)gifError.value='No GIFs found.';
         nextTick(refreshIcons);
       }catch(e){gifError.value='Could not load GIFs.';}
       finally{gifLoading.value=false;}
@@ -874,13 +882,10 @@ createApp({
 
     async function gifLoadTrending(){
       try{
-        const res=await fetch(`${KLIPY_BASE}/gifs/trending?limit=12&contentfilter=medium`);
+        const res=await fetch(`${KLIPY_BASE}/gifs/trending?per_page=12`);
         if(!res.ok)return;
         const data=await res.json();
-        console.log('Klipy trending raw keys:',Object.keys(data));
-        console.log('Klipy trending sample:',JSON.stringify(data).slice(0,500));
-        const items=data.results||data.data||data.gifs||data.items||[];
-        if(items.length)console.log('Klipy first item:',JSON.stringify(items[0],null,2).slice(0,800));
+        const items=gifExtractItems(data);
         gifTrending.value=gifParse(items);
         nextTick(refreshIcons);
       }catch{}
