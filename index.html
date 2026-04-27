@@ -37,9 +37,11 @@
   <div class="container">
     <div class="header">
       <div class="header-left">
-        <div class="location-label">{{ locationName || '&mdash;' }}</div>
         <div class="clock">{{ clockStr }}</div>
-        <div class="date-str">{{ dateStr }}</div>
+        <div class="header-meta">
+          <div class="location-label">{{ locationName || '&mdash;' }}</div>
+          <div class="date-str">{{ dateStr }}</div>
+        </div>
       </div>
       <div class="header-right">
         <button class="icon-btn" @click="refreshBg" title="New background"><i data-lucide="image"></i></button>
