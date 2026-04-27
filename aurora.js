@@ -1343,10 +1343,7 @@ createApp({
       // Dark background
       ctx.fillStyle=bgColor;ctx.fillRect(0,0,ts,ts);
       // Subtle face tint
-      ctx.fillStyle=fgColor+'18';ctx.fillRect(0,0,ts,ts);
-      // Border in accent color
-      ctx.strokeStyle=fgColor+'99';ctx.lineWidth=6;
-      ctx.strokeRect(8,8,ts-16,ts-16);
+      ctx.fillStyle=fgColor+'10';ctx.fillRect(0,0,ts,ts);
       // Number
       if(text!==null&&text!==''&&text!==' '){
         ctx.font=`bold ${ts*0.44}px 'DM Mono',monospace`;
@@ -1395,12 +1392,12 @@ createApp({
           return v;
         })(),
         faces:[
-          [5,7,11,0],[4,2,10,1],[1,3,11,2],[0,8,10,3],[7,9,11,4],
-          [8,6,10,5],[9,1,11,6],[2,0,10,7],[3,5,11,8],[6,4,10,9],
+          [5,7,11,1],[4,2,10,2],[1,3,11,3],[0,8,10,4],[7,9,11,5],
+          [8,6,10,6],[9,1,11,7],[2,0,10,8],[3,5,11,9],[6,4,10,10],
           [1,0,2,-1],[1,2,3,-1],[3,2,4,-1],[3,4,5,-1],[5,4,6,-1],
           [5,6,7,-1],[7,6,8,-1],[7,8,9,-1],[9,8,0,-1],[9,0,1,-1],
         ],
-        faceTexts:[null,' ','1','2','3','4','5','6','7','8','9','10'],
+        faceTexts:[null,'1','2','3','4','5','6','7','8','9','10'],
         textMargin:1.0,
       },
       d12:{
