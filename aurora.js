@@ -1655,7 +1655,7 @@ createApp({
 
       if(char==='blob'){
         // Round blob
-        const ox=24+sway,oy=15+bounce;
+        const ox=30+sway,oy=27+bounce;
         tamaPx(ctx,col,[[0,1],[0,2],[0,3],[0,4],[1,0],[1,1],[1,2],[1,3],[1,4],[1,5],[2,0],[2,5],[3,0],[3,5],[4,0],[4,5],[5,1],[5,2],[5,3],[5,4]],ox,oy,S);
         // Eyes
         if(happy||win){tamaPx(ctx,'#0a0e1a',[[1,1],[2,0],[2,2],[1,4],[2,3],[2,5]],ox,oy,S);}
@@ -1668,7 +1668,7 @@ createApp({
         tamaPx(ctx,col,foot?[[6,1],[5,4]]:[[5,1],[6,4]],ox,oy,S);
 
       } else if(char==='cat'){
-        const ox=21+sway,oy=12+bounce;
+        const ox=27+sway,oy=21+bounce;
         // Ears
         tamaPx(ctx,col,[[0,0],[1,0],[1,1],[0,5],[1,5],[1,4]],ox,oy,S);
         // Head
@@ -1689,7 +1689,7 @@ createApp({
         tamaPx(ctx,col,foot?[[8,1],[8,3]]:[[8,2],[8,4]],ox,oy,S);
 
       } else if(char==='ghost'){
-        const ox=21+sway,oy=12+bounce;
+        const ox=30+sway,oy=24+bounce;
         // Body
         tamaPx(ctx,col,[[0,1],[0,2],[0,3],[0,4],[1,0],[1,1],[1,2],[1,3],[1,4],[1,5],[2,0],[2,5],[3,0],[3,5],[4,0],[4,5],[5,0],[5,1],[5,2],[5,3],[5,4],[5,5]],ox,oy,S);
         // Wavy bottom
@@ -1703,7 +1703,7 @@ createApp({
         else{tamaPx(ctx,'#0a0e1a',[[4,2],[4,3]],ox,oy,S);}
 
       } else if(char==='robot'){
-        const ox=21+sway,oy=12+bounce;
+        const ox=30+sway,oy=15+bounce;
         // Antenna
         tamaPx(ctx,col,[[0,2],[0,3],[1,2],[1,3]],ox,oy,S);
         // Head (square)
@@ -1722,7 +1722,7 @@ createApp({
         tamaPx(ctx,col,foot?[[10,1],[10,4]]:[[10,2],[10,3]],ox,oy,S);
 
       } else if(char==='frog'){
-        const ox=21+sway,oy=15+bounce;
+        const ox=30+sway,oy=24+bounce;
         // Eyes on top (bulgy)
         tamaPx(ctx,col,[[0,0],[0,1],[0,4],[0,5],[1,0],[1,1],[1,4],[1,5]],ox,oy,S);
         if(blink){tamaPx(ctx,'#0a0e1a',[[1,0],[1,1],[1,4],[1,5]],ox,oy,S);}
@@ -1738,7 +1738,7 @@ createApp({
         tamaPx(ctx,col,foot?[[6,0],[6,1],[6,4],[6,5],[7,0],[7,5]]:[[6,0],[6,5],[7,0],[7,1],[7,4],[7,5]],ox,oy,S);
 
       } else if(char==='alien'){
-        const ox=21+sway,oy=12+bounce;
+        const ox=30+sway,oy=21+bounce;
         // Head (tall oval)
         tamaPx(ctx,col,[[0,2],[0,3],[1,1],[1,2],[1,3],[1,4],[2,0],[2,1],[2,2],[2,3],[2,4],[2,5],[3,0],[3,5],[4,0],[4,5],[5,0],[5,1],[5,2],[5,3],[5,4],[5,5],[6,1],[6,2],[6,3],[6,4]],ox,oy,S);
         // Big eyes
@@ -1768,11 +1768,11 @@ createApp({
         ctx.fillStyle='#aaccff';
         const zAlpha=0.4+Math.sin(tamaFrame*0.05)*0.3;
         ctx.globalAlpha=zAlpha;
-        ctx.fillText('z',76,16+bounce);
+        ctx.fillText('z',72,22+bounce);
         ctx.globalAlpha=zAlpha*0.7;
-        ctx.fillText('z',82,9+bounce);
+        ctx.fillText('z',79,14+bounce);
         ctx.globalAlpha=zAlpha*0.4;
-        ctx.fillText('Z',88,2+bounce);
+        ctx.fillText('Z',86,6+bounce);
         ctx.globalAlpha=1;
       }
 
@@ -1793,8 +1793,8 @@ createApp({
         ctx.fillStyle=col;
         const n1y=8+bounce-((tamaFrame*0.5)%20);
         const n2y=4+bounce-((tamaFrame*0.5+10)%20);
-        ctx.fillText('♪',74,n1y);
-        ctx.fillText('♫',2,n2y);
+        ctx.fillText('♪',70,n1y);
+        ctx.fillText('♫',6,n2y);
         ctx.globalAlpha=1;
       }
 
@@ -1848,8 +1848,8 @@ createApp({
         ctx.globalAlpha=alpha*0.8;
         ctx.fillStyle='#6ab4ff';
         const tearY=32+bounce+Math.floor(tamaFrame/4)%12;
-        ctx.fillRect(30,tearY,S,S);
-        ctx.fillRect(60,tearY+6,S,S);
+        ctx.fillRect(34,tearY,S,S);
+        ctx.fillRect(56,tearY+6,S,S);
         ctx.globalAlpha=1;
       }
 
