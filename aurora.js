@@ -284,16 +284,13 @@ createApp({
 
     async function locateAndLoad(){
       const saved=localStorage.getItem('aurora_location');
-      // Reset stale state so failures are visible
       locationError.value='';
       if(saved&&saved.trim()){
         try{
           const g=await geocode(saved.trim());
           locationName.value=g.name;
-          userLat.value=g.lat;
-          userLon.value=g.lon;
-          weather.value=null;
-          sunData.value=null;
+          userLat.value=g.lat;userLon.value=g.lon;
+          weather.value=null;sunData.value=null;
           loadLocationData(g.lat,g.lon);
           return;
         }catch{
@@ -301,16 +298,39 @@ createApp({
           return;
         }
       }
-      // No saved city — fall back to browser geolocation
-      if(navigator.geolocation){
-        navigator.geolocation.getCurrentPosition(async pos=>{
+      // No saved city — use browser geolocation
+      if(!navigator.geolocation){locationError.value='Set a city in settings.';return;}
+      if(navigator.permissions){
+        try{
+          const perm=await navigator.permissions.query({name:'geolocation'});
+          if(perm.state==='denied'){locationError.value='Location denied. Set a city in settings.';return;}
+          if(perm.state==='granted'){doGeolocate();return;}
+          // 'prompt' — needs user gesture (iOS Safari won't show dialog from onMounted)
+          locationPromptNeeded.value=true;return;
+        }catch{}
+      }
+      // permissions API unavailable (iOS Safari sometimes) — always require gesture
+      locationPromptNeeded.value=true;
+    }
+
+    const locationPromptNeeded=ref(false);
+
+    function doGeolocate(){
+      locationPromptNeeded.value=false;
+      navigator.geolocation.getCurrentPosition(
+        async pos=>{
           const{latitude:lat,longitude:lon}=pos.coords;
           userLat.value=lat;userLon.value=lon;
-          try{const r2=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);const d2=await r2.json();locationName.value=d2.address?.city||d2.address?.town||d2.address?.village||'Your Location';}
-          catch{locationName.value='Your Location';}
+          try{
+            const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
+            const d=await r.json();
+            locationName.value=d.address?.city||d.address?.town||d.address?.village||'Your Location';
+          }catch{locationName.value='Your Location';}
           loadLocationData(lat,lon);
-        },()=>{locationError.value='Allow location access or set a city in settings.';});
-      }else{locationError.value='Set a city in settings.';}
+        },
+        ()=>{locationError.value='Allow location access or set a city in settings.';},
+        {timeout:10000,maximumAge:300000,enableHighAccuracy:false}
+      );
     }
     function loadLocationData(lat,lon){fetchWeather(lat,lon);fetchAQI(lat,lon);fetchTides(lat,lon);fetchISS();}
 
@@ -2061,6 +2081,6 @@ createApp({
     function refreshIcons(){nextTick(()=>{if(window.lucide)window.lucide.createIcons();});}
     watch([showPicker,showSettings,showChangelog,somaPlaying,snakePaused,albumExpanded,nowPlaying,visibleWidgets],refreshIcons);
 
-    return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,albumExpanded,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,chatRenderText,formatChatTime,activeWidget,setActiveWidget,clearActiveWidget,solTableau,solFoundations,solStock,solWaste,solMoves,solWon,solInit,solNewGame,solSelected,solDraw,solClickWaste,solClickFoundation,solClickCol,solClickCard,solAutoFoundation,solDrawPixi,solInitPixi,snakeScore,snakeBest,snakeRunning,snakeDead,snakePaused,snakeStart,snakePause,snakeSetDir,wordleGuesses,wordleResults,wordleCurrent,wordleMsg,wordleKeyRows,wordleGetLetter,wordleGetClass,wordleKeyClass,wordleKey,wordleHandleMobileKey,wordleHandleMobileInput,worldClockCities,worldClockPick,worldClockOptions,worldClockTime,worldClockDate,worldClockAdd,worldClockRemove,gifQuery,gifResults,gifTrending,gifLoading,gifError,gifCopied,gifSearch,gifSelect,steamGenres,steamGenre,steamLoading,steamError,steamGame,steamScoreClass,steamPickGenre,steamNext,film,filmGenre,filmGenres,filmNext,passValue,passLength,passOpts,passCopied,passGenerate,passCopy,paletteBase,paletteType,paletteTypes,paletteColors,paletteCopied,paletteGenerate,paletteCopy,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,pickerSearch,filteredWidgetRegistry,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings,tamaReact,tamaInteract,TAMA_CHARS,tamaChar,tamaEnabled,tamaSetChar,tamaWalking,tamaDancing,tamaBPM,tamaRaging,chatUnread,chatBubble,lastfmUser,nowPlaying};
+    return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,locationPromptNeeded,doGeolocate,locationPromptNeeded,doGeolocate,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,albumExpanded,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,chatRenderText,formatChatTime,activeWidget,setActiveWidget,clearActiveWidget,solTableau,solFoundations,solStock,solWaste,solMoves,solWon,solInit,solNewGame,solSelected,solDraw,solClickWaste,solClickFoundation,solClickCol,solClickCard,solAutoFoundation,solDrawPixi,solInitPixi,snakeScore,snakeBest,snakeRunning,snakeDead,snakePaused,snakeStart,snakePause,snakeSetDir,wordleGuesses,wordleResults,wordleCurrent,wordleMsg,wordleKeyRows,wordleGetLetter,wordleGetClass,wordleKeyClass,wordleKey,wordleHandleMobileKey,wordleHandleMobileInput,worldClockCities,worldClockPick,worldClockOptions,worldClockTime,worldClockDate,worldClockAdd,worldClockRemove,gifQuery,gifResults,gifTrending,gifLoading,gifError,gifCopied,gifSearch,gifSelect,steamGenres,steamGenre,steamLoading,steamError,steamGame,steamScoreClass,steamPickGenre,steamNext,film,filmGenre,filmGenres,filmNext,passValue,passLength,passOpts,passCopied,passGenerate,passCopy,paletteBase,paletteType,paletteTypes,paletteColors,paletteCopied,paletteGenerate,paletteCopy,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,pickerSearch,filteredWidgetRegistry,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings,tamaReact,tamaInteract,TAMA_CHARS,tamaChar,tamaEnabled,tamaSetChar,tamaWalking,tamaDancing,tamaBPM,tamaRaging,chatUnread,chatBubble,lastfmUser,nowPlaying};
   }
 }).mount('#app');

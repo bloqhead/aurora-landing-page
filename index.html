@@ -42,6 +42,9 @@
           <div class="location-label">{{ locationName || '&mdash;' }}</div>
           <div class="date-str">{{ dateStr }}</div>
         </div>
+        <button v-if="locationPromptNeeded" class="location-prompt-btn" @click="doGeolocate">
+          <i data-lucide="map-pin"></i> Tap to enable location
+        </button>
       </div>
       <div class="header-right">
         <button class="icon-btn" @click="refreshBg" title="New background"><i data-lucide="image"></i></button>
@@ -684,7 +687,13 @@
         <div class="settings-title">Settings</div>
         <div class="settings-section">
           <div class="settings-section-label">Location (city, country)</div>
-          <input class="settings-input" v-model="locationInput" placeholder="e.g. Asheville or Cape Cod" @keyup.enter="saveSettings" />
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input class="settings-input" v-model="locationInput" placeholder="e.g. Asheville or Cape Cod" @keyup.enter="saveSettings" style="flex:1;" />
+            <button class="settings-btn" style="flex-shrink:0;padding:8px 12px;white-space:nowrap;" @click="doGeolocate" title="Detect my location">
+              <i data-lucide="locate"></i>
+            </button>
+          </div>
+          <div v-if="locationError" class="settings-hint" style="color:#ff6b6b;">{{ locationError }}</div>
           <div v-if="locationError" style="font-size:var(--t-xs);color:#ff8c6b;margin-top:var(--s-xs);">{{ locationError }}</div>
         </div>
         <div class="settings-section">
