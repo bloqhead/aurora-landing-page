@@ -812,7 +812,7 @@ createApp({
     // Single global key handler — routes to the active widget
     function globalKeyHandler(e){
       snakeHandleKey(e);
-      wordleHandleKey(e);
+      wordleKey(e.key);
       if(activeWidget.value==='w2048'){
         const map={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down'};
         if(map[e.key]){w2048Move(map[e.key]);e.preventDefault();}
@@ -834,7 +834,6 @@ createApp({
     const currencyAmount=ref(1);const currencyFrom=ref('USD');const currencyTo=ref('EUR');const currencyResult=ref(null);const currencyRate=ref(null);const currencyLoading=ref(false);
     let currencyTimer=null;
     async function currencyConvert(){clearTimeout(currencyTimer);currencyTimer=setTimeout(async()=>{if(!currencyAmount.value||currencyFrom.value===currencyTo.value){currencyResult.value=currencyAmount.value;currencyRate.value=null;return;}currencyLoading.value=true;try{const r=await fetch(`https://www.frankfurter.app/latest?amount=${currencyAmount.value}&from=${currencyFrom.value}&to=${currencyTo.value}`);const d=await r.json();const res=d.rates[currencyTo.value];currencyResult.value=res.toFixed(2)+' '+currencyTo.value;const rr=await fetch(`https://www.frankfurter.app/latest?amount=1&from=${currencyFrom.value}&to=${currencyTo.value}`);const rd=await rr.json();currencyRate.value=rd.rates[currencyTo.value].toFixed(4);}catch{currencyResult.value='—';}currencyLoading.value=false;},400);}
-    currencyConvert();
 
     // ── GIF SEARCH ───────────────────────────────────────────────────────────────
     const KLIPY_KEY='hrUZI0NCMJ5R5mhwxLMVgfAF5SDkEpXWCNSRNZdsXvadiKpQZLaxxzhxYsmwuq05';
@@ -848,13 +847,14 @@ createApp({
     let gifCopiedTimer=null;
 
     function gifParse(results){
-      return(results||[]).map(r=>({
-        id:r.id,
-        title:r.title||'',
-        // Tenor-compat: media_formats.gif.url or media_formats.tinygif.url for preview
-        url:r.media_formats?.gif?.url||r.media_formats?.mediumgif?.url||'',
-        preview:r.media_formats?.tinygif?.url||r.media_formats?.gif?.url||'',
-      })).filter(r=>r.url);
+      return(results||[]).map(r=>{
+        // Try Tenor-compat format first, then native Klipy files format
+        const mf=r.media_formats;
+        const files=r.files;
+        const url=mf?.gif?.url||mf?.mediumgif?.url||files?.original?.url||files?.gif?.url||'';
+        const preview=mf?.tinygif?.url||mf?.nanogif?.url||files?.preview?.url||files?.small?.url||url||'';
+        return{id:r.id,title:r.title||'',url,preview};
+      }).filter(r=>r.url);
     }
 
     async function gifSearch(){
@@ -875,6 +875,7 @@ createApp({
         const res=await fetch(`${KLIPY_BASE}/gifs/featured?limit=12&contentfilter=medium`);
         if(!res.ok)return;
         const data=await res.json();
+        if(data.results?.length)console.log('Klipy sample item:',JSON.stringify(data.results[0],null,2));
         gifTrending.value=gifParse(data.results);
         nextTick(refreshIcons);
       }catch{}
