@@ -7,7 +7,7 @@ function kpInfo(kp){if(kp<1)return{label:'Quiet',color:'#4ecdc4',chance:'No acti
 
 function aqiInfo(us){if(us<=50)return{label:'Good',color:'#4ecdc4'};if(us<=100)return{label:'Moderate',color:'#ffe066'};if(us<=150)return{label:'Unhealthy for Sensitive Groups',color:'#ffaa44'};if(us<=200)return{label:'Unhealthy',color:'#ff8c42'};if(us<=300)return{label:'Very Unhealthy',color:'#cc5577'};return{label:'Hazardous',color:'#8b0000'};}
 
-function calcMoon(){const now=new Date();const k=29.53058770576;const j=now/86400000+2440587.5;const e=(j-2451550.1)/k;const phase=(e%1+1)%1;const angle=phase*360;const illumination=Math.round((1-Math.cos(angle*Math.PI/180))/2*100);const age=Math.round(phase*k*10)/10;const names=['New Moon','Waxing Crescent','First Quarter','Waxing Gibbous','Full Moon','Waning Gibbous','Last Quarter','Waning Crescent'];const emojis=['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘'];const idx=Math.round(phase*8)%8;const daysToFull=Math.round(((0.5-phase+1)%1)*k);const nf=new Date(now.getTime()+daysToFull*86400000);return{name:names[idx],emoji:emojis[idx],illumination,age,nextFull:nf.toLocaleDateString('en-US',{month:'short',day:'numeric'})};}
+function calcMoon(){const now=new Date();const k=29.53058770576;const j=now/86400000+2440587.5;const e=(j-2451550.1)/k;const phase=(e%1+1)%1;const angle=phase*360;const illumination=Math.round((1-Math.cos(angle*Math.PI/180))/2*100);const age=Math.round(phase*k*10)/10;const names=['New Moon','Waxing Crescent','First Quarter','Waxing Gibbous','Full Moon','Waning Gibbous','Last Quarter','Waning Crescent'];const emojis=['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘'];const idx=Math.round(phase*8)%8;const daysToFull=Math.round(((0.5-phase+1)%1)*k);const daysToNew=Math.round(((1-phase)%1)*k);const nf=new Date(now.getTime()+daysToFull*86400000);const nn=new Date(now.getTime()+daysToNew*86400000);return{name:names[idx],emoji:emojis[idx],illumination,age,phase,nextFull:nf.toLocaleDateString('en-US',{month:'short',day:'numeric'}),nextNew:nn.toLocaleDateString('en-US',{month:'short',day:'numeric'})};}
 
 function calcPlanets(){const now=new Date();const doy=Math.floor((now-(new Date(now.getFullYear(),0,0)))/86400000);const hour=now.getHours();const isNight=hour>=20||hour<=6;const planets=[{name:'Mercury',emoji:'☿',base:88,period:88},{name:'Venus',emoji:'♀',base:225,period:225},{name:'Mars',emoji:'♂',base:687,period:687},{name:'Jupiter',emoji:'♃',base:4333,period:4333},{name:'Saturn',emoji:'♄',base:10759,period:10759},{name:'Uranus',emoji:'⛢',base:30687,period:30687},{name:'Neptune',emoji:'♆',base:60190,period:60190}];return planets.map(p=>{const pos=(doy%p.period)/p.period;const elongation=Math.abs(pos-0.5)*180;const visible=isNight&&elongation>20;const alt=Math.round(elongation);return{...p,visible,info:visible?`~${alt}° elongation`:'Below horizon'}});}
 
@@ -87,6 +87,12 @@ createApp({
 
     // drag-in-picker (mouse + touch)
     const pickerDragging=ref(null); const pickerTarget=ref(null);
+    const pickerSearch=ref('');
+    const filteredWidgetRegistry=computed(()=>{
+      const q=pickerSearch.value.toLowerCase().trim();
+      if(!q)return widgetRegistry.value;
+      return widgetRegistry.value.filter(w=>w.label.toLowerCase().includes(q)||w.desc.toLowerCase().includes(q));
+    });
     function onPickerDragStart(e,id){pickerDragging.value=id;e.dataTransfer&&(e.dataTransfer.effectAllowed='move');}
     function onPickerDragOver(e,id){if(pickerDragging.value&&pickerDragging.value!==id)pickerTarget.value=id;}
     function onPickerDrop(e,id){if(!pickerDragging.value||pickerDragging.value===id)return;const arr=[...order.value];const fi=arr.indexOf(pickerDragging.value),ti=arr.indexOf(id);if(fi<0||ti<0)return;arr.splice(fi,1);arr.splice(ti,0,pickerDragging.value);order.value=arr;saveWidgetState();pickerDragging.value=null;pickerTarget.value=null;}
@@ -119,6 +125,90 @@ createApp({
     const aqi=ref(null); const tides=ref(null); const tidesError=ref('');
     const issPasses=ref(null); const issError=ref(''); const userLat=ref(null); const userLon=ref(null);
     const moon=ref(calcMoon()); const planets=computed(()=>calcPlanets());
+
+    function drawMoonCanvas(){
+      const cv=document.getElementById('moon-canvas');
+      if(!cv)return;
+      const ctx=cv.getContext('2d');
+      const W=120,H=120,R=52,cx=60,cy=60;
+      const phase=moon.value.phase;
+      ctx.clearRect(0,0,W,H);
+
+      // Stars behind
+      ctx.fillStyle='rgba(255,255,255,0.4)';
+      for(let i=0;i<30;i++){
+        const sx=(Math.sin(i*137.5)*0.5+0.5)*W;
+        const sy=(Math.cos(i*97.3)*0.5+0.5)*H;
+        const dist=Math.sqrt((sx-cx)**2+(sy-cy)**2);
+        if(dist>R+6){ctx.fillRect(sx,sy,1,1);}
+      }
+
+      // Dark side of moon (always full circle, dark)
+      ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);
+      ctx.fillStyle='#1a1a2e';ctx.fill();
+
+      // Lit portion — clip to circle, draw ellipse for terminator
+      ctx.save();
+      ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);ctx.clip();
+
+      // The lit portion depends on phase
+      // phase 0=new, 0.25=first quarter, 0.5=full, 0.75=last quarter
+      const lit=phase<=0.5?'right':'left'; // which side is lit
+      const p=phase<=0.5?phase*2:(phase-0.5)*2; // 0-1 within half cycle
+
+      // Draw the lit crescent/gibbous shape
+      ctx.fillStyle='#f0e6c8';
+      if(phase<0.02||phase>0.98){
+        // New moon — no fill
+      } else if(phase>0.48&&phase<0.52){
+        // Full moon
+        ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);ctx.fill();
+      } else {
+        ctx.beginPath();
+        if(lit==='right'){
+          // Waxing: right side lit
+          ctx.arc(cx,cy,R,-Math.PI/2,Math.PI/2,false); // right semicircle
+          // Terminator ellipse x-radius: goes from -R (new) to 0 (quarter) to R (full)
+          const tx=R*(1-p*2); // positive = shadow bulges right, negative = lit bulges right
+          ctx.bezierCurveTo(cx+tx,cy-R,cx+tx,cy+R,cx,cy+R);
+        } else {
+          // Waning: left side lit
+          ctx.arc(cx,cy,R,Math.PI/2,-Math.PI/2,false); // left semicircle
+          const tx=R*(p*2-1);
+          ctx.bezierCurveTo(cx-tx,cy+R,cx-tx,cy-R,cx,cy-R);
+        }
+        ctx.fill();
+      }
+
+      // Moon surface texture (craters)
+      ctx.globalAlpha=0.12;
+      ctx.fillStyle='#888';
+      [[cx-14,cy-10,8],[cx+10,cy+14,6],[cx-6,cy+18,5],[cx+16,cy-16,4],[cx-18,cy+4,3]].forEach(([mx,my,mr])=>{
+        ctx.beginPath();ctx.arc(mx,my,mr,0,Math.PI*2);ctx.fill();
+      });
+      ctx.globalAlpha=1;
+      ctx.restore();
+
+      // Glow for full/near-full
+      if(phase>0.4&&phase<0.6){
+        const glow=ctx.createRadialGradient(cx,cy,R*0.8,cx,cy,R*1.4);
+        glow.addColorStop(0,'rgba(240,230,180,0.15)');
+        glow.addColorStop(1,'rgba(240,230,180,0)');
+        ctx.beginPath();ctx.arc(cx,cy,R*1.4,0,Math.PI*2);
+        ctx.fillStyle=glow;ctx.fill();
+      }
+
+      // Outline
+      ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);
+      ctx.strokeStyle='rgba(255,255,255,0.1)';ctx.lineWidth=1;ctx.stroke();
+    }
+
+    watch(visibleWidgets,()=>{
+      if(visibleWidgets.value.find(w=>w.id==='moon')){
+        nextTick(drawMoonCanvas);
+      }
+    },{immediate:true});
+    watch(moon,()=>nextTick(drawMoonCanvas));
     const quote=ref(null); const animal=ref(null); const animalLoading=ref(false);
     const apod=ref(null); const album=ref(null); const albumLoading=ref(false); const albumExpanded=ref(false);
     const bgCredit=ref(null);
@@ -261,10 +351,11 @@ createApp({
         p.x+=p._vx;
         p.y+=p._vy;
         p._vx*=0.92;
+        if(p._rot)p.rotation+=p._rot;
         p._life-=p._decay;
         p.alpha=Math.max(0,p._life);
         if(p._life<=0){
-          solParticleContainer.removeChild(p);
+          if(solParticleContainer)solParticleContainer.removeChild(p);
           p.destroy();
           solParticles.splice(i,1);
         }
@@ -489,7 +580,37 @@ createApp({
     });
 
     function solReveal(){solTableau.value=solTableau.value.map(col=>{if(col.length&&!col[col.length-1].faceUp){const c=[...col];c[c.length-1]={...c[c.length-1],faceUp:true};return c;}return col;});}
-    function solCheckWin(){const won=solFoundations.value.every(f=>f.length===13);solWon.value=won;if(won)tamaReact('win');}
+    function solCheckWin(){const won=solFoundations.value.every(f=>f.length===13);solWon.value=won;if(won){tamaReact('win');solConfetti();}}
+
+    function solConfetti(){
+      if(!solPixiApp)return;
+      const W=solPixiApp.renderer.width/solPixiApp.renderer.resolution;
+      const H=solPixiApp.renderer.height/solPixiApp.renderer.resolution;
+      const colors=[0x50dca0,0xffd700,0xff6b6b,0x7b6ff0,0x4fc8e8,0xffb347,0xffffff];
+      // Spawn 120 confetti pieces in waves
+      let spawned=0;
+      const burst=()=>{
+        for(let i=0;i<20;i++){
+          const g=new PIXI.Graphics();
+          const color=colors[Math.floor(Math.random()*colors.length)];
+          const w=4+Math.random()*6, h=3+Math.random()*4;
+          g.beginFill(color,1);g.drawRect(0,0,w,h);g.endFill();
+          g.x=Math.random()*W;
+          g.y=-10;
+          g._vx=(Math.random()-0.5)*3;
+          g._vy=2+Math.random()*4;
+          g._rot=(Math.random()-0.5)*0.3;
+          g._life=1.0;
+          g._decay=0.005+Math.random()*0.008;
+          g._gravity=0.05;
+          if(solParticleContainer)solParticleContainer.addChild(g);
+          solParticles.push(g);
+        }
+        spawned+=20;
+        if(spawned<120)setTimeout(burst,200);
+      };
+      burst();
+    }
     function solCanPlaceFoundation(card,fi){const f=solFoundations.value[fi];if(!f.length)return card.rank===0;return f[f.length-1].suit===card.suit&&f[f.length-1].rank===card.rank-1;}
     function solCanPlaceTableau(card,col){const c=solTableau.value[col];if(!c.length)return card.rank===12;const top=c[c.length-1];return top.faceUp&&(top.suit<2)!==(card.suit<2)&&top.rank===card.rank+1;}
     function solDraw(){
@@ -1659,6 +1780,6 @@ createApp({
 
     watch(currentTheme,()=>{}); // color auto-picked in tamaDraw
 
-    return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,albumExpanded,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,chatRenderText,formatChatTime,activeWidget,setActiveWidget,clearActiveWidget,solTableau,solFoundations,solStock,solWaste,solMoves,solWon,solInit,solNewGame,solSelected,solDraw,solClickWaste,solClickFoundation,solClickCol,solClickCard,solAutoFoundation,solDrawPixi,solInitPixi,snakeScore,snakeBest,snakeRunning,snakeDead,snakePaused,snakeStart,snakePause,snakeSetDir,wordleGuesses,wordleResults,wordleCurrent,wordleMsg,wordleKeyRows,wordleGetLetter,wordleGetClass,wordleKeyClass,wordleKey,wordleHandleMobileKey,wordleHandleMobileInput,worldClockCities,worldClockPick,worldClockOptions,worldClockTime,worldClockDate,worldClockAdd,worldClockRemove,steamGenres,steamGenre,steamLoading,steamError,steamGame,steamScoreClass,steamPickGenre,steamNext,film,filmGenre,filmGenres,filmNext,passValue,passLength,passOpts,passCopied,passGenerate,passCopy,paletteBase,paletteType,paletteTypes,paletteColors,paletteCopied,paletteGenerate,paletteCopy,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings,tamaReact,tamaInteract,TAMA_CHARS,tamaChar,tamaPickerOpen,tamaSetChar,tamaWalking,tamaDancing,tamaBPM,tamaRaging,chatUnread,chatBubble};
+    return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,albumExpanded,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,chatRenderText,formatChatTime,activeWidget,setActiveWidget,clearActiveWidget,solTableau,solFoundations,solStock,solWaste,solMoves,solWon,solInit,solNewGame,solSelected,solDraw,solClickWaste,solClickFoundation,solClickCol,solClickCard,solAutoFoundation,solDrawPixi,solInitPixi,snakeScore,snakeBest,snakeRunning,snakeDead,snakePaused,snakeStart,snakePause,snakeSetDir,wordleGuesses,wordleResults,wordleCurrent,wordleMsg,wordleKeyRows,wordleGetLetter,wordleGetClass,wordleKeyClass,wordleKey,wordleHandleMobileKey,wordleHandleMobileInput,worldClockCities,worldClockPick,worldClockOptions,worldClockTime,worldClockDate,worldClockAdd,worldClockRemove,steamGenres,steamGenre,steamLoading,steamError,steamGame,steamScoreClass,steamPickGenre,steamNext,film,filmGenre,filmGenres,filmNext,passValue,passLength,passOpts,passCopied,passGenerate,passCopy,paletteBase,paletteType,paletteTypes,paletteColors,paletteCopied,paletteGenerate,paletteCopy,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,pickerSearch,filteredWidgetRegistry,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings,tamaReact,tamaInteract,TAMA_CHARS,tamaChar,tamaPickerOpen,tamaSetChar,tamaWalking,tamaDancing,tamaBPM,tamaRaging,chatUnread,chatBubble};
   }
 }).mount('#app');

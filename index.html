@@ -99,12 +99,18 @@
         </div>
 
         <!-- MOON -->
-        <div v-else-if="wid.id==='moon'" class="card">          <div class="card-label">Moon Phase</div>
-          <div class="moon-face">{{ moon.emoji }}</div>
-          <div class="moon-name">{{ moon.name }}</div>
-          <div class="moon-detail">{{ moon.illumination }}% illuminated</div>
-          <div class="moon-detail" style="margin-top:4px">Age: {{ moon.age }} days</div>
-          <div class="moon-detail" v-if="moon.nextFull" style="margin-top:4px">Next full moon: {{ moon.nextFull }}</div>
+        <div v-else-if="wid.id==='moon'" class="card">
+          <div class="card-label">Moon Phase</div>
+          <div class="moon-layout">
+            <canvas id="moon-canvas" width="120" height="120" style="display:block;"></canvas>
+            <div class="moon-info">
+              <div class="moon-name">{{ moon.name }}</div>
+              <div class="moon-detail">{{ moon.illumination }}% illuminated</div>
+              <div class="moon-detail">Age: {{ moon.age }} days</div>
+              <div class="moon-detail" v-if="moon.nextFull">Next full: {{ moon.nextFull }}</div>
+              <div class="moon-detail" v-if="moon.nextNew">Next new: {{ moon.nextNew }}</div>
+            </div>
+          </div>
         </div>
 
         <!-- AQI -->
@@ -611,8 +617,9 @@
         <button class="settings-close" @click="showPicker=false">✕</button>
         <div class="picker-title">Widgets</div>
         <div class="picker-subtitle">Toggle visibility and drag to reorder.</div>
+        <input class="picker-search" v-model="pickerSearch" placeholder="Search widgets…" autocomplete="off" spellcheck="false" />
         <div class="picker-list">
-          <div v-for="wid in widgetRegistry" :key="wid.id" class="picker-item"
+          <div v-for="wid in filteredWidgetRegistry" :key="wid.id" class="picker-item"
             :class="{'dragging-picker':pickerDragging===wid.id,'drag-over-picker':pickerTarget===wid.id}"
             :data-wid="wid.id"
             @dragover.prevent="onPickerDragOver($event,wid.id)"

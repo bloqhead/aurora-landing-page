@@ -113,8 +113,15 @@ body{font-family:var(--font-body);font-size:var(--t-md);line-height:1.5;color:va
 .animal-observer{font-family:var(--font-mono);font-size:var(--t-xs);color:var(--text-muted);margin-top:var(--s-sm);opacity:.6;}
 
 /* MOON */
-.moon-face{font-size:clamp(3rem,6vw,5rem);line-height:1;margin-bottom:var(--s-sm);}
+.moon-layout{display:flex;gap:var(--s-md);align-items:center;}
+.moon-layout canvas{flex-shrink:0;border-radius:50%;}
+.moon-info{display:flex;flex-direction:column;gap:4px;}
 .moon-name{font-family:var(--font-display);font-size:var(--t-lg);font-weight:300;}
+.moon-detail{font-family:var(--font-mono);font-size:var(--t-xs);color:var(--text-muted);}
+/* PICKER SEARCH */
+.picker-search{width:100%;box-sizing:border-box;background:rgba(255,255,255,.06);border:1px solid var(--card-border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:var(--font-mono);font-size:var(--t-xs);margin-bottom:var(--s-sm);outline:none;transition:border-color .2s;}
+.picker-search:focus{border-color:var(--accent);}
+.picker-search::placeholder{color:var(--text-muted);}
 .moon-detail{font-family:var(--font-mono);font-size:var(--t-xs);color:var(--text-muted);margin-top:var(--s-xs);}
 
 /* AQI */
