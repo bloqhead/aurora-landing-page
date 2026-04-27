@@ -1387,26 +1387,20 @@ createApp({
       d10:{
         tab:0,af:Math.PI*6/5,chamfer:0.945,scaleFactor:0.9,
         vertices:(()=>{
-          const v=[];
-          for(let i=0,b=0;i<10;i++,b+=Math.PI*2/10){
-            v.push([Math.cos(b),Math.sin(b),0.105*(i%2?1:-1)]);
+          const v=[[0,0,1],[0,0,-1]]; // 0=top pole, 1=bottom pole
+          for(let i=0;i<10;i++){
+            const b=i*Math.PI*2/10;
+            v.push([-Math.cos(b),-Math.sin(b),0.105*(i%2?1:-1)]);
           }
-          v.push([0,0,-1],[0,0,1]); // 10=bottom, 11=top
-          return v;
+          return v; // equatorial verts at indices 2-11
         })(),
         faces:[
-          // 5 sections — each has a top face (odd verts→pole11) and bottom face (even verts→pole10)
-          [1,3,11,0],[0,2,10,1],
-          [3,5,11,2],[2,4,10,3],
-          [5,7,11,4],[4,6,10,5],
-          [7,9,11,6],[6,8,10,7],
-          [9,1,11,8],[8,0,10,9],
-          // equatorial tris bridging each section — each shares one edge with a top and one with a bottom face
-          [1,0,3,-1],[0,2,3,-1],
-          [3,2,5,-1],[2,4,5,-1],
-          [5,4,7,-1],[4,6,7,-1],
-          [7,6,9,-1],[6,8,9,-1],
-          [9,8,1,-1],[8,0,1,-1],
+          // top faces: pole 0 + sequential equatorial pairs
+          [0,11,2,0],[0,2,3,1],[0,3,4,2],[0,4,5,3],[0,5,6,4],
+          [0,6,7,5],[0,7,8,6],[0,8,9,7],[0,9,10,8],[0,10,11,9],
+          // bottom faces: pole 1 + sequential equatorial pairs (reversed)
+          [1,3,2,-1],[1,4,3,-1],[1,5,4,-1],[1,6,5,-1],[1,7,6,-1],
+          [1,8,7,-1],[1,9,8,-1],[1,10,9,-1],[1,11,10,-1],[1,2,11,-1],
         ],
         faceTexts:[null,'1','2','3','4','5','6','7','8','9','10'],
         textMargin:1.0,
