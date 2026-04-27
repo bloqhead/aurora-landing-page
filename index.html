@@ -237,7 +237,10 @@
                   <a v-if="musicAppLink(album)" :href="musicAppLink(album)" target="_blank" rel="noopener" class="album-link">{{ musicAppLabel }}</a>
                 </div>
               </div>
-              <div class="album-why" v-if="album.why">{{ album.why }}</div>
+            </div>
+            <div class="album-summary" v-if="album.why">
+              <div class="album-summary-text" :class="{expanded:albumExpanded}">{{ album.why }}</div>
+              <button class="album-expand-btn" @click="albumExpanded=!albumExpanded">{{ albumExpanded ? 'Show less ▲' : 'Read more ▼' }}</button>
             </div>
           </template>
           <div v-else-if="albumLoading" class="album-loading">searching the stacks…</div>
