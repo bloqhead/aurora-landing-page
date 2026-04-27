@@ -1385,7 +1385,7 @@ createApp({
         textMargin:1.2,
       },
       d10:{
-        tab:0,af:Math.PI*6/5,chamfer:0.965,scaleFactor:0.9,
+        tab:0,af:Math.PI*6/5,chamfer:0.945,scaleFactor:0.9,
         vertices:(()=>{
           const v=[];
           for(let i=0,b=0;i<10;i++,b+=Math.PI*2/10){
@@ -1437,11 +1437,11 @@ createApp({
       const geom=makeGeometry(THREE,chamfered.vectors,chamfered.faces,radius,def.tab,def.af);
 
       // Build per-face materials
-      const mats=[new THREE.MeshPhongMaterial({color:0x0a0e1a,specular:0x172022,shininess:20,flatShading:false})]; // index 0 = chamfer faces
+      const mats=[new THREE.MeshPhongMaterial({color:0x0a0e1a,specular:0x172022,shininess:20,flatShading:false,side:THREE.DoubleSide})]; // index 0 = chamfer faces
       const texts=def.faceTexts;
       for(let i=1;i<texts.length;i++){
         const tex=makeFaceTexture(THREE,texts[i],textHex,bgHex,size);
-        mats.push(new THREE.MeshPhongMaterial({map:tex,specular:0x172022,shininess:30,flatShading:true}));
+        mats.push(new THREE.MeshPhongMaterial({map:tex,specular:0x172022,shininess:30,flatShading:true,side:THREE.DoubleSide}));
       }
 
       const mesh=new THREE.Mesh(geom,mats);
