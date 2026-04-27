@@ -951,17 +951,17 @@ body.theme-win95 ::-webkit-scrollbar-button {
 .np-art-placeholder{width:44px;height:44px;border-radius:3px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 /* Info */
 .np-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;}
-.np-track{font-family:var(--font-mono);font-size:13px;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--accent);text-decoration:none;letter-spacing:.03em;}
-.np-track:hover{text-decoration:underline;}
-.np-track.unlinked{pointer-events:none;}
+.np-track{font-family:var(--font-mono);font-size:15px;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--accent);text-decoration:underline;text-underline-offset:3px;letter-spacing:.03em;}
+.np-track:hover{opacity:.8;}
+.np-track.unlinked{pointer-events:none;text-decoration:none;}
 .np-meta{display:flex;align-items:center;gap:5px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);white-space:nowrap;overflow:hidden;}
-.np-artist{color:rgba(255,255,255,.6);text-decoration:none;flex-shrink:0;}
+.np-artist{color:rgba(255,255,255,.6);text-decoration:underline;text-underline-offset:2px;}
 .np-artist:hover{color:#fff;}
-.np-artist.unlinked{pointer-events:none;}
+.np-artist.unlinked{pointer-events:none;text-decoration:none;}
 .np-sep{opacity:.4;flex-shrink:0;}
-.np-album-link{color:rgba(255,255,255,.4);text-decoration:none;overflow:hidden;text-overflow:ellipsis;}
+.np-album-link{color:rgba(255,255,255,.4);text-decoration:underline;text-underline-offset:2px;overflow:hidden;text-overflow:ellipsis;}
 .np-album-link:hover{color:rgba(255,255,255,.7);}
-.np-album-link.unlinked{pointer-events:none;}
+.np-album-link.unlinked{pointer-events:none;text-decoration:none;}
 /* Winamp visualizer */
 .np-viz{display:flex;align-items:flex-end;gap:2px;height:36px;flex-shrink:0;padding:4px 8px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.08);border-radius:3px;}
 .np-viz-bar{width:3px;border-radius:1px 1px 0 0;transform-origin:bottom;animation:vizBounce var(--dur,.6s) ease-in-out infinite alternate;background:var(--accent);}
