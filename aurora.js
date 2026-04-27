@@ -844,6 +844,7 @@ createApp({
     const gifLoading=ref(false);
     const gifError=ref('');
     const gifDebug=ref('');
+    const gifCopied=ref(false);
     let gifCopiedTimer=null;
 
     // Klipy native response: { result: true, data: { data: [...], has_next, current_page } }
