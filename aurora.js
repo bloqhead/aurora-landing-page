@@ -850,10 +850,11 @@ createApp({
       // Don't intercept keystrokes when user is typing in inputs, textareas, or contenteditable
       const t=e.target;
       if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable))return;
-      // Also skip when modifier keys are held (Cmd+R, Ctrl+F, etc.)
+      // Skip modifier key combos (Cmd+R, Ctrl+F, etc.)
       if(e.metaKey||e.ctrlKey||e.altKey)return;
       snakeHandleKey(e);
-      wordleKey(e.key);
+      // Only route to Wordle if the Wordle widget is visible
+      if(visibleWidgets.value.find(w=>w.id==='wordle'&&w.visible))wordleKey(e.key);
       if(activeWidget.value==='w2048'){
         const map={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down'};
         if(map[e.key]){w2048Move(map[e.key]);e.preventDefault();}
