@@ -1173,8 +1173,11 @@ createApp({
       };
       chatWs.onclose=e=>{
         chatConnecting=false;
-        // 4001/4003 = bad/expired token — don't reconnect, log out
-        if(e.code===4001||e.code===4003){chatLogout();return;}
+        // 4001/4003 = bad/expired token — try refresh first, then logout
+        if(e.code===4001||e.code===4003){
+          chatRefreshToken().then(ok=>{if(!ok)chatLogout();});
+          return;
+        }
         chatScheduleReconnect();
       };
       chatWs.onerror=()=>{
@@ -1202,6 +1205,25 @@ createApp({
       },2000);
     }
 
+    async function chatRefreshToken(){
+      if(!chatToken.value||!chatApiUrl.value)return false;
+      try{
+        const res=await fetch(chatApiUrl.value.replace(/\/$/,'')+'/auth/refresh',{
+          method:'POST',
+          headers:{Authorization:'Bearer '+chatToken.value}
+        });
+        if(!res.ok)return false;
+        const d=await res.json();
+        if(d.token){
+          chatToken.value=d.token;
+          localStorage.setItem('aurora_chat_token',d.token);
+          chatConnectWs();
+          return true;
+        }
+      }catch{}
+      return false;
+    }
+
     function chatLogout(){
       chatWs?.close(); chatWs=null;
       chatUser.value=''; chatToken.value='';
@@ -1220,7 +1242,19 @@ createApp({
     }
 
     // Auto-connect if token exists
-    watch(chatApiUrl,url=>{if(url&&chatToken.value)chatConnectWs();},{immediate:true});
+    watch(chatApiUrl,url=>{
+      if(!url||!chatToken.value)return;
+      // Check if token is expired or expiring within 1 hour — refresh proactively
+      try{
+        const payload=JSON.parse(atob(chatToken.value.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+        const expiresIn=payload.exp-(Date.now()/1000);
+        if(expiresIn<3600){
+          chatRefreshToken().then(ok=>{if(!ok)chatLogout();});
+          return;
+        }
+      }catch{}
+      chatConnectWs();
+    },{immediate:true});
 
     // Reconnect WS when page wakes from sleep / regains focus
     document.addEventListener('visibilitychange',()=>{
