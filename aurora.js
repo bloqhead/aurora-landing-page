@@ -853,8 +853,8 @@ createApp({
       // Skip modifier key combos (Cmd+R, Ctrl+F, etc.)
       if(e.metaKey||e.ctrlKey||e.altKey)return;
       snakeHandleKey(e);
-      // Only route to Wordle if the Wordle widget is visible
-      if(visibleWidgets.value.find(w=>w.id==='wordle'&&w.visible))wordleKey(e.key);
+      // Only route to Wordle when it's the active focused widget
+      if(activeWidget.value==='wordle')wordleKey(e.key);
       if(activeWidget.value==='w2048'){
         const map={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down'};
         if(map[e.key]){w2048Move(map[e.key]);e.preventDefault();}
