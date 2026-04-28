@@ -847,6 +847,11 @@ createApp({
 
     // Single global key handler — routes to the active widget
     function globalKeyHandler(e){
+      // Don't intercept keystrokes when user is typing in inputs, textareas, or contenteditable
+      const t=e.target;
+      if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable))return;
+      // Also skip when modifier keys are held (Cmd+R, Ctrl+F, etc.)
+      if(e.metaKey||e.ctrlKey||e.altKey)return;
       snakeHandleKey(e);
       wordleKey(e.key);
       if(activeWidget.value==='w2048'){
@@ -1195,6 +1200,13 @@ createApp({
 
     // Auto-connect if token exists
     watch(chatApiUrl,url=>{if(url&&chatToken.value)chatConnectWs();},{immediate:true});
+
+    // Reconnect WS when page wakes from sleep / regains focus
+    document.addEventListener('visibilitychange',()=>{
+      if(document.visibilityState==='visible'&&chatToken.value&&(!chatWs||chatWs.readyState!==1)){
+        chatConnectWs();
+      }
+    });
 
 
     const kpAlert=ref(false);
