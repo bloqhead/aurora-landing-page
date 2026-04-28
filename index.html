@@ -478,6 +478,7 @@
           <div class="gif-search-row">
             <input class="gif-input" v-model="gifQuery" @keyup.enter="gifSearch"
               placeholder="Search GIFs…" autocomplete="off" spellcheck="false" />
+            <button v-if="gifResults.length" class="gif-clear-btn" @click="gifResults=[];gifQuery=''" title="Clear search"><i data-lucide="x"></i></button>
             <button class="gif-search-btn" @click="gifSearch"><i data-lucide="search"></i></button>
           </div>
           <div v-if="gifLoading" class="widget-loading">Searching…</div>
