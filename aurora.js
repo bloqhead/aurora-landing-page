@@ -1122,11 +1122,28 @@ createApp({
       finally{chatAuthLoading.value=false;}
     }
 
+    let chatReconnectTimer=null;
+    let chatReconnectDelay=3000;
+    let chatConnecting=false;
+
+    function chatScheduleReconnect(){
+      clearTimeout(chatReconnectTimer);
+      chatReconnectTimer=setTimeout(()=>{
+        if(chatToken.value)chatConnectWs();
+      },chatReconnectDelay);
+      // Exponential backoff up to 30s
+      chatReconnectDelay=Math.min(chatReconnectDelay*2,30000);
+    }
+
     function chatConnectWs(){
-      if(!chatToken.value||!chatApiUrl.value)return;
+      if(!chatToken.value||!chatApiUrl.value||chatConnecting)return;
+      // Close any existing socket cleanly first
+      if(chatWs&&chatWs.readyState<2){chatWs.onclose=null;chatWs.onerror=null;chatWs.close();}
+      chatConnecting=true;
       const baseUrl=chatApiUrl.value.replace(/\/$/,'');
       const wsUrl=baseUrl.replace(/^http/,'ws')+'/ws?token='+chatToken.value;
       chatWs=new WebSocket(wsUrl);
+      chatWs.onopen=()=>{chatConnecting=false;chatReconnectDelay=3000;};
       chatWs.onmessage=e=>{
         const data=JSON.parse(e.data);
         if(data.type==='history'){
@@ -1134,13 +1151,12 @@ createApp({
           scrollChatToBottom();
         } else if(data.type==='message'){
           chatMessages.value.push({...data,type:'message'});
-          // Notify if message is from someone else and chat not visible
           if(data.username!==chatUser.value){
             const chatEl=document.getElementById('chat-messages');
             const inView=chatEl&&chatEl.getBoundingClientRect().top<window.innerHeight;
             if(!inView){
               chatUnread.value++;
-              tamaReact("cheer");chatBubble.value=data.username+': '+data.text.slice(0,40)+(data.text.length>40?'…':'');
+              tamaReact('cheer');chatBubble.value=data.username+': '+data.text.slice(0,40)+(data.text.length>40?'…':'');
               clearTimeout(chatBubbleTimer);
               chatBubbleTimer=setTimeout(()=>chatBubble.value='',5000);
             }
@@ -1155,11 +1171,16 @@ createApp({
           chatTypingUsers.value=data.users;
         }
       };
-      chatWs.onclose=()=>{
-        // Reconnect after 3s if token still valid
-        setTimeout(()=>{if(chatToken.value)chatConnectWs();},3000);
+      chatWs.onclose=e=>{
+        chatConnecting=false;
+        // 4001/4003 = bad/expired token — don't reconnect, log out
+        if(e.code===4001||e.code===4003){chatLogout();return;}
+        chatScheduleReconnect();
       };
-      chatWs.onerror=()=>{chatWs=null;};
+      chatWs.onerror=()=>{
+        chatConnecting=false;
+        // Let onclose handle reconnect — don't do anything here
+      };
     }
 
     function chatSend(){
