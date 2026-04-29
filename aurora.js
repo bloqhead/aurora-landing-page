@@ -620,7 +620,7 @@ createApp({
       solPixiRegions.reverse();
     }
 
-    // Init when widget becomes visible
+    // Init when widget becomes visible OR when masonry reorders (canvas gets recreated)
     watch(visibleWidgets,()=>{
       if(visibleWidgets.value.find(w=>w.id==='solitaire')){
         nextTick(()=>{
@@ -629,12 +629,34 @@ createApp({
           const poll=setInterval(()=>{
             attempts++;
             const el=document.getElementById('sol-pixi');
-            if(el){clearInterval(poll);solInitPixi();}
+            if(el){
+              clearInterval(poll);
+              // Destroy old PixiJS instance if canvas was recreated
+              if(solPixiApp){
+                try{solPixiApp.destroy(true);}catch{}
+                solPixiApp=null;
+                solParticleContainer=null;
+                solParticles.length=0;
+              }
+              solInitPixi();
+            }
             else if(attempts>40)clearInterval(poll);
           },100);
         });
       }
     },{immediate:true});
+
+    // Also reinit when masonry columns change (reorder causes canvas detach)
+    watch(masonryColumns,()=>{
+      if(!visibleWidgets.value.find(w=>w.id==='solitaire'))return;
+      nextTick(()=>setTimeout(()=>{
+        const el=document.getElementById('sol-pixi');
+        if(el&&(!solPixiApp||!solPixiApp.view?.isConnected)){
+          if(solPixiApp){try{solPixiApp.destroy(true);}catch{}solPixiApp=null;solParticleContainer=null;solParticles.length=0;}
+          solInitPixi();
+        }
+      },150));
+    });
 
     // Redraw on state changes
     watch([solTableau,solFoundations,solWaste,solStock,solSelected],()=>{
