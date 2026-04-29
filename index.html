@@ -653,7 +653,7 @@
       <div class="picker-panel">
         <button class="settings-close" @click="showPicker=false"><i data-lucide="x"></i></button>
         <div class="picker-title">Widgets</div>
-        <div class="picker-subtitle">Toggle visibility and drag to reorder.</div>
+        <div class="picker-subtitle">Toggle visibility and drag to reorder. <button class="picker-reset-btn" @click="resetWidgetState">Reset to defaults</button></div>
         <input class="picker-search" v-model="pickerSearch" placeholder="Search widgets…" autocomplete="off" spellcheck="false" />
         <div class="picker-list">
           <div v-for="wid in filteredWidgetRegistry" :key="wid.id" class="picker-item"
