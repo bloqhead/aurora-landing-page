@@ -221,7 +221,7 @@
               <button v-for="s in somaStations" :key="s.id" class="soma-btn" :class="{active:somaStation===s.id}" @click="setSomaStation(s.id)">{{ s.name }}</button>
             </div>
             <div class="soma-controls">
-              <button class="soma-play" @click="toggleSoma"><i :data-lucide="somaPlaying?'pause':'play'"></i></button>
+              <button class="soma-play" @click="toggleSoma"><i v-if="somaPlaying" data-lucide="pause"></i><i v-else data-lucide="play"></i></button>
               <div class="soma-now">
                 <div class="soma-station-name">{{ currentSoma.name }}</div>
                 <div class="soma-desc">{{ currentSoma.desc }}</div>
@@ -253,7 +253,7 @@
             </div>
             <div class="album-summary" v-if="album.why">
               <div class="album-summary-text" :class="{expanded:albumExpanded}">{{ album.why }}</div>
-              <button class="album-expand-btn" @click="albumExpanded=!albumExpanded"><i :data-lucide="albumExpanded?'chevron-up':'chevron-down'"></i> {{ albumExpanded ? 'Show less' : 'Read more' }}</button>
+              <button class="album-expand-btn" @click="albumExpanded=!albumExpanded"><i v-if="albumExpanded" data-lucide="chevron-up"></i><i v-else data-lucide="chevron-down"></i> {{ albumExpanded ? 'Show less' : 'Read more' }}</button>
             </div>
           </template>
           <div v-else-if="albumLoading" class="album-loading">searching the stacks…</div>
@@ -419,7 +419,7 @@
             <button class="snake-btn" @touchstart.prevent="snakeSetDir(0,-1)" @click.stop="snakeSetDir(0,-1)"><i data-lucide="chevron-up"></i></button>
             <div></div>
             <button class="snake-btn" @touchstart.prevent="snakeSetDir(-1,0)" @click.stop="snakeSetDir(-1,0)"><i data-lucide="chevron-left"></i></button>
-            <button class="snake-btn" @touchstart.prevent="snakePause" @click.stop="snakePause" style="font-size:10px;opacity:.6"><i :data-lucide="snakePaused?'play':'pause'"></i></button>
+            <button class="snake-btn" @touchstart.prevent="snakePause" @click.stop="snakePause" style="font-size:10px;opacity:.6"><i v-if="snakePaused" data-lucide="play"></i><i v-else data-lucide="pause"></i></button>
             <button class="snake-btn" @touchstart.prevent="snakeSetDir(1,0)" @click.stop="snakeSetDir(1,0)"><i data-lucide="chevron-right"></i></button>
             <div></div>
             <button class="snake-btn" @touchstart.prevent="snakeSetDir(0,1)" @click.stop="snakeSetDir(0,1)"><i data-lucide="chevron-down"></i></button>
