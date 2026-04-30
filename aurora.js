@@ -649,7 +649,7 @@ createApp({
       } else {
         const g=new PIXI.Graphics();
         g.lineStyle(1,0x334455,0.3);g.drawRoundedRect(0,0,cw,ch,6);
-        g.x=cs2;g.y=0;stage.addChild(g);
+        g.x=PAD+cs2;g.y=PAD;stage.addChild(g);
       }
       solPixiRegions.push({x:PAD+cs2,y:PAD,w:cw,h:ch,action:()=>solClickWaste()});
 
@@ -660,10 +660,10 @@ createApp({
         const top=solFoundations.value[fi];
         if(top.length){
           const card=top[top.length-1];
-          drawCard(fx,0,card.display,true,card.suit<2,false);
+          drawCard(fx,PAD,card.display,true,card.suit<2,false);
         } else {
           const g=new PIXI.Graphics();
-          g.lineStyle(1,0x334455,0.3);g.drawRoundedRect(0,0,cw,ch,6);g.x=fx;g.y=0;
+          g.lineStyle(1,0x334455,0.3);g.drawRoundedRect(0,0,cw,ch,6);g.x=fx;g.y=PAD;
           const t=new PIXI.Text(SUIT_SYMS[fi],{fontSize:Math.round(ch*0.3),fill:0x445566});
           t.x=cw/2-t.width/2;t.y=ch/2-t.height/2;g.addChild(t);stage.addChild(g);
         }
@@ -671,13 +671,13 @@ createApp({
       }
 
       // ── TABLEAU ──
-      const tableauY=ch+GAP*2;
+      const tableauY=PAD+ch+GAP*2;
       const colHeights=solTableau.value.map(col=>col.length===0?ch:((col.length-1)*so+ch));
-      const totalH=tableauY+Math.max(ch,...colHeights)+8;
+      const totalH=tableauY+Math.max(ch,...colHeights)+PAD;
       solPixiApp.renderer.resize(W,totalH);
 
       solTableau.value.forEach((col,ci)=>{
-        const cx=ci*cs2;
+        const cx=PAD+ci*cs2;
         if(!col.length){
           const g=new PIXI.Graphics();
           g.lineStyle(1,0x334455,0.25);g.drawRoundedRect(0,0,cw,ch,6);
@@ -811,7 +811,7 @@ createApp({
         const W=solPixiApp.renderer.width/solPixiApp.renderer.resolution;
         const ncols=7,cw=Math.floor((W-(ncols-1)*GAP)/ncols),ch=Math.round(cw*1.4);
         const fx=(cw+GAP)*(3+fi);
-        solSpawnCinders(fx+cw/2, ch/2);
+        solSpawnCinders(fx+cw/2, PAD+ch/2);
       });
     }
     function solClickCard(ci, ri){
