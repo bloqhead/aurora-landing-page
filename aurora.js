@@ -538,7 +538,8 @@ createApp({
       const accent=parseInt(accentStr.replace('#',''),16);
 
       const ncols=7;
-      const cw=Math.floor((W-(ncols-1)*GAP)/ncols);
+      const PAD=8; // padding to prevent lifted cards clipping at edges
+      const cw=Math.floor((W-PAD*2-(ncols-1)*GAP)/ncols);
       const ch=Math.round(cw*1.4);
       const so=Math.round(ch*0.26);
       const cs2=cw+GAP;
@@ -637,25 +638,25 @@ createApp({
         const t=new PIXI.Text('↺',{fontSize:Math.round(ch*0.3),fill:0x668899});
         t.x=cw/2-t.width/2;t.y=ch/2-t.height/2;stockG.addChild(t);
       }
-      stockG.x=0;stockG.y=0;stage.addChild(stockG);
-      solPixiRegions.push({x:0,y:0,w:cw,h:ch,action:()=>solDraw()});
+      stockG.x=PAD;stockG.y=PAD;stage.addChild(stockG);
+      solPixiRegions.push({x:PAD,y:PAD,w:cw,h:ch,action:()=>solDraw()});
 
       // Waste
       if(solWaste.value.length){
         const card=solWaste.value[solWaste.value.length-1];
         const isSel=solSelected.value?.src==='waste';
-        drawCard(cs2,0,card.display,true,card.suit<2,isSel);
+        drawCard(PAD+cs2,PAD,card.display,true,card.suit<2,isSel);
       } else {
         const g=new PIXI.Graphics();
         g.lineStyle(1,0x334455,0.3);g.drawRoundedRect(0,0,cw,ch,6);
         g.x=cs2;g.y=0;stage.addChild(g);
       }
-      solPixiRegions.push({x:cs2,y:0,w:cw,h:ch,action:()=>solClickWaste()});
+      solPixiRegions.push({x:PAD+cs2,y:PAD,w:cw,h:ch,action:()=>solClickWaste()});
 
       // Foundations (cols 3-6)
       const SUIT_SYMS=['♥','♦','♣','♠'];
       for(let fi=0;fi<4;fi++){
-        const fx=(fi+3)*cs2;
+        const fx=PAD+(fi+3)*cs2;
         const top=solFoundations.value[fi];
         if(top.length){
           const card=top[top.length-1];
@@ -666,7 +667,7 @@ createApp({
           const t=new PIXI.Text(SUIT_SYMS[fi],{fontSize:Math.round(ch*0.3),fill:0x445566});
           t.x=cw/2-t.width/2;t.y=ch/2-t.height/2;g.addChild(t);stage.addChild(g);
         }
-        solPixiRegions.push({x:fx,y:0,w:cw,h:ch,action:(()=>{const i=fi;return()=>solClickFoundation(i);})()});
+        solPixiRegions.push({x:fx,y:PAD,w:cw,h:ch,action:(()=>{const i=fi;return()=>solClickFoundation(i);})()});
       }
 
       // ── TABLEAU ──
