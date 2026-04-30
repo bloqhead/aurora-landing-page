@@ -474,6 +474,7 @@ createApp({
 
       solPixiApp.ticker.add(solUpdateParticles);
       solPixiApp.ticker.add(()=>{
+        if(!solPixiApp||!solPixiApp.stage)return;
         const hasSel=!!solSelected.value;
         if(hasSel!==solPrevSelected){
           solPrevSelected=hasSel;
@@ -573,7 +574,6 @@ createApp({
         }
 
         if(faceUp){
-          const fillColor=isSelected?(0x14203a+(Math.round(0xa*p)<<16)+(Math.round(0xe*p)<<8)):0x14203a;
           g.beginFill(isSelected?0x1e2e4a:0x14203a);
           g.lineStyle(isSelected?2:1,isSelected?accent:0x334466,1);
           g.drawRoundedRect(0,0,cw,ch,6);
@@ -693,17 +693,18 @@ createApp({
       }
     },{immediate:true});
 
-    // Also reinit when masonry columns change (reorder causes canvas detach)
+    // Reinit when masonry columns change (reorder causes canvas detach)
+    // Use { immediate: false } so this doesn't fire on first load (visibleWidgets watch handles that)
     watch(masonryColumns,()=>{
       if(!visibleWidgets.value.find(w=>w.id==='solitaire'))return;
       nextTick(()=>setTimeout(()=>{
         const el=document.getElementById('sol-pixi');
         if(el&&(!solPixiApp||!solPixiApp.view?.isConnected)){
-          if(solPixiApp){try{solPixiApp.destroy(true);}catch{}solPixiApp=null;solParticleContainer=null;solParticles.length=0;}
+          if(solPixiApp){try{solPixiApp.destroy(true);}catch{}solPixiApp=null;solParticleContainer=null;solParticles.length=0;solLiftProgress=0;}
           solInitPixi();
         }
       },150));
-    });
+    },{immediate:false});
 
     // Redraw on state changes
     watch([solTableau,solFoundations,solWaste,solStock,solSelected],()=>{
