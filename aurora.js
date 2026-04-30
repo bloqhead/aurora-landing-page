@@ -379,6 +379,7 @@ createApp({
     // ── PIXI SOLITAIRE ──────────────────────────────────────────────────────────
     let solPixiApp=null;
     let solParticleContainer=null;
+    let solLiftProgress=0;
     const solParticles=[];
 
     function solSpawnCinders(x, y){
@@ -468,7 +469,23 @@ createApp({
       solPixiApp.view.addEventListener('pointerup', solPixiHandlePointer);
 
       // Particle ticker
+      let solLiftAnimating=false;
+      let solPrevSelected=null;
+
       solPixiApp.ticker.add(solUpdateParticles);
+      solPixiApp.ticker.add(()=>{
+        const hasSel=!!solSelected.value;
+        if(hasSel!==solPrevSelected){
+          solPrevSelected=hasSel;
+          solLiftAnimating=true;
+        }
+        if(solLiftAnimating){
+          const target=hasSel?1:0;
+          solLiftProgress+=(target-solLiftProgress)*0.18;
+          if(Math.abs(solLiftProgress-target)<0.01){solLiftProgress=target;solLiftAnimating=false;}
+          solDrawPixi();
+        }
+      });
       solDrawPixi();
     }
 
@@ -527,35 +544,36 @@ createApp({
 
       function drawCard(x,y,label,faceUp,isRed,isSelected){
         const g=new PIXI.Graphics();
-        const liftY=isSelected?-6:0;
-        const liftX=isSelected?1:0;
+        const p=isSelected?solLiftProgress:0;
+        const liftY=-6*p;
+        const liftX=1*p;
 
-        if(isSelected){
-          // Shadow below lifted card
+        if(isSelected&&p>0.01){
+          // Shadow
           const shadow=new PIXI.Graphics();
-          shadow.beginFill(0x000000,0.45);
+          shadow.beginFill(0x000000,0.45*p);
           shadow.drawRoundedRect(4,8,cw,ch,6);
           shadow.endFill();
           shadow.x=x+liftX;shadow.y=y+liftY;
           stage.addChild(shadow);
-
-          // Glow ring — draw slightly larger rect behind card
-          const glow1=new PIXI.Graphics();
-          glow1.beginFill(accent,0.35);
-          glow1.drawRoundedRect(-4,-4,cw+8,ch+8,9);
-          glow1.endFill();
-          glow1.x=x+liftX;glow1.y=y+liftY;
-          stage.addChild(glow1);
-
+          // Outer glow
           const glow2=new PIXI.Graphics();
-          glow2.beginFill(accent,0.15);
+          glow2.beginFill(accent,0.15*p);
           glow2.drawRoundedRect(-8,-8,cw+16,ch+16,12);
           glow2.endFill();
           glow2.x=x+liftX;glow2.y=y+liftY;
           stage.addChild(glow2);
+          // Inner glow
+          const glow1=new PIXI.Graphics();
+          glow1.beginFill(accent,0.35*p);
+          glow1.drawRoundedRect(-4,-4,cw+8,ch+8,9);
+          glow1.endFill();
+          glow1.x=x+liftX;glow1.y=y+liftY;
+          stage.addChild(glow1);
         }
 
         if(faceUp){
+          const fillColor=isSelected?(0x14203a+(Math.round(0xa*p)<<16)+(Math.round(0xe*p)<<8)):0x14203a;
           g.beginFill(isSelected?0x1e2e4a:0x14203a);
           g.lineStyle(isSelected?2:1,isSelected?accent:0x334466,1);
           g.drawRoundedRect(0,0,cw,ch,6);
@@ -665,6 +683,7 @@ createApp({
                 solPixiApp=null;
                 solParticleContainer=null;
                 solParticles.length=0;
+                solLiftProgress=0;
               }
               solInitPixi();
             }
