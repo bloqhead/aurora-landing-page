@@ -578,40 +578,40 @@ createApp({
           g.lineStyle(isSelected?2:1,isSelected?accent:0x334466,1);
           g.drawRoundedRect(0,0,cw,ch,6);
           g.endFill();
-          const t=new PIXI.Text(label,{fontFamily:'monospace',fontWeight:'bold',fontSize:Math.round(cw*0.28),fill:isRed?0xff6b6b:0xe8f4f0});
-          t.x=5;t.y=4;t.eventMode='none';g.addChild(t);
+          g.x=x+liftX;g.y=y+liftY;
+          stage.addChild(g);
 
-          // Angled sheen — sweeps top-left→bottom-right on pickup, reverses on putdown
-          // p goes 0→1 on pickup, 1→0 on putdown
+          // Angled sheen — drawn after card bg, before text so text stays on top
           if(p>0.01&&p<0.99){
-            const sheenContainer=new PIXI.Container();
-            sheenContainer.x=x+liftX;sheenContainer.y=y+liftY;
-
-            // Clip mask — card shape so sheen can't bleed outside
-            const mask=new PIXI.Graphics();
-            mask.beginFill(0xffffff);mask.drawRoundedRect(2,2,cw-4,ch-4,5);mask.endFill();
-            sheenContainer.addChild(mask);
-            sheenContainer.mask=mask;
-
-            // Sheen stripe: angled ~30°, sweeps across card
-            // At p=0 starts off left edge, at p=1 exits right edge
-            const sheenW=cw*0.45; // width of highlight stripe
-            const travel=cw+sheenW; // total travel distance
-            const sheenX=(p*travel)-sheenW; // current X offset of stripe center
-
+            const sheenW=cw*0.5;
+            const travel=cw+sheenW*2;
+            const sheenX=(p*travel)-sheenW;
+            const skew=ch*0.3;
+            const alpha=0.22*Math.sin(p*Math.PI);
             const sheen=new PIXI.Graphics();
-            // Draw a parallelogram tilted ~30° using 4 points
-            const skew=ch*0.35; // horizontal skew amount
-            sheen.beginFill(0xffffff,0.18*Math.sin(p*Math.PI)); // fade in and out
-            sheen.moveTo(sheenX-skew,0);
-            sheen.lineTo(sheenX-skew+sheenW,0);
-            sheen.lineTo(sheenX+sheenW,ch);
-            sheen.lineTo(sheenX,ch);
-            sheen.closePath();sheen.endFill();
-
-            sheenContainer.addChild(sheen);
-            stage.addChild(sheenContainer);
+            const x0=Math.max(2,sheenX-skew);
+            const x1=Math.min(cw-2,sheenX-skew+sheenW);
+            const x2=Math.min(cw-2,sheenX+sheenW);
+            const x3=Math.max(2,sheenX);
+            if(x1>x0||x2>x3){
+              sheen.beginFill(0xffffff,alpha);
+              sheen.moveTo(x0,2);
+              sheen.lineTo(x1,2);
+              sheen.lineTo(x2,ch-2);
+              sheen.lineTo(x3,ch-2);
+              sheen.closePath();sheen.endFill();
+            }
+            sheen.x=x+liftX;sheen.y=y+liftY;
+            stage.addChild(sheen);
           }
+
+          // Text drawn last so it's always on top of sheen
+          const tg=new PIXI.Graphics();
+          tg.x=x+liftX;tg.y=y+liftY;
+          const t=new PIXI.Text(label,{fontFamily:'monospace',fontWeight:'bold',fontSize:Math.round(cw*0.28),fill:isRed?0xff6b6b:0xe8f4f0});
+          t.x=5;t.y=4;t.eventMode='none';
+          stage.addChild(tg);
+          tg.addChild(t);
         } else {
           g.beginFill(0x0d1825);
           g.lineStyle(1,0x2a4060,1);
@@ -619,9 +619,9 @@ createApp({
           g.endFill();
           g.lineStyle(1,0x1a3050,1);
           g.drawRoundedRect(6,6,cw-12,ch-12,3);
+          g.x=x+liftX;g.y=y+liftY;
+          stage.addChild(g);
         }
-        g.x=x+liftX;g.y=y+liftY;
-        stage.addChild(g);
       }
 
       // ── TOP ROW ──
