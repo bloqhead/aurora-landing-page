@@ -1186,7 +1186,7 @@ createApp({
       return new Date(ts).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
     }
 
-    const ALLOWED_IMG_HOSTS=['i.imgur.com','imgur.com','i.redd.it','pbs.twimg.com','media.giphy.com','cdn.discordapp.com','images.unsplash.com','upload.wikimedia.org'];
+    const ALLOWED_IMG_HOSTS=['i.imgur.com','imgur.com','i.redd.it','pbs.twimg.com','media.giphy.com','cdn.discordapp.com','images.unsplash.com','upload.wikimedia.org','static.klipy.com'];
     function chatRenderText(text){
       if(!text)return'';
       // Escape HTML first to prevent XSS
