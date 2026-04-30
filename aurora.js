@@ -527,9 +527,37 @@ createApp({
 
       function drawCard(x,y,label,faceUp,isRed,isSelected){
         const g=new PIXI.Graphics();
+        const liftY=isSelected?-6:0;
+        const liftX=isSelected?1:0;
+
+        if(isSelected){
+          // Shadow below lifted card
+          const shadow=new PIXI.Graphics();
+          shadow.beginFill(0x000000,0.45);
+          shadow.drawRoundedRect(4,8,cw,ch,6);
+          shadow.endFill();
+          shadow.x=x+liftX;shadow.y=y+liftY;
+          stage.addChild(shadow);
+
+          // Glow ring — draw slightly larger rect behind card
+          const glow1=new PIXI.Graphics();
+          glow1.beginFill(accent,0.35);
+          glow1.drawRoundedRect(-4,-4,cw+8,ch+8,9);
+          glow1.endFill();
+          glow1.x=x+liftX;glow1.y=y+liftY;
+          stage.addChild(glow1);
+
+          const glow2=new PIXI.Graphics();
+          glow2.beginFill(accent,0.15);
+          glow2.drawRoundedRect(-8,-8,cw+16,ch+16,12);
+          glow2.endFill();
+          glow2.x=x+liftX;glow2.y=y+liftY;
+          stage.addChild(glow2);
+        }
+
         if(faceUp){
-          g.beginFill(0x14203a);
-          g.lineStyle(isSelected?2.5:1,isSelected?accent:0x334466,1);
+          g.beginFill(isSelected?0x1e2e4a:0x14203a);
+          g.lineStyle(isSelected?2:1,isSelected?accent:0x334466,1);
           g.drawRoundedRect(0,0,cw,ch,6);
           g.endFill();
           const t=new PIXI.Text(label,{fontFamily:'monospace',fontWeight:'bold',fontSize:Math.round(cw*0.28),fill:isRed?0xff6b6b:0xe8f4f0});
@@ -542,7 +570,7 @@ createApp({
           g.lineStyle(1,0x1a3050,1);
           g.drawRoundedRect(6,6,cw-12,ch-12,3);
         }
-        g.x=x;g.y=y;
+        g.x=x+liftX;g.y=y+liftY;
         stage.addChild(g);
       }
 
