@@ -482,8 +482,8 @@ createApp({
         }
         if(solLiftAnimating){
           const target=hasSel?1:0;
-          solLiftProgress+=(target-solLiftProgress)*0.18;
-          if(Math.abs(solLiftProgress-target)<0.01){solLiftProgress=target;solLiftAnimating=false;}
+          solLiftProgress+=(target-solLiftProgress)*0.25; // faster: 0.18→0.25
+          if(Math.abs(solLiftProgress-target)<0.008){solLiftProgress=target;solLiftAnimating=false;}
           solDrawPixi();
         }
       });
@@ -550,7 +550,7 @@ createApp({
         const liftX=1*p;
 
         if(isSelected&&p>0.01){
-          // Shadow
+          // Drop shadow
           const shadow=new PIXI.Graphics();
           shadow.beginFill(0x000000,0.45*p);
           shadow.drawRoundedRect(4,8,cw,ch,6);
@@ -580,6 +580,38 @@ createApp({
           g.endFill();
           const t=new PIXI.Text(label,{fontFamily:'monospace',fontWeight:'bold',fontSize:Math.round(cw*0.28),fill:isRed?0xff6b6b:0xe8f4f0});
           t.x=5;t.y=4;t.eventMode='none';g.addChild(t);
+
+          // Angled sheen — sweeps top-left→bottom-right on pickup, reverses on putdown
+          // p goes 0→1 on pickup, 1→0 on putdown
+          if(p>0.01&&p<0.99){
+            const sheenContainer=new PIXI.Container();
+            sheenContainer.x=x+liftX;sheenContainer.y=y+liftY;
+
+            // Clip mask — card shape so sheen can't bleed outside
+            const mask=new PIXI.Graphics();
+            mask.beginFill(0xffffff);mask.drawRoundedRect(2,2,cw-4,ch-4,5);mask.endFill();
+            sheenContainer.addChild(mask);
+            sheenContainer.mask=mask;
+
+            // Sheen stripe: angled ~30°, sweeps across card
+            // At p=0 starts off left edge, at p=1 exits right edge
+            const sheenW=cw*0.45; // width of highlight stripe
+            const travel=cw+sheenW; // total travel distance
+            const sheenX=(p*travel)-sheenW; // current X offset of stripe center
+
+            const sheen=new PIXI.Graphics();
+            // Draw a parallelogram tilted ~30° using 4 points
+            const skew=ch*0.35; // horizontal skew amount
+            sheen.beginFill(0xffffff,0.18*Math.sin(p*Math.PI)); // fade in and out
+            sheen.moveTo(sheenX-skew,0);
+            sheen.lineTo(sheenX-skew+sheenW,0);
+            sheen.lineTo(sheenX+sheenW,ch);
+            sheen.lineTo(sheenX,ch);
+            sheen.closePath();sheen.endFill();
+
+            sheenContainer.addChild(sheen);
+            stage.addChild(sheenContainer);
+          }
         } else {
           g.beginFill(0x0d1825);
           g.lineStyle(1,0x2a4060,1);
