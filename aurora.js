@@ -712,7 +712,7 @@ createApp({
               clearInterval(poll);
               // Destroy old PixiJS instance if canvas was recreated
               if(solPixiApp){
-                try{solPixiApp.destroy(true);}catch{}
+                try{solPixiApp.ticker.stop();solPixiApp.destroy(true,{children:true});}catch(e){console.warn('sol destroy:',e);}
                 solPixiApp=null;
                 solParticleContainer=null;
                 solParticles.length=0;
@@ -733,7 +733,7 @@ createApp({
       nextTick(()=>setTimeout(()=>{
         const el=document.getElementById('sol-pixi');
         if(el&&(!solPixiApp||!solPixiApp.view?.isConnected)){
-          if(solPixiApp){try{solPixiApp.destroy(true);}catch{}solPixiApp=null;solParticleContainer=null;solParticles.length=0;solLiftProgress=0;}
+          if(solPixiApp){try{solPixiApp.ticker.stop();solPixiApp.destroy(true,{children:true});}catch(e){console.warn('sol destroy:',e);}solPixiApp=null;solParticleContainer=null;solParticles.length=0;solLiftProgress=0;}
           solInitPixi();
         }
       },150));
@@ -1168,7 +1168,7 @@ createApp({
     function scInitPixi(){
       const cv=document.getElementById('simcity-canvas');
       if(!cv)return;
-      if(scPixiApp){try{scPixiApp.destroy(true);}catch{}scPixiApp=null;}
+      if(scPixiApp){try{scPixiApp.ticker.stop();scPixiApp.destroy(true,{children:true});}catch(e){console.warn('sc destroy:',e);}scPixiApp=null;}
 
       const W=cv.parentElement.clientWidth||400;
       const H=Math.round(W*0.65);
@@ -1179,6 +1179,7 @@ createApp({
       scTickerMsg.value=SC_TICKER_MSGS[0];
 
       scPixiApp.ticker.add(()=>{
+        try{
         scTick++;
         // Update city time every 180 ticks
         if(scTick%180===0){
@@ -1205,6 +1206,7 @@ createApp({
           }
         });
         scDraw();
+        }catch(e){console.warn('SimCity tick:',e);}
       });
 
       scTimeStr.value=`${SC_MONTHS[scMonth]} ${scYear}`;
@@ -2061,6 +2063,12 @@ createApp({
     function updateSomaVolume(){somaAudio.volume=parseFloat(somaVolume.value);}
 
     function saveSettings(){localStorage.setItem('aurora_location',locationInput.value);if(locationInput.value.trim()){localStorage.removeItem('aurora_geo_lat');localStorage.removeItem('aurora_geo_lon');localStorage.removeItem('aurora_geo_name');}localStorage.setItem('aurora_unsplash',unsplashKey.value);localStorage.setItem('aurora_lastfm',lastfmKey.value);localStorage.setItem('aurora_nasa',nasaKey.value);localStorage.setItem('aurora_musicapp',musicApp.value);localStorage.setItem('aurora_theme',currentTheme.value);localStorage.setItem('aurora_fahrenheit',useFahrenheit.value);localStorage.setItem('aurora_lastfm_user',lastfmUser.value);localStorage.setItem('aurora_tama_enabled',tamaEnabled.value);bookmarks.value=bookmarkEdits.value.filter(b=>b.url);localStorage.setItem('aurora_bookmarks',JSON.stringify(bookmarks.value));showSettings.value=false;locateAndLoad();fetchBg(bgTopic.value);fetchAlbum(selectedGenre.value);fetchAPOD();}
+
+    // Global error handlers — prevent unhandled rejections from crashing the page
+    window.addEventListener('unhandledrejection',e=>{
+      console.warn('Aurora unhandled rejection:',e.reason);
+      e.preventDefault();
+    });
 
     onMounted(()=>{applyTheme(currentTheme.value);updateNumCols();window.addEventListener('resize',updateNumCols);window.addEventListener('scroll',tamaOnScroll,{passive:true});document.addEventListener('pointerdown',()=>{tamaLastInteraction=Date.now();tamaSleepy=0;},{passive:true});clockTimer=setInterval(()=>{now.value=new Date();},10000);locateAndLoad();fetchKP();fetchQuote();fetchAlbum(selectedGenre.value);fetchBg(bgTopic.value);fetchAnimal();fetchAPOD();fetchChangelogBadge();w2048Init();setInterval(fetchKP,5*60*1000);setInterval(()=>{if(unsplashKey.value)fetchBg(bgTopic.value);},15*60*1000);tamaInit();setTimeout(drawMoonCanvas,300);if(window.lucide)window.lucide.createIcons();});
     onUnmounted(()=>{clearInterval(clockTimer);window.removeEventListener('resize',updateNumCols);window.removeEventListener('scroll',tamaOnScroll);teardownDice();});
