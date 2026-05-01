@@ -825,6 +825,12 @@
       <div class="np-lastfm-badge">last.fm</div>
     </div>
   </transition>
+  <!-- Debug error toast (temporary) -->
+  <transition name="nowplaying">
+    <div v-if="debugError" style="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:9999;background:rgba(200,30,30,.95);color:#fff;font-family:monospace;font-size:11px;padding:10px 16px;border-radius:8px;max-width:90vw;word-break:break-all;text-align:center;">
+      ⚠️ {{ debugError }}
+    </div>
+  </transition>
 
 </div>
 <script type="module" src="aurora.js?v=__BUILD_VERSION__"></script>
