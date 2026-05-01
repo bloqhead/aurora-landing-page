@@ -1170,16 +1170,20 @@ createApp({
     function scInitPixi(){
       const cv=document.getElementById('simcity-canvas');
       if(!cv)return;
-      // Cancel any existing animation loop
       if(scPixiApp){cancelAnimationFrame(scPixiApp);scPixiApp=null;}
 
-      const W=cv.parentElement.clientWidth||400;
-      const H=Math.round(W*0.65);
-      cv.width=W*2;cv.height=H*2; // retina
-      cv.style.width=W+'px';cv.style.height=H+'px';
+      // Let CSS width:100% control display size, just set pixel buffer to match
+      cv.style.width='100%';
+      cv.style.height='auto';
+      const W=cv.clientWidth||cv.parentElement.clientWidth-32||400;
+      const H=Math.round(W*0.62);
+      const dpr=Math.min(window.devicePixelRatio||1,2);
+      cv.width=Math.round(W*dpr);
+      cv.height=Math.round(H*dpr);
+      cv.style.height=H+'px';
 
       const ctx=cv.getContext('2d');
-      ctx.scale(2,2); // retina scale
+      ctx.scale(dpr,dpr);
 
       scCity=scGenerateCity(14);
       scTimeStr.value=SC_MONTHS[scMonth]+' '+scYear;
