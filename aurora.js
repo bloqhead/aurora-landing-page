@@ -1168,224 +1168,180 @@ createApp({
     function scInitPixi(){
       const cv=document.getElementById('simcity-canvas');
       if(!cv)return;
-      if(!window.PIXI){
-        const s=document.createElement('script');
-        s.src='https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.2/pixi.min.js';
-        s.onload=()=>scInitPixi();
-        s.onerror=()=>console.warn('Failed to load PixiJS for SimCity');
-        document.head.appendChild(s);
-        return;
-      }
-      if(scPixiApp){try{scPixiApp.ticker.stop();scPixiApp.destroy(true,{children:true});}catch(e){console.warn('sc destroy:',e);}scPixiApp=null;}
-      const PIXI=window.PIXI;
+      // Cancel any existing animation loop
+      if(scPixiApp){cancelAnimationFrame(scPixiApp);scPixiApp=null;}
 
       const W=cv.parentElement.clientWidth||400;
       const H=Math.round(W*0.65);
-      cv.width=W;cv.height=H;
+      cv.width=W*2;cv.height=H*2; // retina
+      cv.style.width=W+'px';cv.style.height=H+'px';
 
-      scPixiApp=new PIXI.Application({view:cv,width:W,height:H,backgroundColor:SC.SKY_DAY,antialias:false});
+      const ctx=cv.getContext('2d');
+      ctx.scale(2,2); // retina scale
+
       scCity=scGenerateCity(14);
+      scTimeStr.value=SC_MONTHS[scMonth]+' '+scYear;
       scTickerMsg.value=SC_TICKER_MSGS[0];
 
-      scPixiApp.ticker.add(()=>{
-        try{
+      let rafId=null;
+      function loop(){
         scTick++;
-        // Update city time every 180 ticks
         if(scTick%180===0){
           scMonth=(scMonth+1)%12;
           if(scMonth===0)scYear++;
-          scTimeStr.value=`${SC_MONTHS[scMonth]} ${scYear}`;
+          scTimeStr.value=SC_MONTHS[scMonth]+' '+scYear;
           scPop.value+=Math.floor((Math.random()-0.3)*500);
           scFunds.value+=Math.floor(scPop.value*0.01+Math.random()*1000-200);
-          if(scTick%(180*6)===0){
-            scTickerMsg.value=SC_TICKER_MSGS[Math.floor(Math.random()*SC_TICKER_MSGS.length)];
-          }
+          if(scTick%(180*6)===0)scTickerMsg.value=SC_TICKER_MSGS[Math.floor(Math.random()*SC_TICKER_MSGS.length)];
         }
-        // Move cars
-        scCity.cars.forEach(car=>{
-          car.pos=(car.pos+car.speed/60)%scCity.size;
-        });
-        // Window flicker
+        scCity.cars.forEach(car=>{car.pos=(car.pos+car.speed/60)%scCity.size;});
         scCity.buildings.forEach(b=>{
           b.winTimer--;
           if(b.winTimer<=0){
-            const idx=Math.floor(Math.random()*b.winStates.length);
-            b.winStates[idx]=!b.winStates[idx];
+            b.winStates[Math.floor(Math.random()*b.winStates.length)]=Math.random()>0.4;
             b.winTimer=30+Math.floor(Math.random()*300);
           }
         });
-        scDraw();
-        }catch(e){console.warn('SimCity tick:',e);}
-      });
-
-      scTimeStr.value=`${SC_MONTHS[scMonth]} ${scYear}`;
+        scDraw(ctx,W,H);
+        rafId=requestAnimationFrame(loop);
+      }
+      scPixiApp=rafId; // store rafId so we can cancel
+      loop();
     }
 
-    function scDraw(){
-      if(!scPixiApp||!window.PIXI)return;
-      const PIXI=window.PIXI;
-      const app=scPixiApp;
-      const W=app.renderer.width/app.renderer.resolution;
-      const H=app.renderer.height/app.renderer.resolution;
-      const stage=app.stage;
-      stage.removeChildren();
-
+    function scDraw(ctx,W,H){
+      if(!ctx||!scCity)return;
+      try{
       const size=scCity.size;
-      const TW=Math.floor(W/size*1.1); // tile width
-      const TH=Math.floor(TW*0.5);     // tile height (isometric)
+      const TW=Math.floor(W/size*1.15);
+      const TH=Math.floor(TW*0.5);
       const originX=W*0.5;
-      const originY=H*0.18;
+      const originY=H*0.15;
 
-      // Sky gradient
-      const sky=new PIXI.Graphics();
-      sky.beginFill(SC.SKY_DAY);sky.drawRect(0,0,W,H);sky.endFill();
-      // Subtle horizon
-      sky.beginFill(0x88aadd,0.3);sky.drawRect(0,H*0.3,W,H*0.7);sky.endFill();
-      stage.addChild(sky);
+      function iso(r,c){return{x:originX+(c-r)*TW/2, y:originY+(c+r)*TH/2};}
 
-      // Convert grid coords to isometric screen coords
-      function iso(r,c){
-        return{
-          x:originX+(c-r)*TW/2,
-          y:originY+(c+r)*TH/2,
-        };
-      }
+      // Sky
+      const skyGrad=ctx.createLinearGradient(0,0,0,H);
+      skyGrad.addColorStop(0,'#3a6aaa');skyGrad.addColorStop(1,'#6699cc');
+      ctx.fillStyle=skyGrad;ctx.fillRect(0,0,W,H);
 
-      // Draw ground tiles back to front (painter's algorithm)
+      // Draw tiles back to front
       for(let r=0;r<size;r++){
         for(let c=0;c<size;c++){
           const{x,y}=iso(r,c);
           const t=scCity.grid[r][c];
-          const g=new PIXI.Graphics();
-
+          ctx.beginPath();
+          ctx.moveTo(x,y);ctx.lineTo(x+TW/2,y+TH/2);
+          ctx.lineTo(x,y+TH);ctx.lineTo(x-TW/2,y+TH/2);
+          ctx.closePath();
           if(t===T.WATER){
-            // Animated water shimmer
-            const shimmer=Math.sin(scTick*0.05+(r+c)*0.8)*0.15;
-            g.beginFill(SC.WATER,1);
-            // Iso tile diamond
-            g.moveTo(x,y);g.lineTo(x+TW/2,y+TH/2);
-            g.lineTo(x,y+TH);g.lineTo(x-TW/2,y+TH/2);g.closePath();g.endFill();
-            g.beginFill(SC.WATER_SHINE,shimmer);
-            g.moveTo(x,y);g.lineTo(x+TW/2,y+TH/2);
-            g.lineTo(x,y+TH);g.lineTo(x-TW/2,y+TH/2);g.closePath();g.endFill();
+            const shimmer=Math.sin(scTick*0.05+(r+c)*0.8)*20;
+            ctx.fillStyle=`rgb(${34+shimmer|0},${85+shimmer|0},${170+shimmer|0})`;
           } else if(t===T.ROAD_H||t===T.ROAD_V||t===T.ROAD_X){
-            g.beginFill(SC.ROAD);
-            g.moveTo(x,y);g.lineTo(x+TW/2,y+TH/2);
-            g.lineTo(x,y+TH);g.lineTo(x-TW/2,y+TH/2);g.closePath();g.endFill();
-            // Road markings
-            g.lineStyle(1,SC.ROAD_LINE,0.5);
-            g.moveTo(x,y+TH/2);g.lineTo(x,y+TH/2);
+            ctx.fillStyle='#555566';
           } else if(t===T.PARK){
-            g.beginFill(SC.PARK);
-            g.moveTo(x,y);g.lineTo(x+TW/2,y+TH/2);
-            g.lineTo(x,y+TH);g.lineTo(x-TW/2,y+TH/2);g.closePath();g.endFill();
-            // Tree dots
-            g.beginFill(0x226611,0.8);g.drawCircle(x,y+TH*0.6,3);g.endFill();
-            g.beginFill(0x338822,0.8);g.drawCircle(x+TW*0.15,y+TH*0.4,2);g.endFill();
+            ctx.fillStyle='#55aa33';
           } else {
-            g.beginFill(SC.GROUND);
-            g.moveTo(x,y);g.lineTo(x+TW/2,y+TH/2);
-            g.lineTo(x,y+TH);g.lineTo(x-TW/2,y+TH/2);g.closePath();g.endFill();
+            ctx.fillStyle='#4a7a3a';
           }
-          stage.addChild(g);
+          ctx.fill();
+          // Park trees
+          if(t===T.PARK){
+            ctx.fillStyle='#226611';
+            ctx.beginPath();ctx.arc(x,y+TH*0.6,3,0,Math.PI*2);ctx.fill();
+            ctx.fillStyle='#338822';
+            ctx.beginPath();ctx.arc(x+TW*0.12,y+TH*0.4,2,0,Math.PI*2);ctx.fill();
+          }
+          // Road center line
+          if(t===T.ROAD_H||t===T.ROAD_V){
+            ctx.strokeStyle='rgba(180,180,200,0.3)';ctx.lineWidth=0.5;
+            ctx.beginPath();ctx.moveTo(x-TW*0.2,y+TH*0.5);ctx.lineTo(x+TW*0.2,y+TH*0.5);ctx.stroke();
+          }
         }
       }
 
-      // Draw buildings back to front
-      const sortedBuildings=[...scCity.buildings].sort((a,b)=>(a.r+a.c)-(b.r+b.c));
-      sortedBuildings.forEach(b=>{
+      // Draw buildings sorted back to front
+      const sorted=[...scCity.buildings].sort((a,b)=>(a.r+a.c)-(b.r+b.c));
+      sorted.forEach(b=>{
         const{x,y}=iso(b.r,b.c);
-        const bh=b.floors*(TH*0.9);
+        const bh=b.floors*(TH*0.92);
         const bw=TW*0.82;
 
-        const[wl,wm,wd,rl,rd]=b.t===T.RES?
-          [SC.RES_LIGHT,SC.RES_MED,SC.RES_DARK,SC.ROOF_LIGHT,SC.ROOF_DARK]:
-          b.t===T.COM?
-          [SC.COM_LIGHT,SC.COM_MED,SC.COM_DARK,SC.ROOF_MED,SC.ROOF_DARK]:
-          [SC.IND_LIGHT,SC.IND_MED,SC.IND_DARK,SC.IND_MED,SC.IND_DARK];
+        const colors={
+          [T.RES]:{top:'#77bb55',right:'#55993a',left:'#337722',win:'#ffdd88'},
+          [T.COM]:{top:'#7799cc',right:'#5577aa',left:'#334488',win:'#ffffaa'},
+          [T.IND]:{top:'#ccbb55',right:'#aaaa33',left:'#888811',win:'#ffcc44'},
+        }[b.t]||{top:'#998877',right:'#776655',left:'#554433',win:'#ffeecc'};
 
-        const g=new PIXI.Graphics();
+        // Roof
+        ctx.beginPath();
+        ctx.moveTo(x,y-bh);ctx.lineTo(x+bw/2,y-bh+TH/2);
+        ctx.lineTo(x,y-bh+TH);ctx.lineTo(x-bw/2,y-bh+TH/2);
+        ctx.closePath();ctx.fillStyle=colors.top;ctx.fill();
 
-        // Isometric top face (roof)
-        g.beginFill(rl);
-        g.moveTo(x,y-bh);
-        g.lineTo(x+bw/2,y-bh+TH/2);
-        g.lineTo(x,y-bh+TH);
-        g.lineTo(x-bw/2,y-bh+TH/2);
-        g.closePath();g.endFill();
+        // Right face
+        ctx.beginPath();
+        ctx.moveTo(x,y+TH);ctx.lineTo(x+bw/2,y+TH/2);
+        ctx.lineTo(x+bw/2,y+TH/2-bh);ctx.lineTo(x,y-bh+TH);
+        ctx.closePath();ctx.fillStyle=colors.right;ctx.fill();
 
-        // Right face (south-east wall)
-        g.beginFill(wm);
-        g.moveTo(x,y+TH);
-        g.lineTo(x+bw/2,y+TH/2);
-        g.lineTo(x+bw/2,y+TH/2-bh);
-        g.lineTo(x,y-bh+TH);
-        g.closePath();g.endFill();
-
-        // Left face (south-west wall)
-        g.beginFill(wd);
-        g.moveTo(x,y+TH);
-        g.lineTo(x-bw/2,y+TH/2);
-        g.lineTo(x-bw/2,y+TH/2-bh);
-        g.lineTo(x,y-bh+TH);
-        g.closePath();g.endFill();
+        // Left face
+        ctx.beginPath();
+        ctx.moveTo(x,y+TH);ctx.lineTo(x-bw/2,y+TH/2);
+        ctx.lineTo(x-bw/2,y+TH/2-bh);ctx.lineTo(x,y-bh+TH);
+        ctx.closePath();ctx.fillStyle=colors.left;ctx.fill();
 
         // Windows on right face
-        const wRows=b.floors;const wCols=2;
+        const wRows=b.floors;
         for(let wr=0;wr<wRows;wr++){
-          for(let wc=0;wc<wCols;wc++){
-            const winIdx=wr*wCols+wc;
-            const isLit=b.winStates[winIdx%b.winStates.length];
-            const wx=x+(bw/2)*(0.3+wc*0.35);
-            const wy=y+TH/2-bh+(wr+0.5)*(bh/wRows)-(wc*TH*0.25);
-            g.beginFill(isLit?SC.WIN_WARM:SC.WIN_OFF,0.9);
-            g.drawRect(wx-2,wy-2,4,4);
-            g.endFill();
+          for(let wc=0;wc<2;wc++){
+            const winIdx=wr*2+wc;
+            const lit=b.winStates[winIdx%b.winStates.length];
+            const wx=x+(bw/2)*(0.25+wc*0.4)-(wr*TH*0.25);
+            const wy=y+TH/2-bh+(wr+0.5)*(bh/wRows);
+            ctx.fillStyle=lit?colors.win:'#223344';
+            ctx.fillRect(wx-2,wy-2,4,4);
           }
         }
 
-        // Antenna / rooftop detail on commercial
+        // Antenna on tall commercial
         if(b.t===T.COM&&b.floors>4){
-          g.lineStyle(1,0xaabbcc,0.8);
-          g.moveTo(x,y-bh);g.lineTo(x,y-bh-TH*0.6);
-          g.beginFill(0xff3333);g.drawCircle(x,y-bh-TH*0.6,2);g.endFill();
+          ctx.strokeStyle='#aabbcc';ctx.lineWidth=1;
+          ctx.beginPath();ctx.moveTo(x,y-bh);ctx.lineTo(x,y-bh-TH*0.55);ctx.stroke();
+          // Blinking light
+          if(Math.floor(scTick/30)%2===0){
+            ctx.fillStyle='#ff3333';
+            ctx.beginPath();ctx.arc(x,y-bh-TH*0.55,2,0,Math.PI*2);ctx.fill();
+          }
         }
 
-        // Smoke from industrial
+        // Industrial smoke
         if(b.t===T.IND){
-          const smokeY=y-bh-scTick*0.3;
-          const smokeA=0.4*(1-((smokeY%(TH*3))/(TH*3)));
-          g.beginFill(SC.SMOKE,Math.max(0,smokeA));
-          g.drawCircle(x+2,(y-bh)-(scTick*0.5%TH*4),3+Math.sin(scTick*0.1)*1);
-          g.endFill();
+          const age=(scTick*0.4)%(TH*5);
+          const alpha=Math.max(0,0.5*(1-age/(TH*5)));
+          ctx.fillStyle=`rgba(160,160,160,${alpha})`;
+          const sz=2+age*0.04;
+          ctx.beginPath();ctx.arc(x+3,y-bh-age,sz,0,Math.PI*2);ctx.fill();
         }
-
-        stage.addChild(g);
       });
 
-      // Draw cars on roads
+      // Cars
       scCity.cars.forEach(car=>{
-        const g=new PIXI.Graphics();
         let cx,cy;
         if(car.dir==='h'){
-          const pos=car.pos;
-          const isoPos=iso(car.r+car.lane-0.5,pos);
-          cx=isoPos.x;cy=isoPos.y;
+          const p=iso(car.r+car.lane-0.5,car.pos);cx=p.x;cy=p.y;
         } else {
-          const isoPos=iso(car.pos,car.c+car.lane-0.5);
-          cx=isoPos.x;cy=isoPos.y;
+          const p=iso(car.pos,car.c+car.lane-0.5);cx=p.x;cy=p.y;
         }
-        g.beginFill(car.color);
-        g.drawRect(cx-3,cy-2,6,4);
-        g.endFill();
-        g.beginFill(0x334455,0.6);
-        g.drawRect(cx-2,cy-1,4,2);
-        g.endFill();
-        stage.addChild(g);
+        ctx.fillStyle='#'+car.color.toString(16).padStart(6,'0');
+        ctx.fillRect(cx-3,cy-2,6,4);
+        ctx.fillStyle='rgba(30,40,60,0.7)';
+        ctx.fillRect(cx-2,cy-1,4,2);
       });
+
+      }catch(e){console.warn('scDraw:',e);}
     }
 
-    // Watch for widget becoming visible
     watch(visibleWidgets,()=>{
       if(visibleWidgets.value.find(w=>w.id==='simcity')){
         nextTick(()=>{
@@ -1393,10 +1349,12 @@ createApp({
           const poll=setInterval(()=>{
             attempts++;
             const el=document.getElementById('simcity-canvas');
-            if(el){clearInterval(poll);scInitPixi();}
+            if(el){clearInterval(poll);if(scPixiApp){cancelAnimationFrame(scPixiApp);scPixiApp=null;}scInitPixi();}
             else if(attempts>40)clearInterval(poll);
           },100);
         });
+      } else {
+        if(scPixiApp){cancelAnimationFrame(scPixiApp);scPixiApp=null;}
       }
     },{immediate:true});
 
@@ -1404,7 +1362,7 @@ createApp({
       if(!visibleWidgets.value.find(w=>w.id==='simcity'))return;
       nextTick(()=>setTimeout(()=>{
         const el=document.getElementById('simcity-canvas');
-        if(el&&(!scPixiApp||!scPixiApp.view?.isConnected))scInitPixi();
+        if(el){if(scPixiApp){cancelAnimationFrame(scPixiApp);scPixiApp=null;}scInitPixi();}
       },150));
     },{immediate:false});
 
