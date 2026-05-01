@@ -1168,7 +1168,16 @@ createApp({
     function scInitPixi(){
       const cv=document.getElementById('simcity-canvas');
       if(!cv)return;
+      if(!window.PIXI){
+        const s=document.createElement('script');
+        s.src='https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.2/pixi.min.js';
+        s.onload=()=>scInitPixi();
+        s.onerror=()=>console.warn('Failed to load PixiJS for SimCity');
+        document.head.appendChild(s);
+        return;
+      }
       if(scPixiApp){try{scPixiApp.ticker.stop();scPixiApp.destroy(true,{children:true});}catch(e){console.warn('sc destroy:',e);}scPixiApp=null;}
+      const PIXI=window.PIXI;
 
       const W=cv.parentElement.clientWidth||400;
       const H=Math.round(W*0.65);
@@ -1213,7 +1222,8 @@ createApp({
     }
 
     function scDraw(){
-      if(!scPixiApp)return;
+      if(!scPixiApp||!window.PIXI)return;
+      const PIXI=window.PIXI;
       const app=scPixiApp;
       const W=app.renderer.width/app.renderer.resolution;
       const H=app.renderer.height/app.renderer.resolution;
