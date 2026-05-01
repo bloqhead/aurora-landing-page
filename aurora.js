@@ -1376,9 +1376,25 @@ createApp({
     // Watch for widget becoming visible
     watch(visibleWidgets,()=>{
       if(visibleWidgets.value.find(w=>w.id==='simcity')){
-        nextTick(()=>setTimeout(scInitPixi,100));
+        nextTick(()=>{
+          let attempts=0;
+          const poll=setInterval(()=>{
+            attempts++;
+            const el=document.getElementById('simcity-canvas');
+            if(el){clearInterval(poll);scInitPixi();}
+            else if(attempts>40)clearInterval(poll);
+          },100);
+        });
       }
     },{immediate:true});
+
+    watch(masonryColumns,()=>{
+      if(!visibleWidgets.value.find(w=>w.id==='simcity'))return;
+      nextTick(()=>setTimeout(()=>{
+        const el=document.getElementById('simcity-canvas');
+        if(el&&(!scPixiApp||!scPixiApp.view?.isConnected))scInitPixi();
+      },150));
+    },{immediate:false});
 
     // ── STEAM REC ───────────────────────────────────────────────────────────────
     const STEAM_PROXY='https://aurora-chat.daryn-codes.workers.dev/igdb';
