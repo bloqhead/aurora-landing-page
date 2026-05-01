@@ -596,6 +596,18 @@
           <div class="palette-copied">{{ paletteCopied }}</div>
         </div>
 
+        <!-- SIMCITY 2000 -->
+        <div v-else-if="wid.id==='simcity'" class="card simcity-card">
+          <div class="card-label">SimCity 2000</div>
+          <div class="simcity-info">
+            <span class="simcity-stat">POP: {{ scPop.toLocaleString() }}</span>
+            <span class="simcity-stat">${{ scFunds.toLocaleString() }}</span>
+            <span class="simcity-time">{{ scTimeStr }}</span>
+          </div>
+          <canvas id="simcity-canvas" style="display:block;width:100%;image-rendering:pixelated;border-radius:6px;"></canvas>
+          <div class="simcity-ticker">{{ scTickerMsg }}</div>
+        </div>
+
         <div v-else-if="wid.id==='bg'" class="card">          <div class="card-label">Background · Unsplash</div>
           <div class="bg-topics">
             <button v-for="t in bgTopics" :key="t.key" class="topic-btn" :class="{active:bgTopic===t.key}" @click="setBgTopic(t.key)">{{ t.label }}</button>

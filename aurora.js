@@ -29,8 +29,8 @@ const SOMA_STATIONS=[{id:'dronezone',name:'Drone Zone',desc:'Atmospheric ambient
 const ALBUM_FALLBACKS={'ambient':{title:'Discreet Music',artist:'Brian Eno',year:'1975',url:null,why:'The blueprint for ambient music.'},'jazz':{title:'Kind of Blue',artist:'Miles Davis',year:'1959',url:null,why:'Still the best-selling jazz album ever made.'},'folk':{title:'For Emma, Forever Ago',artist:'Bon Iver',year:'2007',url:null,why:'Recorded alone in a Wisconsin cabin.'},'post-rock':{title:'Lift Your Skinny Fists…',artist:'Godspeed You! Black Emperor',year:'2000',url:null,why:'Sprawling, cinematic, unforgettable.'},'classical':{title:'Goldberg Variations',artist:'Glenn Gould',year:'1981',url:null,why:"Gould's quiet, introspective goodbye."},'shoegaze':{title:'Loveless',artist:'My Bloody Valentine',year:'1991',url:null,why:'Changed guitar music forever.'},'blues':{title:'Electric Mud',artist:'Muddy Waters',year:'1968',url:null,why:'Muddy goes psychedelic, brilliantly.'},'soul':{title:"There's a Riot Goin' On",artist:'Sly & the Family Stone',year:'1971',url:null,why:'The sound of utopia collapsing.'},'experimental':{title:'Trout Mask Replica',artist:'Captain Beefheart',year:'1969',url:null,why:'Difficult and rewarding in equal measure.'},'drone':{title:'The Tired Sounds of Stars of the Lid',artist:'Stars of the Lid',year:'2001',url:null,why:'Time feels elastic here.'},'krautrock':{title:'Autobahn',artist:'Kraftwerk',year:'1974',url:null,why:'Invented electronic pop.'},'neo-soul':{title:'Voodoo',artist:"D'Angelo",year:'2000',url:null,why:'Worth every year of the wait.'}};
 const QUOTES=[{text:"The world is quiet here.",author:"Lemony Snicket"},{text:"Not all those who wander are lost.",author:"J.R.R. Tolkien"},{text:"I took a deep breath and listened to the old brag of my heart: I am, I am, I am.",author:"Sylvia Plath"},{text:"The sky is everywhere, it begins at your feet.",author:"Jandy Nelson"},{text:"To live is so startling it leaves little time for anything else.",author:"Emily Dickinson"},{text:"The cure for anything is salt water: sweat, tears, or the sea.",author:"Isak Dinesen"},{text:"In the middle of winter, I at last discovered that there was in me an invincible summer.",author:"Albert Camus"},{text:"Stars are not small or gentle. They are writhing and dying and burning.",author:"Tamsyn Muir"},{text:"The most beautiful thing we can experience is the mysterious.",author:"Albert Einstein"},{text:"Everything you can imagine is real.",author:"Pablo Picasso"},{text:"There is no exquisite beauty without some strangeness in the proportion.",author:"Edgar Allan Poe"},{text:"I am not afraid of storms, for I am learning how to sail my ship.",author:"Louisa May Alcott"},{text:"Wherever you go becomes a part of you somehow.",author:"Anita Desai"},{text:"We shall not cease from exploration.",author:"T.S. Eliot"},{text:"One must always maintain one's connection to the past and yet ceaselessly pull away from it.",author:"Gaston Bachelard"},{text:"I would rather die of passion than of boredom.",author:"Vincent van Gogh"},{text:"The job of the artist is always to deepen the mystery.",author:"Francis Bacon"},{text:"You can't use up creativity. The more you use, the more you have.",author:"Maya Angelou"},{text:"To photograph is to appropriate the thing photographed.",author:"Susan Sontag"},{text:"The aim of art is to represent not the outward appearance of things, but their inward significance.",author:"Aristotle"}];
 
-const DEFAULT_WIDGET_ORDER=['kp','weather','sun','moon','aqi','tides','iss','planets','quote','animal','apod','soma','album','notes','todo','bookmarks','dice','chat','solitaire','snake','wordle','worldclock','gif','steam','filmrec','passgen','palette','bg'];
-const WIDGET_META={kp:{label:'KP Index',icon:'🌌',desc:'Aurora activity — updated every 5 min',cols:4,weight:3},weather:{label:'Weather',icon:'🌤️',desc:'Local conditions from Open-Meteo',cols:4,weight:3},sun:{label:'Sunrise & Sunset',icon:'🌅',desc:'Daily sun arc with daylight duration',cols:4,weight:3},moon:{label:'Moon Phase',icon:'🌕',desc:'Calculated phase, illumination & next full moon',cols:3,weight:2},aqi:{label:'Air Quality',icon:'🌬️',desc:'AQI, PM2.5, PM10 and ozone',cols:3,weight:2},tides:{label:'Tides',icon:'🌊',desc:'Tide highs and lows from Open-Meteo Marine',cols:5,weight:3},iss:{label:'ISS Pass Times',icon:'📡',desc:'When the space station flies over you',cols:4,weight:3},planets:{label:'Planets Tonight',icon:'🔭',desc:'Calculated visibility for naked-eye planets',cols:4,weight:4},quote:{label:'Inspiration',icon:'💬',desc:'Curated quotes from writers, artists, thinkers',cols:6,weight:2},animal:{label:'Animal of the Day',icon:'🦎',desc:'Random wildlife observation + Wikipedia fact',cols:5,weight:5},apod:{label:'NASA APOD',icon:'🌌',desc:'Astronomy Picture of the Day',cols:6,weight:5},soma:{label:'SomaFM Radio',icon:'📻',desc:'Curated ambient & electronic streams',cols:5,weight:3},album:{label:'Album Rec',icon:'🎵',desc:'Last.fm genre recommendations',cols:8,weight:4},notes:{label:'Notes',icon:'📋',desc:'Quick scratchpad, auto-saved locally',cols:5,weight:3},todo:{label:'To-Do',icon:'✅',desc:'Simple checklist, persisted locally',cols:4,weight:3},bookmarks:{label:'Bookmarks',icon:'🔗',desc:'Your personal speed-dial links',cols:12,weight:2},dice:{label:'Dice Roller',icon:'🎲',desc:'D&D dice — d4 through d20',cols:4,weight:3},chat:{label:'Chat',icon:'💬',desc:'Live chat with presence & typing indicators',cols:6,weight:5},solitaire:{label:'Solitaire',icon:'🃏',desc:'Klondike solitaire — drag & drop',cols:8,weight:8},snake:{label:'Snake',icon:'🐍',desc:'Classic snake game',cols:4,weight:4},wordle:{label:'Wordle',icon:'✏️',desc:'Daily 5-letter word game',cols:4,weight:6},worldclock:{label:'World Clock',icon:'🌍',desc:'Multiple city times',cols:4,weight:3},gif:{label:'GIF Search',icon:'🎬',desc:'Search GIFs via Klipy',cols:4,weight:3},steam:{label:'Steam Rec',icon:'🎮',desc:'Game recommendations by genre from Steam',cols:6,weight:4},filmrec:{label:'Film Rec',icon:'🎬',desc:'Random film recommendation by genre',cols:4,weight:3},passgen:{label:'Password',icon:'🔑',desc:'Secure password generator',cols:4,weight:3},palette:{label:'Color Palette',icon:'🎨',desc:'Generate harmonious color palettes',cols:5,weight:3},bg:{label:'Background',icon:'🖼️',desc:'Unsplash photo topic picker',cols:7,weight:2}};
+const DEFAULT_WIDGET_ORDER=['kp','weather','sun','moon','aqi','tides','iss','planets','quote','animal','apod','soma','album','notes','todo','bookmarks','dice','chat','solitaire','snake','wordle','worldclock','gif','steam','filmrec','passgen','palette','simcity','bg'];
+const WIDGET_META={kp:{label:'KP Index',icon:'🌌',desc:'Aurora activity — updated every 5 min',cols:4,weight:3},weather:{label:'Weather',icon:'🌤️',desc:'Local conditions from Open-Meteo',cols:4,weight:3},sun:{label:'Sunrise & Sunset',icon:'🌅',desc:'Daily sun arc with daylight duration',cols:4,weight:3},moon:{label:'Moon Phase',icon:'🌕',desc:'Calculated phase, illumination & next full moon',cols:3,weight:2},aqi:{label:'Air Quality',icon:'🌬️',desc:'AQI, PM2.5, PM10 and ozone',cols:3,weight:2},tides:{label:'Tides',icon:'🌊',desc:'Tide highs and lows from Open-Meteo Marine',cols:5,weight:3},iss:{label:'ISS Pass Times',icon:'📡',desc:'When the space station flies over you',cols:4,weight:3},planets:{label:'Planets Tonight',icon:'🔭',desc:'Calculated visibility for naked-eye planets',cols:4,weight:4},quote:{label:'Inspiration',icon:'💬',desc:'Curated quotes from writers, artists, thinkers',cols:6,weight:2},animal:{label:'Animal of the Day',icon:'🦎',desc:'Random wildlife observation + Wikipedia fact',cols:5,weight:5},apod:{label:'NASA APOD',icon:'🌌',desc:'Astronomy Picture of the Day',cols:6,weight:5},soma:{label:'SomaFM Radio',icon:'📻',desc:'Curated ambient & electronic streams',cols:5,weight:3},album:{label:'Album Rec',icon:'🎵',desc:'Last.fm genre recommendations',cols:8,weight:4},notes:{label:'Notes',icon:'📋',desc:'Quick scratchpad, auto-saved locally',cols:5,weight:3},todo:{label:'To-Do',icon:'✅',desc:'Simple checklist, persisted locally',cols:4,weight:3},bookmarks:{label:'Bookmarks',icon:'🔗',desc:'Your personal speed-dial links',cols:12,weight:2},dice:{label:'Dice Roller',icon:'🎲',desc:'D&D dice — d4 through d20',cols:4,weight:3},chat:{label:'Chat',icon:'💬',desc:'Live chat with presence & typing indicators',cols:6,weight:5},solitaire:{label:'Solitaire',icon:'🃏',desc:'Klondike solitaire — drag & drop',cols:8,weight:8},snake:{label:'Snake',icon:'🐍',desc:'Classic snake game',cols:4,weight:4},wordle:{label:'Wordle',icon:'✏️',desc:'Daily 5-letter word game',cols:4,weight:6},worldclock:{label:'World Clock',icon:'🌍',desc:'Multiple city times',cols:4,weight:3},gif:{label:'GIF Search',icon:'🎬',desc:'Search GIFs via Klipy',cols:4,weight:3},steam:{label:'Steam Rec',icon:'🎮',desc:'Game recommendations by genre from Steam',cols:6,weight:4},filmrec:{label:'Film Rec',icon:'🎬',desc:'Random film recommendation by genre',cols:4,weight:3},passgen:{label:'Password',icon:'🔑',desc:'Secure password generator',cols:4,weight:3},palette:{label:'Color Palette',icon:'🎨',desc:'Generate harmonious color palettes',cols:5,weight:3},simcity:{label:'SimCity 2000',icon:'🏙️',desc:'A living isometric city simulation',cols:8,weight:6},bg:{label:'Background',icon:'🖼️',desc:'Unsplash photo topic picker',cols:7,weight:2}};
 
 async function geocode(city){
   // Strip country suffix if user typed "City, Country" format — API works best with city name only
@@ -68,7 +68,7 @@ createApp({
     // widget registry — order + visibility persisted
     const savedOrder=JSON.parse(localStorage.getItem('aurora_widget_order')||'null');
     const savedVis=JSON.parse(localStorage.getItem('aurora_widget_vis')||'null');
-    const defaultVis={kp:true,weather:true,sun:true,moon:true,aqi:true,tides:false,iss:false,planets:false,quote:true,animal:true,apod:false,soma:false,album:true,notes:false,todo:false,bookmarks:false,dice:true,chat:true,solitaire:false,snake:false,wordle:false,worldclock:false,gif:false,steam:false,filmrec:false,passgen:false,palette:false,bg:true};
+    const defaultVis={kp:true,weather:true,sun:true,moon:true,aqi:true,tides:false,iss:false,planets:false,quote:true,animal:true,apod:false,soma:false,album:true,notes:false,todo:false,bookmarks:false,dice:true,chat:true,solitaire:false,snake:false,wordle:false,worldclock:false,gif:false,steam:false,filmrec:false,passgen:false,palette:false,simcity:false,bg:true};
     const knownIds=new Set(DEFAULT_WIDGET_ORDER);
     // Prune stale IDs (removed widgets) and merge any new ones
     const cleanOrder=savedOrder?savedOrder.filter(id=>knownIds.has(id)):null;
@@ -1057,6 +1057,326 @@ createApp({
     watch(visibleWidgets,()=>{
       if(visibleWidgets.value.find(w=>w.id==='gif')&&!gifTrending.value.length){
         gifLoadTrending();
+      }
+    },{immediate:true});
+
+    // ── SIMCITY 2000 ─────────────────────────────────────────────────────────────
+    const scPop=ref(24800+Math.floor(Math.random()*50000));
+    const scFunds=ref(50000+Math.floor(Math.random()*200000));
+    const scTimeStr=ref('');
+    const scTickerMsg=ref('');
+    let scPixiApp=null;
+    let scYear=1994+Math.floor(Math.random()*8);
+    let scMonth=Math.floor(Math.random()*12);
+    let scTick=0;
+    let scCity=null;
+
+    const SC_TICKER_MSGS=[
+      'Traffic congestion reported on Elm St.','Power outage in the industrial zone.',
+      'New school funded by local taxes.','Water pipe break near downtown.',
+      'Crime rate drops in residential area.','Bond issue passed for new transit.',
+      'Mayor approves stadium construction.','Smog alert issued for industry zone.',
+      'Tourism brings $2.4M to city funds.','Earthquake warning system activated.',
+      'New hospital under construction.','Residents demand lower taxes.',
+      'Fire dept. response time improved.','Port expansion creates 400 jobs.',
+    ];
+
+    const SC_MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    // SC2000 color palette
+    const SC={
+      SKY_DAY:0x5888c8, SKY_DUSK:0xff8844, SKY_NIGHT:0x0a0e2a,
+      GROUND:0x4a7a3a, ROAD:0x555566, ROAD_LINE:0x888899,
+      WATER:0x2255aa, WATER_SHINE:0x4499dd,
+      // Building colors
+      RES_LIGHT:0x88cc66, RES_MED:0x55aa44, RES_DARK:0x337722,
+      COM_LIGHT:0x88aadd, COM_MED:0x5577bb, COM_DARK:0x334499,
+      IND_LIGHT:0xddcc66, IND_MED:0xbbaa33, IND_DARK:0x887722,
+      WALL_LIGHT:0xddccaa, WALL_MED:0xaa9977, WALL_DARK:0x887755,
+      ROOF_LIGHT:0xaabbcc, ROOF_MED:0x889aaa, ROOF_DARK:0x556677,
+      WIN_OFF:0x223344, WIN_ON:0xffffaa, WIN_WARM:0xffcc44,
+      SMOKE:0xaaaaaa, PARK:0x55aa33,
+    };
+
+    // Tile types
+    const T={EMPTY:0,ROAD_H:1,ROAD_V:2,ROAD_X:3,RES:4,COM:5,IND:6,PARK:7,WATER:8};
+
+    function scGenerateCity(size=14){
+      const grid=Array.from({length:size},()=>Array(size).fill(T.EMPTY));
+      const buildings=[];
+      const cars=[];
+      const smoke=[];
+
+      // Road grid — main arteries
+      const roadRows=[3,7,11];
+      const roadCols=[3,7,11];
+      for(let r=0;r<size;r++){
+        for(let c=0;c<size;c++){
+          const hr=roadRows.includes(r);
+          const hc=roadCols.includes(c);
+          if(hr&&hc)grid[r][c]=T.ROAD_X;
+          else if(hr)grid[r][c]=T.ROAD_H;
+          else if(hc)grid[r][c]=T.ROAD_V;
+        }
+      }
+
+      // Water feature in one corner
+      for(let r=0;r<3;r++)for(let c=0;c<3;c++)grid[r][c]=T.WATER;
+
+      // Fill zones
+      const zones=[T.RES,T.RES,T.RES,T.COM,T.COM,T.IND,T.PARK];
+      for(let r=0;r<size;r++){
+        for(let c=0;c<size;c++){
+          if(grid[r][c]===T.EMPTY){
+            grid[r][c]=zones[Math.floor(Math.random()*zones.length)];
+          }
+        }
+      }
+
+      // Generate building data for non-road, non-water, non-park tiles
+      for(let r=0;r<size;r++){
+        for(let c=0;c<size;c++){
+          const t=grid[r][c];
+          if(t===T.RES||t===T.COM||t===T.IND){
+            const floors=t===T.COM?2+Math.floor(Math.random()*7):
+                         t===T.IND?1+Math.floor(Math.random()*3):
+                         1+Math.floor(Math.random()*4);
+            const variant=Math.floor(Math.random()*3);
+            buildings.push({r,c,t,floors,variant,
+              winStates:Array.from({length:floors*4},()=>Math.random()>0.5),
+              winTimer:Math.floor(Math.random()*200),
+              smokeTimer:t===T.IND?Math.floor(Math.random()*60):null,
+            });
+          }
+        }
+      }
+
+      // Spawn cars on roads
+      const hRoads=roadRows.map(r=>({r,dir:'h',pos:0,speed:0.3+Math.random()*0.4,lane:Math.random()>0.5?0.25:0.75}));
+      const vRoads=roadCols.map(c=>({c,dir:'v',pos:0,speed:0.2+Math.random()*0.3,lane:Math.random()>0.5?0.25:0.75}));
+      cars.push(...hRoads.map(rd=>({...rd,pos:Math.random()*size,color:scRandCarColor()})));
+      cars.push(...vRoads.map(rd=>({...rd,pos:Math.random()*size,color:scRandCarColor()})));
+
+      return{grid,buildings,cars,smoke,size};
+    }
+
+    function scRandCarColor(){
+      const colors=[0xff3333,0x3333ff,0xffff33,0x33cc33,0xffffff,0xff8800,0xcc33cc,0x33cccc];
+      return colors[Math.floor(Math.random()*colors.length)];
+    }
+
+    function scInitPixi(){
+      const cv=document.getElementById('simcity-canvas');
+      if(!cv)return;
+      if(scPixiApp){try{scPixiApp.destroy(true);}catch{}scPixiApp=null;}
+
+      const W=cv.parentElement.clientWidth||400;
+      const H=Math.round(W*0.65);
+      cv.width=W;cv.height=H;
+
+      scPixiApp=new PIXI.Application({view:cv,width:W,height:H,backgroundColor:SC.SKY_DAY,antialias:false});
+      scCity=scGenerateCity(14);
+      scTickerMsg.value=SC_TICKER_MSGS[0];
+
+      scPixiApp.ticker.add(()=>{
+        scTick++;
+        // Update city time every 180 ticks
+        if(scTick%180===0){
+          scMonth=(scMonth+1)%12;
+          if(scMonth===0)scYear++;
+          scTimeStr.value=`${SC_MONTHS[scMonth]} ${scYear}`;
+          scPop.value+=Math.floor((Math.random()-0.3)*500);
+          scFunds.value+=Math.floor(scPop.value*0.01+Math.random()*1000-200);
+          if(scTick%(180*6)===0){
+            scTickerMsg.value=SC_TICKER_MSGS[Math.floor(Math.random()*SC_TICKER_MSGS.length)];
+          }
+        }
+        // Move cars
+        scCity.cars.forEach(car=>{
+          car.pos=(car.pos+car.speed/60)%scCity.size;
+        });
+        // Window flicker
+        scCity.buildings.forEach(b=>{
+          b.winTimer--;
+          if(b.winTimer<=0){
+            const idx=Math.floor(Math.random()*b.winStates.length);
+            b.winStates[idx]=!b.winStates[idx];
+            b.winTimer=30+Math.floor(Math.random()*300);
+          }
+        });
+        scDraw();
+      });
+
+      scTimeStr.value=`${SC_MONTHS[scMonth]} ${scYear}`;
+    }
+
+    function scDraw(){
+      if(!scPixiApp)return;
+      const app=scPixiApp;
+      const W=app.renderer.width/app.renderer.resolution;
+      const H=app.renderer.height/app.renderer.resolution;
+      const stage=app.stage;
+      stage.removeChildren();
+
+      const size=scCity.size;
+      const TW=Math.floor(W/size*1.1); // tile width
+      const TH=Math.floor(TW*0.5);     // tile height (isometric)
+      const originX=W*0.5;
+      const originY=H*0.18;
+
+      // Sky gradient
+      const sky=new PIXI.Graphics();
+      sky.beginFill(SC.SKY_DAY);sky.drawRect(0,0,W,H);sky.endFill();
+      // Subtle horizon
+      sky.beginFill(0x88aadd,0.3);sky.drawRect(0,H*0.3,W,H*0.7);sky.endFill();
+      stage.addChild(sky);
+
+      // Convert grid coords to isometric screen coords
+      function iso(r,c){
+        return{
+          x:originX+(c-r)*TW/2,
+          y:originY+(c+r)*TH/2,
+        };
+      }
+
+      // Draw ground tiles back to front (painter's algorithm)
+      for(let r=0;r<size;r++){
+        for(let c=0;c<size;c++){
+          const{x,y}=iso(r,c);
+          const t=scCity.grid[r][c];
+          const g=new PIXI.Graphics();
+
+          if(t===T.WATER){
+            // Animated water shimmer
+            const shimmer=Math.sin(scTick*0.05+(r+c)*0.8)*0.15;
+            g.beginFill(SC.WATER,1);
+            // Iso tile diamond
+            g.moveTo(x,y);g.lineTo(x+TW/2,y+TH/2);
+            g.lineTo(x,y+TH);g.lineTo(x-TW/2,y+TH/2);g.closePath();g.endFill();
+            g.beginFill(SC.WATER_SHINE,shimmer);
+            g.moveTo(x,y);g.lineTo(x+TW/2,y+TH/2);
+            g.lineTo(x,y+TH);g.lineTo(x-TW/2,y+TH/2);g.closePath();g.endFill();
+          } else if(t===T.ROAD_H||t===T.ROAD_V||t===T.ROAD_X){
+            g.beginFill(SC.ROAD);
+            g.moveTo(x,y);g.lineTo(x+TW/2,y+TH/2);
+            g.lineTo(x,y+TH);g.lineTo(x-TW/2,y+TH/2);g.closePath();g.endFill();
+            // Road markings
+            g.lineStyle(1,SC.ROAD_LINE,0.5);
+            g.moveTo(x,y+TH/2);g.lineTo(x,y+TH/2);
+          } else if(t===T.PARK){
+            g.beginFill(SC.PARK);
+            g.moveTo(x,y);g.lineTo(x+TW/2,y+TH/2);
+            g.lineTo(x,y+TH);g.lineTo(x-TW/2,y+TH/2);g.closePath();g.endFill();
+            // Tree dots
+            g.beginFill(0x226611,0.8);g.drawCircle(x,y+TH*0.6,3);g.endFill();
+            g.beginFill(0x338822,0.8);g.drawCircle(x+TW*0.15,y+TH*0.4,2);g.endFill();
+          } else {
+            g.beginFill(SC.GROUND);
+            g.moveTo(x,y);g.lineTo(x+TW/2,y+TH/2);
+            g.lineTo(x,y+TH);g.lineTo(x-TW/2,y+TH/2);g.closePath();g.endFill();
+          }
+          stage.addChild(g);
+        }
+      }
+
+      // Draw buildings back to front
+      const sortedBuildings=[...scCity.buildings].sort((a,b)=>(a.r+a.c)-(b.r+b.c));
+      sortedBuildings.forEach(b=>{
+        const{x,y}=iso(b.r,b.c);
+        const bh=b.floors*(TH*0.9);
+        const bw=TW*0.82;
+
+        const[wl,wm,wd,rl,rd]=b.t===T.RES?
+          [SC.RES_LIGHT,SC.RES_MED,SC.RES_DARK,SC.ROOF_LIGHT,SC.ROOF_DARK]:
+          b.t===T.COM?
+          [SC.COM_LIGHT,SC.COM_MED,SC.COM_DARK,SC.ROOF_MED,SC.ROOF_DARK]:
+          [SC.IND_LIGHT,SC.IND_MED,SC.IND_DARK,SC.IND_MED,SC.IND_DARK];
+
+        const g=new PIXI.Graphics();
+
+        // Isometric top face (roof)
+        g.beginFill(rl);
+        g.moveTo(x,y-bh);
+        g.lineTo(x+bw/2,y-bh+TH/2);
+        g.lineTo(x,y-bh+TH);
+        g.lineTo(x-bw/2,y-bh+TH/2);
+        g.closePath();g.endFill();
+
+        // Right face (south-east wall)
+        g.beginFill(wm);
+        g.moveTo(x,y+TH);
+        g.lineTo(x+bw/2,y+TH/2);
+        g.lineTo(x+bw/2,y+TH/2-bh);
+        g.lineTo(x,y-bh+TH);
+        g.closePath();g.endFill();
+
+        // Left face (south-west wall)
+        g.beginFill(wd);
+        g.moveTo(x,y+TH);
+        g.lineTo(x-bw/2,y+TH/2);
+        g.lineTo(x-bw/2,y+TH/2-bh);
+        g.lineTo(x,y-bh+TH);
+        g.closePath();g.endFill();
+
+        // Windows on right face
+        const wRows=b.floors;const wCols=2;
+        for(let wr=0;wr<wRows;wr++){
+          for(let wc=0;wc<wCols;wc++){
+            const winIdx=wr*wCols+wc;
+            const isLit=b.winStates[winIdx%b.winStates.length];
+            const wx=x+(bw/2)*(0.3+wc*0.35);
+            const wy=y+TH/2-bh+(wr+0.5)*(bh/wRows)-(wc*TH*0.25);
+            g.beginFill(isLit?SC.WIN_WARM:SC.WIN_OFF,0.9);
+            g.drawRect(wx-2,wy-2,4,4);
+            g.endFill();
+          }
+        }
+
+        // Antenna / rooftop detail on commercial
+        if(b.t===T.COM&&b.floors>4){
+          g.lineStyle(1,0xaabbcc,0.8);
+          g.moveTo(x,y-bh);g.lineTo(x,y-bh-TH*0.6);
+          g.beginFill(0xff3333);g.drawCircle(x,y-bh-TH*0.6,2);g.endFill();
+        }
+
+        // Smoke from industrial
+        if(b.t===T.IND){
+          const smokeY=y-bh-scTick*0.3;
+          const smokeA=0.4*(1-((smokeY%(TH*3))/(TH*3)));
+          g.beginFill(SC.SMOKE,Math.max(0,smokeA));
+          g.drawCircle(x+2,(y-bh)-(scTick*0.5%TH*4),3+Math.sin(scTick*0.1)*1);
+          g.endFill();
+        }
+
+        stage.addChild(g);
+      });
+
+      // Draw cars on roads
+      scCity.cars.forEach(car=>{
+        const g=new PIXI.Graphics();
+        let cx,cy;
+        if(car.dir==='h'){
+          const pos=car.pos;
+          const isoPos=iso(car.r+car.lane-0.5,pos);
+          cx=isoPos.x;cy=isoPos.y;
+        } else {
+          const isoPos=iso(car.pos,car.c+car.lane-0.5);
+          cx=isoPos.x;cy=isoPos.y;
+        }
+        g.beginFill(car.color);
+        g.drawRect(cx-3,cy-2,6,4);
+        g.endFill();
+        g.beginFill(0x334455,0.6);
+        g.drawRect(cx-2,cy-1,4,2);
+        g.endFill();
+        stage.addChild(g);
+      });
+    }
+
+    // Watch for widget becoming visible
+    watch(visibleWidgets,()=>{
+      if(visibleWidgets.value.find(w=>w.id==='simcity')){
+        nextTick(()=>setTimeout(scInitPixi,100));
       }
     },{immediate:true});
 
@@ -2273,6 +2593,6 @@ createApp({
     function refreshIcons(){nextTick(()=>{if(window.lucide)window.lucide.createIcons();});}
     watch([showPicker,showSettings,showChangelog,somaPlaying,snakePaused,albumExpanded,nowPlaying,visibleWidgets,locationPromptNeeded],refreshIcons);
 
-    return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,locationPromptNeeded,doGeolocate,locationPromptNeeded,doGeolocate,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,albumExpanded,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,chatRenderText,formatChatTime,activeWidget,setActiveWidget,clearActiveWidget,solTableau,solFoundations,solStock,solWaste,solMoves,solWon,solInit,solNewGame,solSelected,solDraw,solClickWaste,solClickFoundation,solClickCol,solClickCard,solAutoFoundation,solDrawPixi,solInitPixi,snakeScore,snakeBest,snakeRunning,snakeDead,snakePaused,snakeStart,snakePause,snakeSetDir,wordleGuesses,wordleResults,wordleCurrent,wordleMsg,wordleKeyRows,wordleGetLetter,wordleGetClass,wordleKeyClass,wordleKey,wordleHandleMobileKey,wordleHandleMobileInput,worldClockCities,worldClockPick,worldClockOptions,worldClockTime,worldClockDate,worldClockAdd,worldClockRemove,gifQuery,gifResults,gifTrending,gifLoading,gifError,gifCopied,gifSearch,gifSelect,steamGenres,steamGenre,steamLoading,steamError,steamGame,steamScoreClass,steamPickGenre,steamNext,film,filmGenre,filmGenres,filmNext,passValue,passLength,passOpts,passCopied,passGenerate,passCopy,paletteBase,paletteType,paletteTypes,paletteColors,paletteCopied,paletteGenerate,paletteCopy,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,pickerSearch,filteredWidgetRegistry,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,resetWidgetState,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings,tamaReact,tamaInteract,TAMA_CHARS,tamaChar,tamaEnabled,tamaSetChar,tamaWalking,tamaDancing,tamaBPM,tamaRaging,chatUnread,chatBubble,lastfmUser,nowPlaying};
+    return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,locationPromptNeeded,doGeolocate,locationPromptNeeded,doGeolocate,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,albumExpanded,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,chatRenderText,formatChatTime,activeWidget,setActiveWidget,clearActiveWidget,solTableau,solFoundations,solStock,solWaste,solMoves,solWon,solInit,solNewGame,solSelected,solDraw,solClickWaste,solClickFoundation,solClickCol,solClickCard,solAutoFoundation,solDrawPixi,solInitPixi,snakeScore,snakeBest,snakeRunning,snakeDead,snakePaused,snakeStart,snakePause,snakeSetDir,wordleGuesses,wordleResults,wordleCurrent,wordleMsg,wordleKeyRows,wordleGetLetter,wordleGetClass,wordleKeyClass,wordleKey,wordleHandleMobileKey,wordleHandleMobileInput,worldClockCities,worldClockPick,worldClockOptions,worldClockTime,worldClockDate,worldClockAdd,worldClockRemove,scPop,scFunds,scTimeStr,scTickerMsg,gifQuery,gifResults,gifTrending,gifLoading,gifError,gifCopied,gifSearch,gifSelect,steamGenres,steamGenre,steamLoading,steamError,steamGame,steamScoreClass,steamPickGenre,steamNext,film,filmGenre,filmGenres,filmNext,passValue,passLength,passOpts,passCopied,passGenerate,passCopy,paletteBase,paletteType,paletteTypes,paletteColors,paletteCopied,paletteGenerate,paletteCopy,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,pickerSearch,filteredWidgetRegistry,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,resetWidgetState,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings,tamaReact,tamaInteract,TAMA_CHARS,tamaChar,tamaEnabled,tamaSetChar,tamaWalking,tamaDancing,tamaBPM,tamaRaging,chatUnread,chatBubble,lastfmUser,nowPlaying};
   }
 }).mount('#app');
