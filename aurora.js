@@ -1107,9 +1107,9 @@ createApp({
       const cars=[];
       const smoke=[];
 
-      // Road grid — main arteries
-      const roadRows=[3,7,11];
-      const roadCols=[3,7,11];
+      // Wider road grid — more breathing room
+      const roadRows=[2,5,9,12];
+      const roadCols=[2,5,9,12];
       for(let r=0;r<size;r++){
         for(let c=0;c<size;c++){
           const hr=roadRows.includes(r);
@@ -1120,11 +1120,11 @@ createApp({
         }
       }
 
-      // Water feature in one corner
-      for(let r=0;r<3;r++)for(let c=0;c<3;c++)grid[r][c]=T.WATER;
+      // Water feature
+      for(let r=0;r<2;r++)for(let c=0;c<2;c++)grid[r][c]=T.WATER;
 
-      // Fill zones
-      const zones=[T.RES,T.RES,T.RES,T.COM,T.COM,T.IND,T.PARK];
+      // Fill zones — more parks and empty lots for breathing room
+      const zones=[T.RES,T.RES,T.COM,T.IND,T.PARK,T.PARK,T.EMPTY,T.EMPTY];
       for(let r=0;r<size;r++){
         for(let c=0;c<size;c++){
           if(grid[r][c]===T.EMPTY){
@@ -1133,29 +1133,31 @@ createApp({
         }
       }
 
-      // Generate building data for non-road, non-water, non-park tiles
+      // Generate buildings — skip ~30% of buildable tiles for gaps
       for(let r=0;r<size;r++){
         for(let c=0;c<size;c++){
           const t=grid[r][c];
-          if(t===T.RES||t===T.COM||t===T.IND){
-            const floors=t===T.COM?2+Math.floor(Math.random()*7):
+          if((t===T.RES||t===T.COM||t===T.IND)&&Math.random()>0.3){
+            const floors=t===T.COM?2+Math.floor(Math.random()*6):
                          t===T.IND?1+Math.floor(Math.random()*3):
-                         1+Math.floor(Math.random()*4);
-            const variant=Math.floor(Math.random()*3);
-            buildings.push({r,c,t,floors,variant,
+                         1+Math.floor(Math.random()*3);
+            buildings.push({r,c,t,floors,
               winStates:Array.from({length:floors*4},()=>Math.random()>0.5),
               winTimer:Math.floor(Math.random()*200),
-              smokeTimer:t===T.IND?Math.floor(Math.random()*60):null,
             });
           }
         }
       }
 
-      // Spawn cars on roads
-      const hRoads=roadRows.map(r=>({r,dir:'h',pos:0,speed:0.3+Math.random()*0.4,lane:Math.random()>0.5?0.25:0.75}));
-      const vRoads=roadCols.map(c=>({c,dir:'v',pos:0,speed:0.2+Math.random()*0.3,lane:Math.random()>0.5?0.25:0.75}));
-      cars.push(...hRoads.map(rd=>({...rd,pos:Math.random()*size,color:scRandCarColor()})));
-      cars.push(...vRoads.map(rd=>({...rd,pos:Math.random()*size,color:scRandCarColor()})));
+      // One car per road — keeps it readable
+      roadRows.forEach(r=>{
+        cars.push({r,dir:'h',pos:Math.random()*size,speed:0.25+Math.random()*0.35,
+          lane:Math.random()>0.5?0.3:0.7,color:scRandCarColor()});
+      });
+      roadCols.forEach(c=>{
+        cars.push({c,dir:'v',pos:Math.random()*size,speed:0.2+Math.random()*0.3,
+          lane:Math.random()>0.5?0.3:0.7,color:scRandCarColor()});
+      });
 
       return{grid,buildings,cars,smoke,size};
     }
@@ -1260,9 +1262,33 @@ createApp({
         }
       }
 
-      // Draw buildings sorted back to front
-      const sorted=[...scCity.buildings].sort((a,b)=>(a.r+a.c)-(b.r+b.c));
-      sorted.forEach(b=>{
+      // Build unified draw list sorted by iso depth (r+c) so cars go behind buildings
+      const drawList=[];
+
+      // Add buildings
+      scCity.buildings.forEach(b=>drawList.push({depth:b.r+b.c,type:'building',data:b}));
+
+      // Add cars with their current iso depth
+      scCity.cars.forEach(car=>{
+        let r,c;
+        if(car.dir==='h'){r=car.r+car.lane-0.5;c=car.pos;}
+        else{r=car.pos;c=car.c+car.lane-0.5;}
+        drawList.push({depth:r+c,type:'car',data:car,isoR:r,isoC:c});
+      });
+
+      drawList.sort((a,b)=>a.depth-b.depth);
+
+      drawList.forEach(item=>{
+        if(item.type==='car'){
+          const{x,y}=iso(item.isoR,item.isoC);
+          ctx.fillStyle='#'+item.data.color.toString(16).padStart(6,'0');
+          ctx.fillRect(x-3,y-2,6,4);
+          ctx.fillStyle='rgba(30,40,60,0.8)';
+          ctx.fillRect(x-2,y-1,4,2);
+          return;
+        }
+
+        const b=item.data;
         const{x,y}=iso(b.r,b.c);
         const bh=b.floors*(TH*0.92);
         const bw=TW*0.82;
@@ -1292,13 +1318,11 @@ createApp({
         ctx.closePath();ctx.fillStyle=colors.left;ctx.fill();
 
         // Windows on right face
-        const wRows=b.floors;
-        for(let wr=0;wr<wRows;wr++){
+        for(let wr=0;wr<b.floors;wr++){
           for(let wc=0;wc<2;wc++){
-            const winIdx=wr*2+wc;
-            const lit=b.winStates[winIdx%b.winStates.length];
+            const lit=b.winStates[(wr*2+wc)%b.winStates.length];
             const wx=x+(bw/2)*(0.25+wc*0.4)-(wr*TH*0.25);
-            const wy=y+TH/2-bh+(wr+0.5)*(bh/wRows);
+            const wy=y+TH/2-bh+(wr+0.5)*(bh/b.floors);
             ctx.fillStyle=lit?colors.win:'#223344';
             ctx.fillRect(wx-2,wy-2,4,4);
           }
@@ -1308,7 +1332,6 @@ createApp({
         if(b.t===T.COM&&b.floors>4){
           ctx.strokeStyle='#aabbcc';ctx.lineWidth=1;
           ctx.beginPath();ctx.moveTo(x,y-bh);ctx.lineTo(x,y-bh-TH*0.55);ctx.stroke();
-          // Blinking light
           if(Math.floor(scTick/30)%2===0){
             ctx.fillStyle='#ff3333';
             ctx.beginPath();ctx.arc(x,y-bh-TH*0.55,2,0,Math.PI*2);ctx.fill();
@@ -1319,24 +1342,9 @@ createApp({
         if(b.t===T.IND){
           const age=(scTick*0.4)%(TH*5);
           const alpha=Math.max(0,0.5*(1-age/(TH*5)));
-          ctx.fillStyle=`rgba(160,160,160,${alpha})`;
-          const sz=2+age*0.04;
-          ctx.beginPath();ctx.arc(x+3,y-bh-age,sz,0,Math.PI*2);ctx.fill();
+          ctx.fillStyle=`rgba(160,160,160,${alpha.toFixed(2)})`;
+          ctx.beginPath();ctx.arc(x+3,y-bh-age,2+age*0.04,0,Math.PI*2);ctx.fill();
         }
-      });
-
-      // Cars
-      scCity.cars.forEach(car=>{
-        let cx,cy;
-        if(car.dir==='h'){
-          const p=iso(car.r+car.lane-0.5,car.pos);cx=p.x;cy=p.y;
-        } else {
-          const p=iso(car.pos,car.c+car.lane-0.5);cx=p.x;cy=p.y;
-        }
-        ctx.fillStyle='#'+car.color.toString(16).padStart(6,'0');
-        ctx.fillRect(cx-3,cy-2,6,4);
-        ctx.fillStyle='rgba(30,40,60,0.7)';
-        ctx.fillRect(cx-2,cy-1,4,2);
       });
 
       }catch(e){console.warn('scDraw:',e);}
