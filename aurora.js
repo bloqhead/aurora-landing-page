@@ -1121,15 +1121,19 @@ createApp({
       }
     }
     function pomoToggle(){
-      if(!pomoRunning.value){
-        if(Notification.permission==='default')Notification.requestPermission();
-        pomoRunning.value=true;
-        pomoTimer=setInterval(pomoTick,1000);
-      } else {
-        pomoRunning.value=false;
-        clearInterval(pomoTimer);
-      }
-      refreshIcons();
+      try{
+        if(!pomoRunning.value){
+          if(typeof Notification!=='undefined'&&Notification.permission==='default'){
+            Notification.requestPermission().catch(()=>{});
+          }
+          pomoRunning.value=true;
+          pomoTimer=setInterval(pomoTick,1000);
+        } else {
+          pomoRunning.value=false;
+          clearInterval(pomoTimer);
+        }
+        nextTick(refreshIcons);
+      }catch(e){console.error('pomoToggle error:',e);}
     }
     function pomoReset(){
       pomoRunning.value=false;clearInterval(pomoTimer);
