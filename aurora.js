@@ -433,9 +433,34 @@ createApp({
       return x>=b.x&&x<=b.x+b.width&&y>=b.y&&y<=b.y+b.height;
     }
 
+    let solInitializing=false;
+
+    function solDestroyPixi(){
+      if(!solPixiApp)return;
+      try{
+        solPixiApp.ticker.stop();
+        // Clear all ticker listeners before destroying
+        solPixiApp.ticker.remove(solUpdateParticles);
+        solPixiApp.ticker._head.next=null; // detach all callbacks
+      }catch{}
+      try{
+        const container=document.getElementById('sol-pixi');
+        if(container)container.removeEventListener('pointerdown',solPixiHandlePointerDown);
+        solPixiApp.view?.removeEventListener('pointerup',solPixiHandlePointer);
+      }catch{}
+      try{solPixiApp.destroy(true,{children:true});}catch{}
+      solPixiApp=null;
+      solParticleContainer=null;
+      solParticles.length=0;
+      solLiftProgress=0;
+    }
+
     async function solInitPixi(){
+      if(solInitializing)return;
+      solInitializing=true;
+      try{
       const container=document.getElementById('sol-pixi');
-      if(!container)return;
+      if(!container){solInitializing=false;return;}
       if(!window.PIXI){
         await new Promise((res,rej)=>{
           const s=document.createElement('script');
@@ -446,13 +471,7 @@ createApp({
         });
       }
       const PIXI=window.PIXI;
-      if(solPixiApp){
-        const container=document.getElementById('sol-pixi');
-        if(container)container.removeEventListener('pointerdown',solPixiHandlePointerDown);
-        solPixiApp.view.removeEventListener('pointerup',solPixiHandlePointer);
-        solPixiApp.destroy(true,{children:true});
-        solPixiApp=null;
-      }
+      solDestroyPixi();
       const W=container.offsetWidth||300;
       solPixiApp=new PIXI.Application({
         width:W,height:400,backgroundAlpha:0,
@@ -490,6 +509,8 @@ createApp({
         }
       });
       solDrawPixi();
+      }catch(e){console.warn('solInitPixi error:',e);}
+      solInitializing=false;
     }
 
     let solPointerDownTime=0, solPointerDownX=0, solPointerDownY=0;
@@ -735,7 +756,7 @@ createApp({
       nextTick(()=>setTimeout(()=>{
         const el=document.getElementById('sol-pixi');
         if(el&&(!solPixiApp||!solPixiApp.view?.isConnected)){
-          if(solPixiApp){try{solPixiApp.ticker.stop();solPixiApp.ticker.remove(solUpdateParticles);solPixiApp.destroy(true,{children:true});}catch(e){console.warn('sol destroy:',e);}solPixiApp=null;solParticleContainer=null;solParticles.length=0;solLiftProgress=0;}
+          solDestroyPixi();
           solInitPixi();
         }
       },150));
