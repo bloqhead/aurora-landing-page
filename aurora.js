@@ -439,6 +439,7 @@ createApp({
         await new Promise((res,rej)=>{
           const s=document.createElement('script');
           s.src='https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.2/pixi.min.js';
+          s.crossOrigin='anonymous';
           s.onload=res;s.onerror=rej;
           document.head.appendChild(s);
         });
@@ -2058,6 +2059,9 @@ createApp({
       e.preventDefault();
     });
     window.addEventListener('error',e=>{
+      // Ignore cross-origin script errors (line 0, no message detail) — these are
+      // from third-party CDN scripts and can't be acted on
+      if(!e.lineno||e.message==='Script error.'||e.message==='Script error')return;
       console.warn('Aurora error:',e.message);
       showDebugError('Error: '+e.message+' ('+e.lineno+')');
     });
