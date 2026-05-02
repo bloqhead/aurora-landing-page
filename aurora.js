@@ -1089,32 +1089,32 @@ createApp({
     const pomoMode=ref('work');
     const pomoRunning=ref(false);
     const pomoSessions=ref(0);
-    let pomoSecsLeft=pomoWorkMins.value*60;
+    const pomoSecsLeft=ref(pomoWorkMins.value*60);
     let pomoTimer=null;
     let pomoTomatoTimer=null;
 
     const pomoDisplay=computed(()=>{
-      const m=Math.floor(pomoSecsLeft/60).toString().padStart(2,'0');
-      const s=(pomoSecsLeft%60).toString().padStart(2,'0');
+      const m=Math.floor(pomoSecsLeft.value/60).toString().padStart(2,'0');
+      const s=(pomoSecsLeft.value%60).toString().padStart(2,'0');
       return m+':'+s;
     });
     const pomoProgress=computed(()=>{
       const total=(pomoMode.value==='work'?pomoWorkMins.value:pomoBreakMins.value)*60;
-      return Math.round((1-pomoSecsLeft/total)*100);
+      return Math.round((1-pomoSecsLeft.value/total)*100);
     });
 
     function pomoTick(){
-      pomoSecsLeft--;
-      if(pomoSecsLeft<=0){
+      pomoSecsLeft.value--;
+      if(pomoSecsLeft.value<=0){
         if(pomoMode.value==='work'){
           pomoSessions.value++;
           pomoMode.value='break';
-          pomoSecsLeft=pomoBreakMins.value*60;
+          pomoSecsLeft.value=pomoBreakMins.value*60;
           pomoGoTomato();
           if(Notification.permission==='granted')new Notification('🍅 Break time!',{body:'Good work! Take a breather.',icon:'/icons/icon-192.png'});
         } else {
           pomoMode.value='work';
-          pomoSecsLeft=pomoWorkMins.value*60;
+          pomoSecsLeft.value=pomoWorkMins.value*60;
           tamaReact('cheer');
           if(Notification.permission==='granted')new Notification('⏱ Back to work!',{body:'Break over — let\'s go!',icon:'/icons/icon-192.png'});
         }
@@ -1133,7 +1133,7 @@ createApp({
     }
     function pomoReset(){
       pomoRunning.value=false;clearInterval(pomoTimer);
-      pomoMode.value='work';pomoSecsLeft=pomoWorkMins.value*60;
+      pomoMode.value='work';pomoSecsLeft.value=pomoWorkMins.value*60;
       localStorage.setItem('aurora_pomo_work',pomoWorkMins.value);
       localStorage.setItem('aurora_pomo_break',pomoBreakMins.value);
       pomoGoNormal();
@@ -2734,6 +2734,6 @@ createApp({
     function refreshIcons(){nextTick(()=>{if(window.lucide)window.lucide.createIcons();});}
     watch([showPicker,showSettings,showChangelog,somaPlaying,snakePaused,albumExpanded,nowPlaying,visibleWidgets,locationPromptNeeded],refreshIcons);
 
-    return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,locationPromptNeeded,doGeolocate,locationPromptNeeded,doGeolocate,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,albumExpanded,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,chatRenderText,formatChatTime,activeWidget,setActiveWidget,clearActiveWidget,solTableau,solFoundations,solStock,solWaste,solMoves,solWon,solInit,solNewGame,solSelected,solDraw,solClickWaste,solClickFoundation,solClickCol,solClickCard,solAutoFoundation,solDrawPixi,solInitPixi,snakeScore,snakeBest,snakeRunning,snakeDead,snakePaused,snakeStart,snakePause,snakeSetDir,wordleGuesses,wordleResults,wordleCurrent,wordleMsg,wordleKeyRows,wordleGetLetter,wordleGetClass,wordleKeyClass,wordleKey,wordleHandleMobileKey,wordleHandleMobileInput,worldClockCities,worldClockPick,worldClockOptions,worldClockTime,worldClockDate,worldClockAdd,worldClockRemove,debugError,scPop,scFunds,scTimeStr,scTickerMsg,gifQuery,gifResults,gifTrending,gifLoading,gifError,gifCopied,gifSearch,gifSelect,steamGenres,steamGenre,steamLoading,steamError,steamGame,steamScoreClass,steamPickGenre,steamNext,film,filmGenre,filmGenres,filmNext,passValue,passLength,passOpts,passCopied,passGenerate,passCopy,paletteBase,paletteType,paletteTypes,paletteColors,paletteCopied,paletteGenerate,paletteCopy,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,pickerSearch,filteredWidgetRegistry,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,resetWidgetState,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings,tamaReact,tamaInteract,TAMA_CHARS,tamaChar,tamaEnabled,tamaSetChar,pomoWorkMins,pomoBreakMins,pomoMode,pomoRunning,pomoSessions,pomoDisplay,pomoProgress,pomoToggle,pomoReset,tamaWalking,tamaDancing,tamaBPM,tamaRaging,chatUnread,chatBubble,lastfmUser,nowPlaying};
+    return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,locationPromptNeeded,doGeolocate,locationPromptNeeded,doGeolocate,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,albumExpanded,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,chatRenderText,formatChatTime,activeWidget,setActiveWidget,clearActiveWidget,solTableau,solFoundations,solStock,solWaste,solMoves,solWon,solInit,solNewGame,solSelected,solDraw,solClickWaste,solClickFoundation,solClickCol,solClickCard,solAutoFoundation,solDrawPixi,solInitPixi,snakeScore,snakeBest,snakeRunning,snakeDead,snakePaused,snakeStart,snakePause,snakeSetDir,wordleGuesses,wordleResults,wordleCurrent,wordleMsg,wordleKeyRows,wordleGetLetter,wordleGetClass,wordleKeyClass,wordleKey,wordleHandleMobileKey,wordleHandleMobileInput,worldClockCities,worldClockPick,worldClockOptions,worldClockTime,worldClockDate,worldClockAdd,worldClockRemove,debugError,scPop,scFunds,scTimeStr,scTickerMsg,gifQuery,gifResults,gifTrending,gifLoading,gifError,gifCopied,gifSearch,gifSelect,steamGenres,steamGenre,steamLoading,steamError,steamGame,steamScoreClass,steamPickGenre,steamNext,film,filmGenre,filmGenres,filmNext,passValue,passLength,passOpts,passCopied,passGenerate,passCopy,paletteBase,paletteType,paletteTypes,paletteColors,paletteCopied,paletteGenerate,paletteCopy,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,pickerSearch,filteredWidgetRegistry,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,resetWidgetState,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings,tamaReact,tamaInteract,TAMA_CHARS,tamaChar,tamaEnabled,tamaSetChar,pomoWorkMins,pomoBreakMins,pomoMode,pomoRunning,pomoSessions,pomoSecsLeft,pomoDisplay,pomoProgress,pomoToggle,pomoReset,tamaWalking,tamaDancing,tamaBPM,tamaRaging,chatUnread,chatBubble,lastfmUser,nowPlaying};
   }
 }).mount('#app');
