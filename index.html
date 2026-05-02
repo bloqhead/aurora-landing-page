@@ -221,7 +221,10 @@
               <button v-for="s in somaStations" :key="s.id" class="soma-btn" :class="{active:somaStation===s.id}" @click="setSomaStation(s.id)">{{ s.name }}</button>
             </div>
             <div class="soma-controls">
-              <button class="soma-play" @click="toggleSoma"><i v-if="somaPlaying" data-lucide="pause"></i><i v-else data-lucide="play"></i></button>
+              <button class="soma-play" @click="toggleSoma">
+                <svg v-if="somaPlaying" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                <svg v-else viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+              </button>
               <div class="soma-now">
                 <div class="soma-station-name">{{ currentSoma.name }}</div>
                 <div class="soma-desc">{{ currentSoma.desc }}</div>
@@ -253,7 +256,11 @@
             </div>
             <div class="album-summary" v-if="album.why">
               <div class="album-summary-text" :class="{expanded:albumExpanded}">{{ album.why }}</div>
-              <button class="album-expand-btn" @click="albumExpanded=!albumExpanded"><i v-if="albumExpanded" data-lucide="chevron-up"></i><i v-else data-lucide="chevron-down"></i> {{ albumExpanded ? 'Show less' : 'Read more' }}</button>
+              <button class="album-expand-btn" @click="albumExpanded=!albumExpanded">
+                <svg v-if="albumExpanded" viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none"><polyline points="18,15 12,9 6,15"/></svg>
+                <svg v-else viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none"><polyline points="6,9 12,15 18,9"/></svg>
+                {{ albumExpanded ? 'Show less' : 'Read more' }}
+              </button>
             </div>
           </template>
           <div v-else-if="albumLoading" class="album-loading">searching the stacks…</div>
@@ -419,7 +426,10 @@
             <button class="snake-btn" @touchstart.prevent="snakeSetDir(0,-1)" @click.stop="snakeSetDir(0,-1)"><i data-lucide="chevron-up"></i></button>
             <div></div>
             <button class="snake-btn" @touchstart.prevent="snakeSetDir(-1,0)" @click.stop="snakeSetDir(-1,0)"><i data-lucide="chevron-left"></i></button>
-            <button class="snake-btn" @touchstart.prevent="snakePause" @click.stop="snakePause" style="font-size:10px;opacity:.6"><i v-if="snakePaused" data-lucide="play"></i><i v-else data-lucide="pause"></i></button>
+            <button class="snake-btn" @touchstart.prevent="snakePause" @click.stop="snakePause" style="font-size:10px;opacity:.6">
+              <svg v-if="snakePaused" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+              <svg v-else viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            </button>
             <button class="snake-btn" @touchstart.prevent="snakeSetDir(1,0)" @click.stop="snakeSetDir(1,0)"><i data-lucide="chevron-right"></i></button>
             <div></div>
             <button class="snake-btn" @touchstart.prevent="snakeSetDir(0,1)" @click.stop="snakeSetDir(0,1)"><i data-lucide="chevron-down"></i></button>
@@ -606,8 +616,8 @@
           </div>
           <div class="pomo-controls">
             <button class="pomo-btn" @click="pomoToggle">
-              <i v-if="pomoRunning" data-lucide="pause"></i>
-              <i v-else data-lucide="play"></i>
+              <svg v-if="pomoRunning" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+              <svg v-else viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
             </button>
             <button class="pomo-btn pomo-reset" @click="pomoReset" title="Reset">
               <i data-lucide="rotate-ccw"></i>
