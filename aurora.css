@@ -399,7 +399,26 @@ a{color:inherit;} button{font-family:inherit;}
 .currency-result{font-family:var(--font-display);font-size:var(--t-2xl);font-weight:200;color:var(--accent);text-align:center;margin:var(--s-xs) 0;}
 .currency-rate{font-family:var(--font-mono);font-size:var(--t-xs);color:var(--text-muted);text-align:center;}
 
-/* SIMCITY */
+/* POMODORO */
+.pomodoro-card{text-align:center;}
+.pomo-mode{font-family:var(--font-mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;opacity:.6;margin-bottom:4px;}
+.pomo-mode.work{color:var(--accent);}
+.pomo-mode.break{color:#ff6b6b;}
+.pomo-clock{font-family:var(--font-display);font-size:clamp(2.8rem,8vw,4rem);font-weight:200;line-height:1;letter-spacing:.05em;margin-bottom:12px;}
+.pomo-progress-track{height:3px;background:rgba(255,255,255,.08);border-radius:2px;margin-bottom:16px;overflow:hidden;}
+.pomo-progress-bar{height:100%;border-radius:2px;transition:width .5s linear;}
+.pomo-controls{display:flex;justify-content:center;gap:12px;margin-bottom:16px;}
+.pomo-btn{width:48px;height:48px;border-radius:50%;border:2px solid var(--card-border);background:rgba(255,255,255,.04);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.pomo-btn:hover{border-color:var(--accent);color:var(--accent);}
+.pomo-btn [data-lucide]{width:20px;height:20px;stroke-width:2;}
+.pomo-reset{width:36px;height:36px;align-self:center;}
+.pomo-reset [data-lucide]{width:15px;height:15px;}
+.pomo-sessions{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:12px;}
+.pomo-dot{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--card-border);transition:background .3s;}
+.pomo-dot.filled{background:#ff6b6b;border-color:#ff6b6b;}
+.pomo-sessions-label{font-family:var(--font-mono);font-size:10px;color:var(--text-muted);margin-left:4px;}
+.pomo-settings{display:flex;justify-content:center;gap:16px;font-family:var(--font-mono);font-size:10px;color:var(--text-muted);}
+.pomo-input{width:36px;background:rgba(255,255,255,.06);border:1px solid var(--card-border);border-radius:4px;color:var(--text);font-family:var(--font-mono);font-size:10px;text-align:center;padding:2px 4px;margin:0 4px;}
 .simcity-card{background:#0a0e1a !important;padding-bottom:var(--s-sm) !important;overflow:hidden;}
 .simcity-info{display:flex;align-items:center;gap:12px;margin-bottom:6px;font-family:var(--font-mono);font-size:10px;}
 .simcity-stat{color:var(--accent);letter-spacing:.08em;}

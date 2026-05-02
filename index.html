@@ -596,6 +596,33 @@
           <div class="palette-copied">{{ paletteCopied }}</div>
         </div>
 
+        <!-- POMODORO -->
+        <div v-else-if="wid.id==='pomodoro'" class="card pomodoro-card">
+          <div class="card-label">Pomodoro</div>
+          <div class="pomo-mode" :class="pomoMode">{{ pomoMode==='work'?'Focus':'Break' }}</div>
+          <div class="pomo-clock">{{ pomoDisplay }}</div>
+          <div class="pomo-progress-track">
+            <div class="pomo-progress-bar" :style="{width:pomoProgress+'%',background:pomoMode==='work'?'var(--accent)':'#ff6b6b'}"></div>
+          </div>
+          <div class="pomo-controls">
+            <button class="pomo-btn" @click="pomoToggle">
+              <i v-if="pomoRunning" data-lucide="pause"></i>
+              <i v-else data-lucide="play"></i>
+            </button>
+            <button class="pomo-btn pomo-reset" @click="pomoReset" title="Reset">
+              <i data-lucide="rotate-ccw"></i>
+            </button>
+          </div>
+          <div class="pomo-sessions">
+            <span v-for="i in 4" :key="i" class="pomo-dot" :class="{filled:pomoSessions>=i}"></span>
+            <span class="pomo-sessions-label">{{ pomoSessions }}/4 sessions</span>
+          </div>
+          <div class="pomo-settings">
+            <label>Work <input type="number" class="pomo-input" v-model.number="pomoWorkMins" min="1" max="60" @change="pomoReset" /> min</label>
+            <label>Break <input type="number" class="pomo-input" v-model.number="pomoBreakMins" min="1" max="30" @change="pomoReset" /> min</label>
+          </div>
+        </div>
+
         <!-- SIMCITY 2000 -->
         <div v-else-if="wid.id==='simcity'" class="card simcity-card">
           <div class="card-label">SimCity 2000</div>
@@ -738,7 +765,7 @@
             </label>
           </div>
           <div v-if="tamaEnabled" style="display:flex;gap:6px;flex-wrap:wrap;">
-            <button v-for="c in TAMA_CHARS" :key="c.id"
+            <button v-for="c in TAMA_CHARS.filter(c=>!c.hidden)" :key="c.id"
               @click="tamaSetChar(c.id)"
               :title="c.label"
               class="tama-pick-opt"

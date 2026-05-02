@@ -29,8 +29,8 @@ const SOMA_STATIONS=[{id:'dronezone',name:'Drone Zone',desc:'Atmospheric ambient
 const ALBUM_FALLBACKS={'ambient':{title:'Discreet Music',artist:'Brian Eno',year:'1975',url:null,why:'The blueprint for ambient music.'},'jazz':{title:'Kind of Blue',artist:'Miles Davis',year:'1959',url:null,why:'Still the best-selling jazz album ever made.'},'folk':{title:'For Emma, Forever Ago',artist:'Bon Iver',year:'2007',url:null,why:'Recorded alone in a Wisconsin cabin.'},'post-rock':{title:'Lift Your Skinny Fists…',artist:'Godspeed You! Black Emperor',year:'2000',url:null,why:'Sprawling, cinematic, unforgettable.'},'classical':{title:'Goldberg Variations',artist:'Glenn Gould',year:'1981',url:null,why:"Gould's quiet, introspective goodbye."},'shoegaze':{title:'Loveless',artist:'My Bloody Valentine',year:'1991',url:null,why:'Changed guitar music forever.'},'blues':{title:'Electric Mud',artist:'Muddy Waters',year:'1968',url:null,why:'Muddy goes psychedelic, brilliantly.'},'soul':{title:"There's a Riot Goin' On",artist:'Sly & the Family Stone',year:'1971',url:null,why:'The sound of utopia collapsing.'},'experimental':{title:'Trout Mask Replica',artist:'Captain Beefheart',year:'1969',url:null,why:'Difficult and rewarding in equal measure.'},'drone':{title:'The Tired Sounds of Stars of the Lid',artist:'Stars of the Lid',year:'2001',url:null,why:'Time feels elastic here.'},'krautrock':{title:'Autobahn',artist:'Kraftwerk',year:'1974',url:null,why:'Invented electronic pop.'},'neo-soul':{title:'Voodoo',artist:"D'Angelo",year:'2000',url:null,why:'Worth every year of the wait.'}};
 const QUOTES=[{text:"The world is quiet here.",author:"Lemony Snicket"},{text:"Not all those who wander are lost.",author:"J.R.R. Tolkien"},{text:"I took a deep breath and listened to the old brag of my heart: I am, I am, I am.",author:"Sylvia Plath"},{text:"The sky is everywhere, it begins at your feet.",author:"Jandy Nelson"},{text:"To live is so startling it leaves little time for anything else.",author:"Emily Dickinson"},{text:"The cure for anything is salt water: sweat, tears, or the sea.",author:"Isak Dinesen"},{text:"In the middle of winter, I at last discovered that there was in me an invincible summer.",author:"Albert Camus"},{text:"Stars are not small or gentle. They are writhing and dying and burning.",author:"Tamsyn Muir"},{text:"The most beautiful thing we can experience is the mysterious.",author:"Albert Einstein"},{text:"Everything you can imagine is real.",author:"Pablo Picasso"},{text:"There is no exquisite beauty without some strangeness in the proportion.",author:"Edgar Allan Poe"},{text:"I am not afraid of storms, for I am learning how to sail my ship.",author:"Louisa May Alcott"},{text:"Wherever you go becomes a part of you somehow.",author:"Anita Desai"},{text:"We shall not cease from exploration.",author:"T.S. Eliot"},{text:"One must always maintain one's connection to the past and yet ceaselessly pull away from it.",author:"Gaston Bachelard"},{text:"I would rather die of passion than of boredom.",author:"Vincent van Gogh"},{text:"The job of the artist is always to deepen the mystery.",author:"Francis Bacon"},{text:"You can't use up creativity. The more you use, the more you have.",author:"Maya Angelou"},{text:"To photograph is to appropriate the thing photographed.",author:"Susan Sontag"},{text:"The aim of art is to represent not the outward appearance of things, but their inward significance.",author:"Aristotle"}];
 
-const DEFAULT_WIDGET_ORDER=['kp','weather','sun','moon','aqi','tides','iss','planets','quote','animal','apod','soma','album','notes','todo','bookmarks','dice','chat','solitaire','snake','wordle','worldclock','gif','steam','filmrec','passgen','palette','simcity','bg'];
-const WIDGET_META={kp:{label:'KP Index',icon:'🌌',desc:'Aurora activity — updated every 5 min',cols:4,weight:3},weather:{label:'Weather',icon:'🌤️',desc:'Local conditions from Open-Meteo',cols:4,weight:3},sun:{label:'Sunrise & Sunset',icon:'🌅',desc:'Daily sun arc with daylight duration',cols:4,weight:3},moon:{label:'Moon Phase',icon:'🌕',desc:'Calculated phase, illumination & next full moon',cols:3,weight:2},aqi:{label:'Air Quality',icon:'🌬️',desc:'AQI, PM2.5, PM10 and ozone',cols:3,weight:2},tides:{label:'Tides',icon:'🌊',desc:'Tide highs and lows from Open-Meteo Marine',cols:5,weight:3},iss:{label:'ISS Pass Times',icon:'📡',desc:'When the space station flies over you',cols:4,weight:3},planets:{label:'Planets Tonight',icon:'🔭',desc:'Calculated visibility for naked-eye planets',cols:4,weight:4},quote:{label:'Inspiration',icon:'💬',desc:'Curated quotes from writers, artists, thinkers',cols:6,weight:2},animal:{label:'Animal of the Day',icon:'🦎',desc:'Random wildlife observation + Wikipedia fact',cols:5,weight:5},apod:{label:'NASA APOD',icon:'🌌',desc:'Astronomy Picture of the Day',cols:6,weight:5},soma:{label:'SomaFM Radio',icon:'📻',desc:'Curated ambient & electronic streams',cols:5,weight:3},album:{label:'Album Rec',icon:'🎵',desc:'Last.fm genre recommendations',cols:8,weight:4},notes:{label:'Notes',icon:'📋',desc:'Quick scratchpad, auto-saved locally',cols:5,weight:3},todo:{label:'To-Do',icon:'✅',desc:'Simple checklist, persisted locally',cols:4,weight:3},bookmarks:{label:'Bookmarks',icon:'🔗',desc:'Your personal speed-dial links',cols:12,weight:2},dice:{label:'Dice Roller',icon:'🎲',desc:'D&D dice — d4 through d20',cols:4,weight:3},chat:{label:'Chat',icon:'💬',desc:'Live chat with presence & typing indicators',cols:6,weight:5},solitaire:{label:'Solitaire',icon:'🃏',desc:'Klondike solitaire — drag & drop',cols:8,weight:8},snake:{label:'Snake',icon:'🐍',desc:'Classic snake game',cols:4,weight:4},wordle:{label:'Wordle',icon:'✏️',desc:'Daily 5-letter word game',cols:4,weight:6},worldclock:{label:'World Clock',icon:'🌍',desc:'Multiple city times',cols:4,weight:3},gif:{label:'GIF Search',icon:'🎬',desc:'Search GIFs via Klipy',cols:4,weight:3},steam:{label:'Steam Rec',icon:'🎮',desc:'Game recommendations by genre from Steam',cols:6,weight:4},filmrec:{label:'Film Rec',icon:'🎬',desc:'Random film recommendation by genre',cols:4,weight:3},passgen:{label:'Password',icon:'🔑',desc:'Secure password generator',cols:4,weight:3},palette:{label:'Color Palette',icon:'🎨',desc:'Generate harmonious color palettes',cols:5,weight:3},simcity:{label:'SimCity 2000',icon:'🏙️',desc:'A living isometric city simulation',cols:8,weight:6},bg:{label:'Background',icon:'🖼️',desc:'Unsplash photo topic picker',cols:7,weight:2}};
+const DEFAULT_WIDGET_ORDER=['kp','weather','sun','moon','aqi','tides','iss','planets','quote','animal','apod','soma','album','notes','todo','bookmarks','dice','chat','solitaire','snake','wordle','worldclock','gif','steam','filmrec','passgen','palette','pomodoro','simcity','bg'];
+const WIDGET_META={kp:{label:'KP Index',icon:'🌌',desc:'Aurora activity — updated every 5 min',cols:4,weight:3},weather:{label:'Weather',icon:'🌤️',desc:'Local conditions from Open-Meteo',cols:4,weight:3},sun:{label:'Sunrise & Sunset',icon:'🌅',desc:'Daily sun arc with daylight duration',cols:4,weight:3},moon:{label:'Moon Phase',icon:'🌕',desc:'Calculated phase, illumination & next full moon',cols:3,weight:2},aqi:{label:'Air Quality',icon:'🌬️',desc:'AQI, PM2.5, PM10 and ozone',cols:3,weight:2},tides:{label:'Tides',icon:'🌊',desc:'Tide highs and lows from Open-Meteo Marine',cols:5,weight:3},iss:{label:'ISS Pass Times',icon:'📡',desc:'When the space station flies over you',cols:4,weight:3},planets:{label:'Planets Tonight',icon:'🔭',desc:'Calculated visibility for naked-eye planets',cols:4,weight:4},quote:{label:'Inspiration',icon:'💬',desc:'Curated quotes from writers, artists, thinkers',cols:6,weight:2},animal:{label:'Animal of the Day',icon:'🦎',desc:'Random wildlife observation + Wikipedia fact',cols:5,weight:5},apod:{label:'NASA APOD',icon:'🌌',desc:'Astronomy Picture of the Day',cols:6,weight:5},soma:{label:'SomaFM Radio',icon:'📻',desc:'Curated ambient & electronic streams',cols:5,weight:3},album:{label:'Album Rec',icon:'🎵',desc:'Last.fm genre recommendations',cols:8,weight:4},notes:{label:'Notes',icon:'📋',desc:'Quick scratchpad, auto-saved locally',cols:5,weight:3},todo:{label:'To-Do',icon:'✅',desc:'Simple checklist, persisted locally',cols:4,weight:3},bookmarks:{label:'Bookmarks',icon:'🔗',desc:'Your personal speed-dial links',cols:12,weight:2},dice:{label:'Dice Roller',icon:'🎲',desc:'D&D dice — d4 through d20',cols:4,weight:3},chat:{label:'Chat',icon:'💬',desc:'Live chat with presence & typing indicators',cols:6,weight:5},solitaire:{label:'Solitaire',icon:'🃏',desc:'Klondike solitaire — drag & drop',cols:8,weight:8},snake:{label:'Snake',icon:'🐍',desc:'Classic snake game',cols:4,weight:4},wordle:{label:'Wordle',icon:'✏️',desc:'Daily 5-letter word game',cols:4,weight:6},worldclock:{label:'World Clock',icon:'🌍',desc:'Multiple city times',cols:4,weight:3},gif:{label:'GIF Search',icon:'🎬',desc:'Search GIFs via Klipy',cols:4,weight:3},steam:{label:'Steam Rec',icon:'🎮',desc:'Game recommendations by genre from Steam',cols:6,weight:4},filmrec:{label:'Film Rec',icon:'🎬',desc:'Random film recommendation by genre',cols:4,weight:3},passgen:{label:'Password',icon:'🔑',desc:'Secure password generator',cols:4,weight:3},palette:{label:'Color Palette',icon:'🎨',desc:'Generate harmonious color palettes',cols:5,weight:3},pomodoro:{label:'Pomodoro',icon:'🍅',desc:'Focus timer with work and break intervals',cols:4,weight:2},simcity:{label:'SimCity 2000',icon:'🏙️',desc:'A living isometric city simulation',cols:8,weight:6},bg:{label:'Background',icon:'🖼️',desc:'Unsplash photo topic picker',cols:7,weight:2}};
 
 async function geocode(city){
   // Strip country suffix if user typed "City, Country" format — API works best with city name only
@@ -68,7 +68,7 @@ createApp({
     // widget registry — order + visibility persisted
     const savedOrder=JSON.parse(localStorage.getItem('aurora_widget_order')||'null');
     const savedVis=JSON.parse(localStorage.getItem('aurora_widget_vis')||'null');
-    const defaultVis={kp:true,weather:true,sun:true,moon:true,aqi:true,tides:false,iss:false,planets:false,quote:true,animal:true,apod:false,soma:false,album:true,notes:false,todo:false,bookmarks:false,dice:true,chat:true,solitaire:false,snake:false,wordle:false,worldclock:false,gif:false,steam:false,filmrec:false,passgen:false,palette:false,simcity:false,bg:true};
+    const defaultVis={kp:true,weather:true,sun:true,moon:true,aqi:true,tides:false,iss:false,planets:false,quote:true,animal:true,apod:false,soma:false,album:true,notes:false,todo:false,bookmarks:false,dice:true,chat:true,solitaire:false,snake:false,wordle:false,worldclock:false,gif:false,steam:false,filmrec:false,passgen:false,palette:false,pomodoro:false,simcity:false,bg:true};
     const knownIds=new Set(DEFAULT_WIDGET_ORDER);
     // Prune stale IDs (removed widgets) and merge any new ones
     const cleanOrder=savedOrder?savedOrder.filter(id=>knownIds.has(id)):null;
@@ -1082,6 +1082,78 @@ createApp({
         gifLoadTrending();
       }
     },{immediate:true});
+
+    // ── POMODORO ─────────────────────────────────────────────────────────────────
+    const pomoWorkMins=ref(parseInt(localStorage.getItem('aurora_pomo_work')||'25'));
+    const pomoBreakMins=ref(parseInt(localStorage.getItem('aurora_pomo_break')||'5'));
+    const pomoMode=ref('work');
+    const pomoRunning=ref(false);
+    const pomoSessions=ref(0);
+    let pomoSecsLeft=pomoWorkMins.value*60;
+    let pomoTimer=null;
+    let pomoTomatoTimer=null;
+
+    const pomoDisplay=computed(()=>{
+      const m=Math.floor(pomoSecsLeft/60).toString().padStart(2,'0');
+      const s=(pomoSecsLeft%60).toString().padStart(2,'0');
+      return m+':'+s;
+    });
+    const pomoProgress=computed(()=>{
+      const total=(pomoMode.value==='work'?pomoWorkMins.value:pomoBreakMins.value)*60;
+      return Math.round((1-pomoSecsLeft/total)*100);
+    });
+
+    function pomoTick(){
+      pomoSecsLeft--;
+      if(pomoSecsLeft<=0){
+        if(pomoMode.value==='work'){
+          pomoSessions.value++;
+          pomoMode.value='break';
+          pomoSecsLeft=pomoBreakMins.value*60;
+          pomoGoTomato();
+          if(Notification.permission==='granted')new Notification('🍅 Break time!',{body:'Good work! Take a breather.',icon:'/icons/icon-192.png'});
+        } else {
+          pomoMode.value='work';
+          pomoSecsLeft=pomoWorkMins.value*60;
+          tamaReact('cheer');
+          if(Notification.permission==='granted')new Notification('⏱ Back to work!',{body:'Break over — let\'s go!',icon:'/icons/icon-192.png'});
+        }
+      }
+    }
+    function pomoToggle(){
+      if(!pomoRunning.value){
+        if(Notification.permission==='default')Notification.requestPermission();
+        pomoRunning.value=true;
+        pomoTimer=setInterval(pomoTick,1000);
+      } else {
+        pomoRunning.value=false;
+        clearInterval(pomoTimer);
+      }
+      refreshIcons();
+    }
+    function pomoReset(){
+      pomoRunning.value=false;clearInterval(pomoTimer);
+      pomoMode.value='work';pomoSecsLeft=pomoWorkMins.value*60;
+      localStorage.setItem('aurora_pomo_work',pomoWorkMins.value);
+      localStorage.setItem('aurora_pomo_break',pomoBreakMins.value);
+      pomoGoNormal();
+    }
+    let pomoOrigChar=null;
+    function pomoGoTomato(){
+      pomoOrigChar=tamaChar.value;
+      tamaChar.value='tomato';
+      tamaDancing.value=true;
+      clearTimeout(pomoTomatoTimer);
+      pomoTomatoTimer=setTimeout(()=>{
+        tamaChar.value=pomoOrigChar||'blob';
+        pomoOrigChar=null;
+        tamaDancing.value=false;
+      },12000);
+    }
+    function pomoGoNormal(){
+      if(pomoOrigChar){tamaChar.value=pomoOrigChar;pomoOrigChar=null;}
+      clearTimeout(pomoTomatoTimer);
+    }
 
     // ── SIMCITY 2000 ─────────────────────────────────────────────────────────────
     const scPop=ref(24800+Math.floor(Math.random()*50000));
@@ -2193,6 +2265,7 @@ createApp({
       {id:'dragon',label:'Dragon', emoji:'🐉'},
       {id:'skull', label:'Skull',  emoji:'💀'},
       {id:'plant', label:'Plant',  emoji:'🌱'},
+      {id:'tomato',label:'Tomato', emoji:'🍅', hidden:true},
     ];
     const tamaChar=ref(localStorage.getItem('aurora_tama')||'blob');
     const tamaEnabled=ref(localStorage.getItem('aurora_tama_enabled')!=='false');
@@ -2503,6 +2576,32 @@ createApp({
         tamaPx(ctx,'#664433',[[4,1],[4,2],[4,3],[4,4]],ox,oy,S);
         // Pot feet
         tamaPx(ctx,'#cc6644',foot?[[7,1],[7,4]]:[[7,0],[7,5]],ox,oy,S);
+
+      } else if(char==='tomato'){
+        // 🍅 Tomato — red round body, green stem/leaves, happy face
+        const ox=30+sway,oy=18+bounce;
+        // Stem
+        tamaPx(ctx,'#44aa22',[[0,2],[0,3],[-1,2]],ox,oy,S);
+        // Leaves
+        tamaPx(ctx,'#55cc33',[[-1,1],[-1,3],[0,1],[0,4]],ox,oy,S);
+        // Body (round red tomato)
+        tamaPx(ctx,'#ee3322',[[1,1],[1,2],[1,3],[1,4],[2,0],[2,1],[2,2],[2,3],[2,4],[2,5],[3,0],[3,1],[3,2],[3,3],[3,4],[3,5],[4,0],[4,1],[4,2],[4,3],[4,4],[4,5],[5,1],[5,2],[5,3],[5,4]],ox,oy,S);
+        // Shine highlight
+        tamaPx(ctx,'#ff6655',[[2,1],[2,2],[3,1]],ox,oy,S);
+        // Eyes
+        if(happy||win){
+          tamaPx(ctx,'#0a0e1a',[[2,4],[3,3],[3,5],[2,2],[3,1],[3,3]],ox,oy,S);
+        } else if(blink){
+          tamaPx(ctx,'#0a0e1a',[[2,1],[2,2],[2,4],[2,5]],ox,oy,S);
+        } else {
+          tamaPx(ctx,'#0a0e1a',[[2,1],[2,2],[2,4],[2,5]],ox,oy,S);
+          tamaPx(ctx,'#ffffff',[[2,1],[2,4]],ox,oy,S);
+        }
+        // Big happy smile — always grinning
+        tamaPx(ctx,'#0a0e1a',[[4,1],[4,4],[5,2],[5,3]],ox,oy,S);
+        tamaPx(ctx,'#ffffff',[[4,2],[4,3]],ox,oy,S);
+        // Little legs
+        tamaPx(ctx,'#cc2211',foot?[[6,1],[6,4]]:[[6,2],[6,3]],ox,oy,S);
       }
 
       // Sleepy ZZZs
@@ -2635,6 +2734,6 @@ createApp({
     function refreshIcons(){nextTick(()=>{if(window.lucide)window.lucide.createIcons();});}
     watch([showPicker,showSettings,showChangelog,somaPlaying,snakePaused,albumExpanded,nowPlaying,visibleWidgets,locationPromptNeeded],refreshIcons);
 
-    return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,locationPromptNeeded,doGeolocate,locationPromptNeeded,doGeolocate,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,albumExpanded,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,chatRenderText,formatChatTime,activeWidget,setActiveWidget,clearActiveWidget,solTableau,solFoundations,solStock,solWaste,solMoves,solWon,solInit,solNewGame,solSelected,solDraw,solClickWaste,solClickFoundation,solClickCol,solClickCard,solAutoFoundation,solDrawPixi,solInitPixi,snakeScore,snakeBest,snakeRunning,snakeDead,snakePaused,snakeStart,snakePause,snakeSetDir,wordleGuesses,wordleResults,wordleCurrent,wordleMsg,wordleKeyRows,wordleGetLetter,wordleGetClass,wordleKeyClass,wordleKey,wordleHandleMobileKey,wordleHandleMobileInput,worldClockCities,worldClockPick,worldClockOptions,worldClockTime,worldClockDate,worldClockAdd,worldClockRemove,debugError,scPop,scFunds,scTimeStr,scTickerMsg,gifQuery,gifResults,gifTrending,gifLoading,gifError,gifCopied,gifSearch,gifSelect,steamGenres,steamGenre,steamLoading,steamError,steamGame,steamScoreClass,steamPickGenre,steamNext,film,filmGenre,filmGenres,filmNext,passValue,passLength,passOpts,passCopied,passGenerate,passCopy,paletteBase,paletteType,paletteTypes,paletteColors,paletteCopied,paletteGenerate,paletteCopy,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,pickerSearch,filteredWidgetRegistry,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,resetWidgetState,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings,tamaReact,tamaInteract,TAMA_CHARS,tamaChar,tamaEnabled,tamaSetChar,tamaWalking,tamaDancing,tamaBPM,tamaRaging,chatUnread,chatBubble,lastfmUser,nowPlaying};
+    return{clockStr,dateStr,showSettings,showPicker,showChangelog,changelogLoading,changelogError,changelogEntries,changelogUnread,openChangelog,locationInput,unsplashKey,lastfmKey,nasaKey,musicApp,currentTheme,useFahrenheit,bgTopic,selectedGenre,bookmarks,bookmarkEdits,locationName,locationError,locationPromptNeeded,doGeolocate,locationPromptNeeded,doGeolocate,weather,sunData,sunProgress,sunArcY,kp,kpInfo:kpInfoVal,kpAlert,dismissKpAlert,aqi,tides,tidesError,issPasses,issError,formatISSTime,moon,planets,quote,animal,animalLoading,apod,album,albumLoading,albumExpanded,bgCredit,notes,notesSaved,todos,todoInput,somaStation,somaPlaying,somaVolume,currentSoma,diceTypes,activeDie,diceResult,diceRolling,diceHistory,diceMod,rollDice,switchDie,chatUser,chatAuthMode,chatUsername,chatPassword,chatAuthLoading,chatError,chatTurnstileToken,chatMessages,chatOnline,chatTypingText,chatInput,chatMessagesEl,chatInputEl,chatSubmitAuth,chatSend,chatOnTyping,chatLogout,chatRenderText,formatChatTime,activeWidget,setActiveWidget,clearActiveWidget,solTableau,solFoundations,solStock,solWaste,solMoves,solWon,solInit,solNewGame,solSelected,solDraw,solClickWaste,solClickFoundation,solClickCol,solClickCard,solAutoFoundation,solDrawPixi,solInitPixi,snakeScore,snakeBest,snakeRunning,snakeDead,snakePaused,snakeStart,snakePause,snakeSetDir,wordleGuesses,wordleResults,wordleCurrent,wordleMsg,wordleKeyRows,wordleGetLetter,wordleGetClass,wordleKeyClass,wordleKey,wordleHandleMobileKey,wordleHandleMobileInput,worldClockCities,worldClockPick,worldClockOptions,worldClockTime,worldClockDate,worldClockAdd,worldClockRemove,debugError,scPop,scFunds,scTimeStr,scTickerMsg,gifQuery,gifResults,gifTrending,gifLoading,gifError,gifCopied,gifSearch,gifSelect,steamGenres,steamGenre,steamLoading,steamError,steamGame,steamScoreClass,steamPickGenre,steamNext,film,filmGenre,filmGenres,filmNext,passValue,passLength,passOpts,passCopied,passGenerate,passCopy,paletteBase,paletteType,paletteTypes,paletteColors,paletteCopied,paletteGenerate,paletteCopy,themeMap:THEMES,bgTopics:BG_TOPICS,genres:GENRES,somaStations:SOMA_STATIONS,widgetRegistry,visibleWidgets,masonryColumns,pickerDragging,pickerTarget,pickerSearch,filteredWidgetRegistry,cToF,msToMph,musicAppLabel,musicAppLink,toggleWidget,resetWidgetState,onPickerDragStart,onPickerDragOver,onPickerDrop,onPickerDragEnd,onPickerTouchStart,onPickerTouchMove,onPickerTouchEnd,fetchQuote,fetchAnimal,fetchAlbum,refreshBg,setBgTopic,pickGenre,setTheme,setSomaStation,toggleSoma,updateSomaVolume,saveNotes,addTodo,toggleTodo,deleteTodo,saveSettings,tamaReact,tamaInteract,TAMA_CHARS,tamaChar,tamaEnabled,tamaSetChar,pomoWorkMins,pomoBreakMins,pomoMode,pomoRunning,pomoSessions,pomoDisplay,pomoProgress,pomoToggle,pomoReset,tamaWalking,tamaDancing,tamaBPM,tamaRaging,chatUnread,chatBubble,lastfmUser,nowPlaying};
   }
 }).mount('#app');
