@@ -408,6 +408,7 @@ createApp({
     }
 
     function solUpdateParticles(){
+      if(!solPixiApp||solPixiApp._destroyed)return;
       for(let i=solParticles.length-1;i>=0;i--){
         const p=solParticles[i];
         p._vy+=p._gravity;
@@ -475,7 +476,7 @@ createApp({
 
       solPixiApp.ticker.add(solUpdateParticles);
       solPixiApp.ticker.add(()=>{
-        if(!solPixiApp||!solPixiApp.stage)return;
+        if(!solPixiApp||solPixiApp._destroyed)return;
         const hasSel=!!solSelected.value;
         if(hasSel!==solPrevSelected){
           solPrevSelected=hasSel;
@@ -522,7 +523,7 @@ createApp({
     let solPixiRegions=[];
 
     function solDrawPixi(){
-      if(!solPixiApp||!window.PIXI)return;
+      if(!solPixiApp||!window.PIXI||solPixiApp._destroyed)return;
       const PIXI=window.PIXI;
       const stage=solPixiApp.stage;
       stage.removeChildren();
@@ -713,7 +714,7 @@ createApp({
               clearInterval(poll);
               // Destroy old PixiJS instance if canvas was recreated
               if(solPixiApp){
-                try{solPixiApp.ticker.stop();solPixiApp.destroy(true,{children:true});}catch(e){console.warn('sol destroy:',e);}
+                try{solPixiApp.ticker.stop();solPixiApp.ticker.remove(solUpdateParticles);solPixiApp.destroy(true,{children:true});}catch(e){console.warn('sol destroy:',e);}
                 solPixiApp=null;
                 solParticleContainer=null;
                 solParticles.length=0;
@@ -734,7 +735,7 @@ createApp({
       nextTick(()=>setTimeout(()=>{
         const el=document.getElementById('sol-pixi');
         if(el&&(!solPixiApp||!solPixiApp.view?.isConnected)){
-          if(solPixiApp){try{solPixiApp.ticker.stop();solPixiApp.destroy(true,{children:true});}catch(e){console.warn('sol destroy:',e);}solPixiApp=null;solParticleContainer=null;solParticles.length=0;solLiftProgress=0;}
+          if(solPixiApp){try{solPixiApp.ticker.stop();solPixiApp.ticker.remove(solUpdateParticles);solPixiApp.destroy(true,{children:true});}catch(e){console.warn('sol destroy:',e);}solPixiApp=null;solParticleContainer=null;solParticles.length=0;solLiftProgress=0;}
           solInitPixi();
         }
       },150));
