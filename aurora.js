@@ -1111,12 +1111,12 @@ createApp({
           pomoMode.value='break';
           pomoSecsLeft.value=pomoBreakMins.value*60;
           pomoGoTomato();
-          if(Notification.permission==='granted')new Notification('🍅 Break time!',{body:'Good work! Take a breather.',icon:'/icons/icon-192.png'});
+          if(typeof Notification!=='undefined'&&Notification.permission==='granted')new Notification('🍅 Break time!',{body:'Good work! Take a breather.',icon:'/icons/icon-192.png'});
         } else {
           pomoMode.value='work';
           pomoSecsLeft.value=pomoWorkMins.value*60;
           tamaReact('cheer');
-          if(Notification.permission==='granted')new Notification('⏱ Back to work!',{body:'Break over — let\'s go!',icon:'/icons/icon-192.png'});
+          if(typeof Notification!=='undefined'&&Notification.permission==='granted')new Notification('⏱ Back to work!',{body:'Break over — let\'s go!',icon:'/icons/icon-192.png'});
         }
       }
     }
