@@ -521,25 +521,23 @@ createApp({
       solPointerDownY=e.clientY;
     }
     function solPixiHandlePointer(e){
+      try{
       if(!solPixiApp||!window.PIXI)return;
-      // Must have a matching pointerdown within 500ms
       if(Date.now()-solPointerDownTime>500)return;
-      // Ignore if moved more than 12px (scroll/drag)
       if(Math.abs(e.clientX-solPointerDownX)>12||Math.abs(e.clientY-solPointerDownY)>12)return;
-      // Reset so double-fire can't re-trigger
       solPointerDownTime=0;
       const rect=solPixiApp.view.getBoundingClientRect();
       const scaleX=solPixiApp.screen.width/rect.width;
       const scaleY=solPixiApp.screen.height/rect.height;
       const x=(e.clientX-rect.left)*scaleX;
       const y=(e.clientY-rect.top)*scaleY;
-      
       for(const r of solPixiRegions){
         if(x>=r.x&&x<=r.x+r.w&&y>=r.y&&y<=r.y+r.h){
-              r.action();
+          r.action();
           return;
         }
       }
+      }catch(e){console.warn('solPixiHandlePointer:',e);}
     }
 
     let solPixiRegions=[];
@@ -829,13 +827,13 @@ createApp({
       else{const col=[...solTableau.value[ci]];col.splice(col.length-1,1);solTableau.value[ci]=col;}
       solSelected.value=null;solReveal();solMoves.value++;solCheckWin();solSave();
       // Cinders at foundation position
-      nextTick(()=>{
+      nextTick(()=>{try{
         if(!solPixiApp)return;
         const W=solPixiApp.renderer.width/solPixiApp.renderer.resolution;
-        const ncols=7,cw=Math.floor((W-(ncols-1)*GAP)/ncols),ch=Math.round(cw*1.4);
-        const fx=(cw+GAP)*(3+fi);
+        const ncols=7,cw=Math.floor((W-SOL_PAD*2-(ncols-1)*GAP)/ncols),ch=Math.round(cw*1.4);
+        const fx=SOL_PAD+(cw+GAP)*(3+fi);
         solSpawnCinders(fx+cw/2, SOL_PAD+ch/2);
-      });
+      }catch(e){console.warn('cinder foundation:',e);}});
     }
     function solClickCard(ci, ri){
       const col=solTableau.value[ci];
@@ -864,15 +862,15 @@ createApp({
       else{const c=[...solTableau.value[fromCi]];c.splice(fromRi,cards.length);solTableau.value[fromCi]=c;}
       solSelected.value=null;solReveal();solMoves.value++;solSave();
       // Cinders at tableau drop position
-      nextTick(()=>{
+      nextTick(()=>{try{
         if(!solPixiApp)return;
         const W=solPixiApp.renderer.width/solPixiApp.renderer.resolution;
-        const ncols=7,cw=Math.floor((W-(ncols-1)*GAP)/ncols),ch=Math.round(cw*1.4);
-        const tableauY=ch+GAP*2;
-        const cx=ci*(cw+GAP);
+        const ncols=7,cw=Math.floor((W-SOL_PAD*2-(ncols-1)*GAP)/ncols),ch=Math.round(cw*1.4);
+        const tableauY=SOL_PAD+ch+GAP*2;
+        const cx=SOL_PAD+ci*(cw+GAP);
         const cardY=tableauY+Math.max(0,solTableau.value[ci].length-1)*STACK_OFFSET;
         solSpawnCinders(cx+cw/2, cardY);
-      });
+      }catch(e){console.warn('cinder tableau:',e);}});
     }
 
     function solClickCol(ci, colLen){
