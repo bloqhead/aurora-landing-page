@@ -378,6 +378,7 @@ createApp({
 
     // ── PIXI SOLITAIRE ──────────────────────────────────────────────────────────
     const SOL_PAD=8; // padding to prevent lifted cards clipping at edges
+    let solPixiApp=null;
     let solParticleContainer=null;
     let solLiftProgress=0;
     const solParticles=[];
