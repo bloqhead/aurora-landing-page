@@ -420,7 +420,7 @@ a{color:inherit;} button{font-family:inherit;}
 .ms-cell.n1{color:#4fc8ff;}.ms-cell.n2{color:#50dca0;}.ms-cell.n3{color:#ff6b6b;}
 .ms-cell.n4{color:#9b7ff0;}.ms-cell.n5{color:#ff8c00;}
 /* Modal */
-.ms-modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;}
+.ms-modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;}
 .ms-modal{background:var(--card);border:1px solid var(--card-border);border-radius:16px;padding:var(--s-lg);max-width:360px;width:90%;position:relative;}
 .ms-modal-title{font-family:var(--font-display);font-size:var(--t-lg);font-weight:300;margin-bottom:var(--s-md);}
 .ms-modal-body{font-family:var(--font-mono);font-size:var(--t-xs);color:var(--text-muted);line-height:1.7;}
