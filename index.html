@@ -606,6 +606,65 @@
           <div class="palette-copied">{{ paletteCopied }}</div>
         </div>
 
+        <!-- MINESWEEPER -->
+        <div v-else-if="wid.id==='minesweeper'" class="card ms-card">
+          <div class="card-label">Minesweeper</div>
+          <div class="ms-toolbar">
+            <div class="ms-info">
+              <span class="ms-counter">💣 {{ msRemaining }}</span>
+              <span class="ms-counter">⏱ {{ msTime }}</span>
+            </div>
+            <div class="ms-btns">
+              <select class="ms-diff" v-model="msDifficulty" @change="msNewGame">
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+              <button class="ms-btn" @click="msNewGame" title="New game"><i data-lucide="refresh-cw"></i></button>
+              <button class="ms-btn" @click="msShowHelp=true" title="How to play"><i data-lucide="help-circle"></i></button>
+            </div>
+          </div>
+          <div v-if="msWon" class="ms-banner ms-banner-win">🎉 You won!</div>
+          <div v-if="msLost" class="ms-banner ms-banner-lose">💥 Game over!</div>
+          <div class="ms-grid" :style="{gridTemplateColumns:`repeat(${msCols},1fr)`}">
+            <button v-for="(cell,i) in msBoard" :key="i"
+              class="ms-cell"
+              :class="{
+                revealed:cell.revealed,
+                flagged:cell.flagged,
+                mine:cell.revealed&&cell.mine,
+                'n1':cell.revealed&&cell.adj===1,'n2':cell.revealed&&cell.adj===2,
+                'n3':cell.revealed&&cell.adj===3,'n4':cell.revealed&&cell.adj===4,
+                'n5':cell.revealed&&cell.adj>=5,
+              }"
+              @click="msReveal(i)"
+              @contextmenu.prevent="msFlag(i)"
+              @touchstart.prevent="msTouchStart(i)"
+              @touchend.prevent="msTouchEnd(i)"
+            >
+              <template v-if="cell.flagged&&!cell.revealed">🚩</template>
+              <template v-else-if="cell.revealed&&cell.mine">💣</template>
+              <template v-else-if="cell.revealed&&cell.adj>0">{{ cell.adj }}</template>
+            </button>
+          </div>
+        </div>
+
+        <!-- MINESWEEPER HELP MODAL -->
+        <div v-if="msShowHelp" class="ms-modal-overlay" @click.self="msShowHelp=false">
+          <div class="ms-modal">
+            <button class="settings-close" @click="msShowHelp=false"><i data-lucide="x"></i></button>
+            <div class="ms-modal-title">How to Play</div>
+            <div class="ms-modal-body">
+              <p>Reveal all safe cells without hitting a mine.</p>
+              <div class="ms-help-row"><span class="ms-help-key">Click</span> Reveal a cell</div>
+              <div class="ms-help-row"><span class="ms-help-key">Right-click</span> Flag a mine</div>
+              <div class="ms-help-row"><span class="ms-help-key">Long press</span> Flag on mobile</div>
+              <div class="ms-help-row"><span class="ms-help-key">Numbers</span> Adjacent mine count</div>
+              <p>First click is always safe. Good luck! 💣</p>
+            </div>
+          </div>
+        </div>
+
         <!-- POMODORO -->
         <div v-else-if="wid.id==='pomodoro'" class="card pomodoro-card">
           <div class="card-label">Pomodoro</div>

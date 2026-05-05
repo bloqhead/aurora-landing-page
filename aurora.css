@@ -399,7 +399,34 @@ a{color:inherit;} button{font-family:inherit;}
 .currency-result{font-family:var(--font-display);font-size:var(--t-2xl);font-weight:200;color:var(--accent);text-align:center;margin:var(--s-xs) 0;}
 .currency-rate{font-family:var(--font-mono);font-size:var(--t-xs);color:var(--text-muted);text-align:center;}
 
-/* POMODORO */
+/* MINESWEEPER */
+.ms-card{user-select:none;}
+.ms-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px;}
+.ms-info{display:flex;gap:12px;}
+.ms-counter{font-family:var(--font-mono);font-size:12px;color:var(--accent);letter-spacing:.05em;}
+.ms-btns{display:flex;align-items:center;gap:6px;}
+.ms-diff{background:rgba(255,255,255,.06);border:1px solid var(--card-border);border-radius:6px;color:var(--text);font-family:var(--font-mono);font-size:10px;padding:4px 6px;cursor:pointer;}
+.ms-btn{background:rgba(255,255,255,.06);border:1px solid var(--card-border);border-radius:6px;color:var(--text-muted);cursor:pointer;padding:5px 7px;display:flex;align-items:center;transition:color .2s;}
+.ms-btn:hover{color:var(--accent);}
+.ms-btn [data-lucide]{width:13px;height:13px;stroke-width:2;}
+.ms-banner{text-align:center;font-family:var(--font-mono);font-size:12px;padding:6px;border-radius:6px;margin-bottom:8px;}
+.ms-banner-win{background:rgba(80,220,160,.15);color:#50dca0;}
+.ms-banner-lose{background:rgba(255,80,80,.15);color:#ff5050;}
+.ms-grid{display:grid;gap:2px;width:100%;}
+.ms-cell{aspect-ratio:1;border-radius:3px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.06);color:var(--text);font-family:var(--font-mono);font-size:clamp(8px,1.5vw,13px);font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .1s;padding:0;line-height:1;min-width:0;}
+.ms-cell:hover:not(.revealed){background:rgba(255,255,255,.12);}
+.ms-cell.revealed{background:rgba(255,255,255,.03);border-color:rgba(255,255,255,.04);cursor:default;}
+.ms-cell.mine{background:rgba(255,60,60,.3);}
+.ms-cell.n1{color:#4fc8ff;}.ms-cell.n2{color:#50dca0;}.ms-cell.n3{color:#ff6b6b;}
+.ms-cell.n4{color:#9b7ff0;}.ms-cell.n5{color:#ff8c00;}
+/* Modal */
+.ms-modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;}
+.ms-modal{background:var(--card);border:1px solid var(--card-border);border-radius:16px;padding:var(--s-lg);max-width:360px;width:90%;position:relative;}
+.ms-modal-title{font-family:var(--font-display);font-size:var(--t-lg);font-weight:300;margin-bottom:var(--s-md);}
+.ms-modal-body{font-family:var(--font-mono);font-size:var(--t-xs);color:var(--text-muted);line-height:1.7;}
+.ms-modal-body p{margin:0 0 var(--s-sm);}
+.ms-help-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.ms-help-key{background:rgba(255,255,255,.08);border:1px solid var(--card-border);border-radius:5px;padding:2px 8px;color:var(--text);white-space:nowrap;font-size:10px;}
 .pomodoro-card{text-align:center;}
 .pomo-mode{font-family:var(--font-mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;opacity:.6;margin-bottom:4px;}
 .pomo-mode.work{color:var(--accent);}
