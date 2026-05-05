@@ -1613,7 +1613,13 @@ createApp({
       if(!visibleWidgets.value.find(w=>w.id==='simcity'))return;
       nextTick(()=>setTimeout(()=>{
         const el=document.getElementById('simcity-canvas');
-        if(el){if(scPixiApp){cancelAnimationFrame(scPixiApp);scPixiApp=null;}scInitPixi();}
+        if(!el)return;
+        const disconnected=!el.isConnected;
+        const zeroSize=el.clientWidth===0;
+        if(disconnected||zeroSize){
+          if(scPixiApp){cancelAnimationFrame(scPixiApp);scPixiApp=null;}
+          scInitPixi();
+        }
       },150));
     },{immediate:false});
 
