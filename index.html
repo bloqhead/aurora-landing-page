@@ -28,7 +28,28 @@
 <link href="https://fonts.cdnfonts.com/css/vcr-osd-mono" rel="stylesheet" />
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <link rel="stylesheet" href="aurora.css?v=__BUILD_VERSION__">
-<script>if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(r=>r.forEach(s=>s.unregister()));caches.keys().then(k=>k.forEach(c=>caches.delete(c)));}</script>
+<script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/aurora-landing-page/sw.js?v=__BUILD_VERSION__')
+    .then(reg=>{
+      // Check for waiting SW (new version ready)
+      if(reg.waiting){window.__SW_WAITING=reg.waiting;}
+      reg.addEventListener('updatefound',()=>{
+        const sw=reg.installing;
+        sw.addEventListener('statechange',()=>{
+          if(sw.state==='installed'&&navigator.serviceWorker.controller){
+            window.__SW_WAITING=sw;
+            document.dispatchEvent(new CustomEvent('sw-update-ready'));
+          }
+        });
+      });
+    });
+  // When SW activates and sends SW_UPDATED, reload
+  navigator.serviceWorker.addEventListener('message',e=>{
+    if(e.data?.type==='SW_UPDATED')window.location.reload();
+  });
+}
+</script>
 </head>
 <body>
 <div id="bg-layer"></div>
@@ -874,6 +895,13 @@
       </div>
     </div>
   </div>
+
+  <!-- SW update toast -->
+  <transition name="nowplaying">
+    <div v-if="swUpdateReady" class="sw-update-toast" @click="swUpdate">
+      <i data-lucide="refresh-cw"></i> New version available — tap to update
+    </div>
+  </transition>
 
   <!-- Sticky tamagotchi -->
   <div v-if="tamaEnabled" class="tama-sticky" :class="{walking:tamaWalking,dancing:tamaDancing&&!tamaWalking,raging:tamaRaging}"
