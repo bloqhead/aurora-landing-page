@@ -335,6 +335,8 @@ createApp({
 
     function doGeolocate(){
       locationPromptNeeded.value=false;
+      locationError.value='';
+      if(!navigator.geolocation){locationError.value='Geolocation not supported.';return;}
       navigator.geolocation.getCurrentPosition(
         async pos=>{
           const{latitude:lat,longitude:lon}=pos.coords;
@@ -349,7 +351,10 @@ createApp({
           }catch{locationName.value='Your Location';}
           loadLocationData(lat,lon);
         },
-        ()=>{locationError.value='Allow location access or set a city in settings.';},
+        err=>{
+          const msgs={1:'Location access denied.',2:'Location unavailable.',3:'Location request timed out.'};
+          locationError.value=msgs[err.code]||'Could not get location.';
+        },
         {timeout:10000,maximumAge:300000,enableHighAccuracy:false}
       );
     }

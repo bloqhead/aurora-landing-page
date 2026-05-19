@@ -782,12 +782,11 @@
           <div class="settings-section-label">Location (city, country)</div>
           <div style="display:flex;gap:8px;align-items:center;">
             <input class="settings-input" v-model="locationInput" placeholder="e.g. Asheville or Cape Cod" @keyup.enter="saveSettings" style="flex:1;" />
-            <button class="settings-btn" style="flex-shrink:0;padding:8px 12px;white-space:nowrap;" @click="doGeolocate" title="Detect my location">
+            <button class="settings-btn" style="flex-shrink:0;padding:8px 12px;white-space:nowrap;" @click="locationError='';doGeolocate()" title="Detect my location">
               <i data-lucide="locate"></i>
             </button>
           </div>
           <div v-if="locationError" class="settings-hint" style="color:#ff6b6b;">{{ locationError }}</div>
-          <div v-if="locationError" style="font-size:var(--t-xs);color:#ff8c6b;margin-top:var(--s-xs);">{{ locationError }}</div>
         </div>
         <div class="settings-section">
           <div class="settings-section-label">Unsplash Access Key</div>
